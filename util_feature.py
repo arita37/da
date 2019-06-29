@@ -119,14 +119,14 @@ def pd_num_tocat(df):
         df[c] = pd.cut(df[c], bins=bins, labels=labels)
 
    
-def feature_impt_logis(clf, cols2) :
+def sk_feature_impt_logis(clf, cols2) :
     
     dfeatures = pd.DataFrame( { 'feature' :  cols2  ,  'coef' :   clf.coef_[0]  ,
                              'coef_abs' : np.abs(  clf.coef_[0]  )  }).sort_values('coef_abs', ascending=False)    
     dfeatures['rank'] = np.arange(0, len(dfeatures))
     return dfeatures
 
-def merge_columns( dfm3, ll0 ) :
+def pd_merge_columns( dfm3, ll0 ) :
     
     dd = {}
     for x in ll0 :
@@ -138,7 +138,7 @@ def merge_columns( dfm3, ll0 ) :
     return dd
 
 
-def merge_colunns2( dfm3,  l, x0 ) :
+def pd_merge_colunns2( dfm3,  l, x0 ) :
     
     dfz = pd.DataFrame( { 'easy_id' : dfm3['easy_id'].values })  
     for t in l :
@@ -190,12 +190,7 @@ def pd_downsample(df, coltarget="y", n1max= 10000, n2max= -1, isconcat=1 ):
 
 
 
-# return list(df.columns)
-def get_ccol(df):
-    
-    return list(df.columns)
-
-def get_dfna_col(dfm2):
+def pd_stat_na_percol(dfm2):
     
     ll = []
     for x in dfm2.columns :
@@ -210,7 +205,7 @@ def get_dfna_col(dfm2):
 
 
 
-def get_dfna_user(dfm2, n = 10**6):
+def pd_stat_na_perow(dfm2, n = 10**6):
     
     ll =[]  ; n = 10**6
     for ii,x in dfm2.iloc[ :n, :].iterrows() :
@@ -224,7 +219,8 @@ def get_dfna_user(dfm2, n = 10**6):
     return dfna_user
 
 
-def get_stat_imbalance(df):
+
+def pd_stat_col_imbalance(df):
     
     ll =  { x : []  for x in   [ 'col', 'xmin_freq', 'nunique', 'xmax_freq' ,'xmax' , 
                                   'xmin',  'n', 'n_na', 'n_notna'  ]   }
@@ -258,7 +254,7 @@ def get_stat_imbalance(df):
 
 
 
-def get_cat_correlation_ratio(categories, measurements):
+def np_cat_correlation_ratio(x,y):
     
     confusion_matrix = pd.crosstab(x,y)
     chi2 = ss.chi2_contingency(confusion_matrix)[0]
@@ -271,8 +267,7 @@ def get_cat_correlation_ratio(categories, measurements):
     return np.sqrt(phi2corr/min((kcorr-1),(rcorr-1)))
 
 
-# ???
-def theils_u(x, y):
+def np_mutual_info_(x, y):
         
     s_xy = conditional_entropy(x,y)
     x_counter = Counter(x)
@@ -284,9 +279,9 @@ def theils_u(x, y):
     else:
         return (s_x - s_xy) / s_x
     
-    
+  
 #### Calculate KAISO Limit  #########################################################
-def get_kaiso_limit(dfm2, col_score='scoress', coldefault="y", ntotal_default=491, def_list=None, nblock=20.0) : 
+def pd_segment_limit(dfm2, col_score='scoress', coldefault="y", ntotal_default=491, def_list=None, nblock=20.0) : 
     
     if def_list is None :
        def_list = np.ones(21) * ntotal_default / nblock       
@@ -326,14 +321,13 @@ def get_kaiso2(x, l1):
             return i+1
     return i + 1+1
 
-##### Drop duplicates
-def np_drop_duplicates(l1):
-    
+
+def np_drop_duplicates(l1):    
     l0 = list( OrderedDict((x, True) for x in l1 ).keys())
     return l0
 
-def col_extract_colbin(cols2) :
-    
+
+def np_col_extractname_colbin(cols2) :
     coln = []
     for ss in cols2 :
      xr = ss[ss.rfind("_")+1:]
@@ -347,8 +341,7 @@ def col_extract_colbin(cols2) :
     return coln
 
 
-def col_stats(df) :
-    
+def pd_stats_col(df) :
     ll = { 'col' : [], 'nunique' : [] }
     for x in df.columns:
        ll['col'].append( x )
@@ -361,8 +354,7 @@ def col_stats(df) :
     return ll
 
 
-def np_intersection(df1, df2, colid) :
-    
+def pd_col_intersection(df1, df2, colid) :
     n2 = list( set(df1[colid].values).intersection(df2[colid]) )
     print("total matchin",  len(n2), len(df1), len(df2) )
     return n2
@@ -397,14 +389,13 @@ def pd_feat_normalize(dfm2, colnum_log, colproba) :
 
 
 
-def pd_feat_check( dfm2 ) :
-    
+def pd_col_check( dfm2 ) :
     for x in dfm2.columns :
        if len( dfm2[x].unique() ) > 2 and dfm2[x].dtype  != np.dtype('O'):
            print(x, len(dfm2[x].unique())  ,  dfm2[x].min() , dfm2[x].max()  )
 
 
-def pd_remove(df, cols) :
+def pd_col_remove(df, cols) :
     
     for x in  cols :
       try :   
@@ -424,13 +415,13 @@ def sk_feature_importance(clfrf, feature_name):
             )
 
 
-def col_extract(colbin):
+def np_col_extractname(col_onehot):
     
     '''
     Column extraction 
     '''   
     colnew = []
-    for x in colbin :
+    for x in col_onehot :
        if len(x) > 2 :
          if   x[-2] ==  "_" :
              if x[:-2] not in colnew : 
@@ -448,8 +439,7 @@ def col_extract(colbin):
 
 
 
-
-def col_remove(cols, colsremove) :
+def np_col_remove(cols, colsremove) :
     
     #cols = list(df1.columns)
     '''
@@ -467,7 +457,8 @@ def col_remove(cols, colsremove) :
     return cols
 
 
-def col_remove_fuzzy(cols, colsremove) :
+
+def np_col_remove_fuzzy(cols, colsremove) :
     
     #cols = list(df1.columns)
     '''

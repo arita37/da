@@ -4,6 +4,31 @@ Some special methods
 """
 
 
+######################### OPTIM   ###################################################
+def optim_is_pareto_efficient(Xmat_cost, epsilon=0.01, ret_boolean=1):
+    """ Calculate Pareto Frontier of Multi-criteria Optimization program
+    c1, c2  has to be minimized : -Sharpe, -Perf, +Drawdown
+    :param Xmat_cost: An (n_points, k_costs) array
+    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
+    """
+    pesp = 1.0 + epsilon  # Relax Pareto Constraints
+    is_efficient = np.ones(Xmat_cost.shape[0], dtype=bool)
+    for i, c in enumerate(Xmat_cost):
+        if is_efficient[i]:
+            is_efficient[is_efficient] = np.any(
+                Xmat_cost[is_efficient] <= c * pesp, axis=1
+            )  # Remove dominated points
+    if ret_boolean:
+        return is_efficient
+    else:
+        return Xmat_cost[is_efficient]
+    # return is_efficient
+
+
+
+
+
+
 def pd_validation_struct():
     pass
     """
