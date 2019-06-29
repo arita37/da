@@ -815,7 +815,7 @@ https://github.com/ResidentMario/missingno
    """
 
 
-def pd_describe(df):
+def pd_stat_describe(df):
     """ Describe the tables
 
 
