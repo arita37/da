@@ -78,13 +78,15 @@ def pd_num_tocat(df, colname = None,  colexclude=None, method=""):
         space  = (ma - mi) / 5
         bins   = [mi + i * space for i in range(6)]
         bins[0] -= 0.0000001
+
+        labels = np.arange(0, len(bins))
         df[c] = pd.cut(df[c], bins=bins, labels=labels)
     return df
 
 
 
 
-def pd_merge_columns(dfm3, ll0):
+def pd_col_merge(dfm3, ll0):
     dd = {}
     for x in ll0:
         ll2 = []
@@ -95,7 +97,7 @@ def pd_merge_columns(dfm3, ll0):
     return dd
 
 
-def pd_merge_colunns2(dfm3, l, x0):
+def pd_col_merge2(dfm3, l, x0):
     dfz = pd.DataFrame({'easy_id': dfm3['easy_id'].values})
     for t in l:
         ix = t.rfind("_")
@@ -112,7 +114,7 @@ def pd_merge_colunns2(dfm3, l, x0):
     return dfz
 
 
-def pd_downsample(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
+def pd_sampling(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
     """
     DownSampler      
     """
