@@ -413,7 +413,7 @@ def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u
         return corr
 
 
-def pd_numerical_encoding(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
+def pd_num_encoding(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
     """
     Encoding a data-set with mixed data (numerical and categorical) to a numerical-only data-set,
     using the following logic:
@@ -893,36 +893,7 @@ def pd_validation_struct():
   """
 
 
-def pd_checkpoint():
-    pass
 
-
-"""
-  Create Checkpoint on dataframe to save intermediate results
-  https://github.com/ResidentMario/checkpoints
-  To start, import checkpoints and enable it:
-
-from checkpoints import checkpoints
-checkpoints.enable()
-This will augment your environment with pandas.Series.safe_map and pandas.DataFrame.safe_apply methods. Now suppose we create a Series of floats, except for one invalid entry smack in the middle:
-
-import pandas as pd; import numpy as np
-rand = pd.Series(np.random.random(100))
-rand[50] = "____"
-Suppose we want to remean this data. If we apply a naive map:
-
-rand.map(lambda v: v - 0.5)
-
-    TypeError: unsupported operand type(s) for -: 'str' and 'float'
-Not only are the results up to that point lost, but we're also not actually told where the failure occurs! Using safe_map instead:
-
-rand.safe_map(lambda v: v - 0.5)
-
-    <ROOT>/checkpoint/checkpoints/checkpoints.py:96: UserWarning: Failure on index 50
-    TypeError: unsupported operand type(s) for -: 'str' and 'float'
-
-
-"""
 
 """
 You can control how many decimal points of precision to display
