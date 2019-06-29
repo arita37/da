@@ -63,6 +63,24 @@ def np_transform_pca(Xmat, dimpca=2, whiten=True):
 
 
 
+def sk_feature_impt_logis(clf, cols2):
+    dfeatures = pd.DataFrame({'feature': cols2, 'coef': clf.coef_[0],
+                              'coef_abs': np.abs(clf.coef_[0])}).sort_values('coef_abs', ascending=False)
+    dfeatures['rank'] = np.arange(0, len(dfeatures))
+    return dfeatures
+
+
+
+def sk_feature_importance(clfrf, feature_name):
+    importances = clfrf.feature_importances_
+    indices = np.argsort(importances)[::-1]
+    for f in range(0, len(feature_name)):
+        if importances[indices[f]] > 0.0001:
+            print(
+                str(f + 1), str(indices[f]), feature_name[indices[f]], str(importances[indices[f]])
+            )
+
+
 
 
 

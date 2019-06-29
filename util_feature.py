@@ -9,6 +9,7 @@ util_feature: input/output is pandas
 import copy
 import os
 from collections import OrderedDict
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -21,7 +22,7 @@ except Exception as e:
     print(e)
 
 
-import util
+# import util
 
 
 print('os.getcwd', os.getcwd())
@@ -30,11 +31,11 @@ print('os.getcwd', os.getcwd())
 
 ########################################################################################################################
 ########################################################################################################################
-def pd_col_tohot(df, colnames):
-    for x in colnames:
-        print(x, df.shape, flush=True)
+def pd_col_to_onehot(df, colname):
+    for x in colname:
         try:
             nunique = len(df[x].unique())
+            print(x, nunique, df.shape, flush=True)
 
             if nunique > 2:
                 df = pd.concat([df, pd.get_dummies(df[x], prefix=x)], axis=1).drop([x], axis=1)
@@ -45,18 +46,21 @@ def pd_col_tohot(df, colnames):
                 lb = preprocessing.LabelBinarizer()
                 vv = lb.fit_transform(df[x])
                 df[x] = vv
-        except:
-            pass
+        except Exception as e:
+            print(x, e)
     return df
 
 
+"""
 def pd_col_to_onehot(df, nan_as_category=True, categorical_columns=None):
-    original_columns = list(df.columns)
+
     #     categorical_columns = [col for col in df.columns if df[col].dtype == 'object']
     cat_col = [col for col in df.columns]
     df = pd.get_dummies(df, columns=cat_col, dummy_na=nan_as_category)
     new_columns = [c for c in df.columns if c not in original_columns]
     return df, new_columns
+"""
+
 
 
 def pd_num_tocat(df, colname = None,  colexclude=None, method=""):
@@ -78,12 +82,6 @@ def pd_num_tocat(df, colname = None,  colexclude=None, method=""):
     return df
 
 
-
-def sk_feature_impt_logis(clf, cols2):
-    dfeatures = pd.DataFrame({'feature': cols2, 'coef': clf.coef_[0],
-                              'coef_abs': np.abs(clf.coef_[0])}).sort_values('coef_abs', ascending=False)
-    dfeatures['rank'] = np.arange(0, len(dfeatures))
-    return dfeatures
 
 
 def pd_merge_columns(dfm3, ll0):
@@ -137,7 +135,7 @@ def pd_downsample(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
         return df2
 
     else:
-        print("y=1", n1, "y=0", n0)
+        print("y=1", n2max, "y=0", len(df1))
         return df0, df1
 
 
@@ -222,28 +220,281 @@ def pd_stat_col_imbalance(df):
     return ll
 
 
-def np_cat_correlation_ratio(x, y):
-    confusion_matrix = pd.crosstab(x, y)
+import math
+def np_conditional_entropy(x, y):
+    """
+    Calculates the conditional entropy of x given y: S(x|y)
+    Wikipedia: https://en.wikipedia.org/wiki/Conditional_entropy
+    **Returns:** float
+    Parameters
+    ----------
+    x : list / NumPy ndarray / Pandas Series
+        A sequence of measurements
+    y : list / NumPy ndarray / Pandas Series
+        A sequence of measurements
+    """
+    y_counter = Counter(y)
+    xy_counter = Counter(list(zip(x,y)))
+    total_occurrences = sum(y_counter.values())
+    entropy = 0.0
+    for xy in xy_counter.keys():
+        p_xy = xy_counter[xy] / total_occurrences
+        p_y = y_counter[xy[1]] / total_occurrences
+        entropy += p_xy * math.log(p_y/p_xy)
+    return entropy
+
+
+def np_cramers_v(x, y):
+    """
+    Calculates Cramer's V statistic for categorical-categorical association.
+    Uses correction from Bergsma and Wicher, Journal of the Korean Statistical Society 42 (2013): 323-328.
+    This is a symmetric coefficient: V(x,y) = V(y,x)
+    Original function taken from: https://stackoverflow.com/a/46498792/5863503
+    Wikipedia: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
+    **Returns:** float in the range of [0,1]
+    Parameters
+    ----------
+    x : list / NumPy ndarray / Pandas Series
+        A sequence of categorical measurements
+    y : list / NumPy ndarray / Pandas Series
+        A sequence of categorical measurements
+    """
+    confusion_matrix = pd.crosstab(x,y)
     chi2 = ss.chi2_contingency(confusion_matrix)[0]
     n = confusion_matrix.sum().sum()
-    phi2 = chi2 / n
-    r, k = confusion_matrix.shape
-    phi2corr = max(0, phi2 - ((k - 1) * (r - 1)) / (n - 1))
-    rcorr = r - ((r - 1) ** 2) / (n - 1)
-    kcorr = k - ((k - 1) ** 2) / (n - 1)
-    return np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
+    phi2 = chi2/n
+    r,k = confusion_matrix.shape
+    phi2corr = max(0, phi2-((k-1)*(r-1))/(n-1))
+    rcorr = r-((r-1)**2)/(n-1)
+    kcorr = k-((k-1)**2)/(n-1)
+    return np.sqrt(phi2corr/min((kcorr-1),(rcorr-1)))
 
 
-def np_mutual_info_(x, y):
-    s_xy = conditional_entropy(x, y)
+def np_theils_u(x, y):
+    """
+    Calculates Theil's U statistic (Uncertainty coefficient) for categorical-categorical association.
+    This is the uncertainty of x given y: value is on the range of [0,1] - where 0 means y provides no information about
+    x, and 1 means y provides full information about x.
+    This is an asymmetric coefficient: U(x,y) != U(y,x)
+    Wikipedia: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+    **Returns:** float in the range of [0,1]
+    Parameters
+    ----------
+    x : list / NumPy ndarray / Pandas Series
+        A sequence of categorical measurements
+    y : list / NumPy ndarray / Pandas Series
+        A sequence of categorical measurements
+    """
+    s_xy = np_conditional_entropy(x,y)
     x_counter = Counter(x)
     total_occurrences = sum(x_counter.values())
-    p_x = list(map(lambda n: n / total_occurrences, x_counter.values()))
+    p_x = list(map(lambda n: n/total_occurrences, x_counter.values()))
     s_x = ss.entropy(p_x)
     if s_x == 0:
         return 1
     else:
         return (s_x - s_xy) / s_x
+
+
+def np_correlation_ratio(categories, measurements):
+    """
+    Calculates the Correlation Ratio (sometimes marked by the greek letter Eta) for categorical-continuous association.
+    Answers the question - given a continuous value of a measurement, is it possible to know which category is it
+    associated with?
+    Value is in the range [0,1], where 0 means a category cannot be determined by a continuous measurement, and 1 means
+    a category can be determined with absolute certainty.
+    Wikipedia: https://en.wikipedia.org/wiki/Correlation_ratio
+    **Returns:** float in the range of [0,1]
+    Parameters
+    ----------
+    categories : list / NumPy ndarray / Pandas Series
+        A sequence of categorical measurements
+    measurements : list / NumPy ndarray / Pandas Series
+        A sequence of continuous measurements
+    """
+    categories = convert(categories, 'array')
+    measurements = convert(measurements, 'array')
+    fcat, _ = pd.factorize(categories)
+    cat_num = np.max(fcat)+1
+    y_avg_array = np.zeros(cat_num)
+    n_array = np.zeros(cat_num)
+    for i in range(0,cat_num):
+        cat_measures = measurements[np.argwhere(fcat == i).flatten()]
+        n_array[i] = len(cat_measures)
+        y_avg_array[i] = np.average(cat_measures)
+    y_total_avg = np.sum(np.multiply(y_avg_array,n_array))/np.sum(n_array)
+    numerator = np.sum(np.multiply(n_array,np.power(np.subtract(y_avg_array,y_total_avg),2)))
+    denominator = np.sum(np.power(np.subtract(measurements,y_total_avg),2))
+    if numerator == 0:
+        eta = 0.0
+    else:
+        eta = np.sqrt(numerator/denominator)
+    return eta
+
+
+def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u=False, plot=True,
+                 return_results = False, **kwargs):
+    """
+    Calculate the correlation/strength-of-association of features in data-set with both categorical (eda_tools) and
+    continuous features using:
+     * Pearson's R for continuous-continuous cases
+     * Correlation Ratio for categorical-continuous cases
+     * Cramer's V or Theil's U for categorical-categorical cases
+    **Returns:** a DataFrame of the correlation/strength-of-association between all features
+    **Example:** see `associations_example` under `dython.examples`
+    Parameters
+    ----------
+    df : NumPy ndarray / Pandas DataFrame
+        The data-set for which the features' correlation is computed
+    nominal_columns : string / list / NumPy ndarray
+        Names of columns of the data-set which hold categorical values. Can also be the string 'all' to state that all
+        columns are categorical, or None (default) to state none are categorical
+    mark_columns : Boolean, default = False
+        if True, output's columns' names will have a suffix of '(nom)' or '(con)' based on there type (eda_tools or
+        continuous), as provided by nominal_columns
+    theil_u : Boolean, default = False
+        In the case of categorical-categorical feaures, use Theil's U instead of Cramer's V
+    plot : Boolean, default = True
+        If True, plot a heat-map of the correlation matrix
+    return_results : Boolean, default = False
+        If True, the function will return a Pandas DataFrame of the computed associations
+    kwargs : any key-value pairs
+        Arguments to be passed to used function and methods
+    """
+    df = convert(df, 'dataframe')
+    columns = df.columns
+    if nominal_columns is None:
+        nominal_columns = list()
+    elif nominal_columns == 'all':
+        nominal_columns = columns
+    corr = pd.DataFrame(index=columns, columns=columns)
+    for i in range(0,len(columns)):
+        for j in range(i,len(columns)):
+            if i == j:
+                corr[columns[i]][columns[j]] = 1.0
+            else:
+                if columns[i] in nominal_columns:
+                    if columns[j] in nominal_columns:
+                        if theil_u:
+                            corr[columns[j]][columns[i]] = np_theils_u(df[columns[i]], df[columns[j]])
+                            corr[columns[i]][columns[j]] = np_theils_u(df[columns[j]], df[columns[i]])
+                        else:
+                            cell = np_cramers_v(df[columns[i]], df[columns[j]])
+                            corr[columns[i]][columns[j]] = cell
+                            corr[columns[j]][columns[i]] = cell
+                    else:
+                        cell = np_correlation_ratio(df[columns[i]], df[columns[j]])
+                        corr[columns[i]][columns[j]] = cell
+                        corr[columns[j]][columns[i]] = cell
+                else:
+                    if columns[j] in nominal_columns:
+                        cell = np_correlation_ratio(df[columns[j]], df[columns[i]])
+                        corr[columns[i]][columns[j]] = cell
+                        corr[columns[j]][columns[i]] = cell
+                    else:
+                        cell, _ = ss.pearsonr(df[columns[i]], df[columns[j]])
+                        corr[columns[i]][columns[j]] = cell
+                        corr[columns[j]][columns[i]] = cell
+    corr.fillna(value=np.nan, inplace=True)
+    if mark_columns:
+        marked_columns = ['{} (nom)'.format(col) if col in nominal_columns else '{} (con)'.format(col) for col in columns]
+        corr.columns = marked_columns
+        corr.index = marked_columns
+    if plot:
+        pass
+        """
+        plt.figure(figsize=kwargs.get('figsize',None))
+        sns.heatmap(corr, annot=kwargs.get('annot',True), fmt=kwargs.get('fmt','.2f'))
+        plt.show()
+        """
+    if return_results:
+        return corr
+
+
+def pd_numerical_encoding(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
+    """
+    Encoding a data-set with mixed data (numerical and categorical) to a numerical-only data-set,
+    using the following logic:
+    * categorical with only a single value will be marked as zero (or dropped, if requested)
+    * categorical with two values will be replaced with the result of Pandas `factorize`
+    * categorical with more than two values will be replaced with the result of Pandas `get_dummies`
+    * numerical columns will not be modified
+    **Returns:** DataFrame or (DataFrame, dict). If `drop_fact_dict` is True, returns the encoded DataFrame.
+    else, returns a tuple of the encoded DataFrame and dictionary, where each key is a two-value column, and the
+    value is the original labels, as supplied by Pandas `factorize`. Will be empty if no two-value columns are
+    present in the data-set
+    Parameters
+    ----------
+    df : NumPy ndarray / Pandas DataFrame
+        The data-set to encode
+    nominal_columns : sequence / string
+        A sequence of the nominal (categorical) columns in the dataset. If string, must be 'all' to state that
+        all columns are nominal. If None, nothing happens. Default: 'all'
+    drop_single_label : Boolean, default = False
+        If True, nominal columns with a only a single value will be dropped.
+    drop_fact_dict : Boolean, default = True
+        If True, the return value will be the encoded DataFrame alone. If False, it will be a tuple of
+        the DataFrame and the dictionary of the binary factorization (originating from pd.factorize)
+    """
+    df = convert(df, 'dataframe')
+    if nominal_columns is None:
+        return df
+    elif nominal_columns == 'all':
+        nominal_columns = df.columns
+    converted_dataset = pd.DataFrame()
+    binary_columns_dict = dict()
+    for col in df.columns:
+        if col not in nominal_columns:
+            converted_dataset.loc[:,col] = df[col]
+        else:
+            unique_values = pd.unique(df[col])
+            if len(unique_values) == 1 and not drop_single_label:
+                converted_dataset.loc[:,col] = 0
+            elif len(unique_values) == 2:
+                converted_dataset.loc[:,col], binary_columns_dict[col] = pd.factorize(df[col])
+            else:
+                dummies = pd.get_dummies(df[col], prefix=col)
+                converted_dataset = pd.concat([converted_dataset,dummies],axis=1)
+    if drop_fact_dict:
+        return converted_dataset
+    else:
+        return converted_dataset, binary_columns_dict
+
+
+
+def convert(data, to):
+    converted = None
+    if to == 'array':
+        if isinstance(data, np.ndarray):
+            converted = data
+        elif isinstance(data, pd.Series):
+            converted = data.values
+        elif isinstance(data, list):
+            converted = np.array(data)
+        elif isinstance(data, pd.DataFrame):
+            converted = data.as_matrix()
+    elif to == 'list':
+        if isinstance(data, list):
+            converted = data
+        elif isinstance(data, pd.Series):
+            converted = data.values.tolist()
+        elif isinstance(data, np.ndarray):
+            converted = data.tolist()
+    elif to == 'dataframe':
+        if isinstance(data, pd.DataFrame):
+            converted = data
+        elif isinstance(data, np.ndarray):
+            converted = pd.DataFrame(data)
+    else:
+        raise ValueError("Unknown data conversion: {}".format(to))
+    if converted is None:
+        raise TypeError('cannot handle data conversion of type: {} to {}'.format(type(data),to))
+    else:
+        return converted
+
+
+
+
 
 
 #### Calculate KAISO Limit  #########################################################
@@ -291,7 +542,7 @@ def np_drop_duplicates(l1):
     return l0
 
 
-def np_col_extractname_colbin(cols2):
+def col_extractname_colbin(cols2):
     coln = []
     for ss in cols2:
         xr = ss[ss.rfind("_") + 1:]
@@ -364,23 +615,12 @@ def pd_col_remove(df, cols):
     return df
 
 
-def sk_feature_importance(clfrf, feature_name):
-    importances = clfrf.feature_importances_
-    indices = np.argsort(importances)[::-1]
-    for f in range(0, len(feature_name)):
-        if importances[indices[f]] > 0.0001:
-            print(
-                str(f + 1), str(indices[f]), feature_name[indices[f]], str(importances[indices[f]])
-            )
 
 
 
 
 
-
-
-
-def np_col_extractname(col_onehot):
+def col_extractname(col_onehot):
     '''
     Column extraction 
     '''
