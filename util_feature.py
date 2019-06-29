@@ -29,6 +29,7 @@ print('os.getcwd', os.getcwd())
 
 
 ########################################################################################################################
+########################################################################################################################
 def pd_col_tohot(df, colnames):
     for x in colnames:
         print(x, df.shape, flush=True)
@@ -58,15 +59,24 @@ def pd_col_to_onehot(df, nan_as_category=True, categorical_columns=None):
     return df, new_columns
 
 
-def pd_num_tocat(df):
+def pd_num_tocat(df, colname = None,  colexclude=None, method=""):
+    """
+    :param df:
+    :param method:
+    :return:
+    """
+    colname = colname if colname is not None else list( df.columns)
     for c in df.columns:
-        if c in categories: continue
-        df[c] = df[c].astype(np.float32)
+        if c in colexclude:
+            continue
+        df[c]  = df[c].astype(np.float32)
         mi, ma = df[c].min(), df[c].max()
-        space = (ma - mi) / 5
-        bins = [mi + i * space for i in range(6)]
+        space  = (ma - mi) / 5
+        bins   = [mi + i * space for i in range(6)]
         bins[0] -= 0.0000001
         df[c] = pd.cut(df[c], bins=bins, labels=labels)
+    return df
+
 
 
 def sk_feature_impt_logis(clf, cols2):
@@ -129,6 +139,29 @@ def pd_downsample(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
     else:
         print("y=1", n1, "y=0", n0)
         return df0, df1
+
+
+#### Histo
+def pd_stat_histo(dfm2, bins=50, col0='diff', col1='y'):
+    hh = np.histogram(dfm2[col0].values,
+                      bins=bins, range=None, normed=None, weights=None, density=None)
+    hh2 = pd.DataFrame({'xall': hh[1][:-1],
+                        'freqall': hh[0]})[['xall', 'freqall']]
+    hh2['densityall'] = hh2['freqall'] / hh2['freqall'].sum()
+
+    hh = np.histogram(dfm2[dfm2[col1] == 0][col0].values,
+                      bins=bins, range=None, normed=None, weights=None, density=None)
+    hh2['x0'] = hh[1][:-1]
+    hh2['freq0'] = hh[0]
+    hh2['density0'] = hh2['freq0'] / hh2['freq0'].sum()
+
+    hh = np.histogram(dfm2[dfm2[col1] == 1][col0].values,
+                      bins=bins, range=None, normed=None, weights=None, density=None)
+    hh2['x1'] = hh[1][:-1]
+    hh2['freq1'] = hh[0]
+    hh2['density1'] = hh2['freq1'] / hh2['freq1'].sum()
+
+    return hh2
 
 
 def pd_stat_na_percol(dfm2):
@@ -700,7 +733,5 @@ list(le.inverse_transform([2, 2, 1]))
     return Xnew, mapping_cat_int
 
 
-def np_transform_pca(Xmat, dimpca=2, whiten=True):
-    """Project ndim data into dimpca sub-space  """
-    pca = PCA(n_components=dimpca, whiten=whiten).fit(Xmat)
-    return pca.transform(Xmat)
+
+

@@ -55,6 +55,18 @@ DIRCWD = "./"
 
 ##############################################################################
 
+
+def np_transform_pca(Xmat, dimpca=2, whiten=True):
+    """Project ndim data into dimpca sub-space  """
+    pca = PCA(n_components=dimpca, whiten=whiten).fit(Xmat)
+    return pca.transform(Xmat)
+
+
+
+
+
+
+
 def split_train(df1, ntrain=10000, ntest=100000, colused=None ) :
     n1  = len( df1[ df1['y'] == 0 ] )
     dft = pd.concat(( df1[ df1['y'] == 0 ].iloc[  np.random.choice( n1 , ntest, False), : ]  , 

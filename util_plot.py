@@ -17,29 +17,7 @@ def plotxy(x,y, color=1, size=1, title= "") :
     plt.show()
 
 
-#### Histo     
-def np_histo(dfm2, bins=50, col0='diff', col1='y') :
-    hh  = np.histogram( dfm2[ col0 ].values , 
-                     bins=bins, range=None, normed=None, weights=None, density=None)
-    hh2 = pd.DataFrame({ 'xall' : hh[1][:-1] , 
-                       'freqall' :hh[0] } )[[ 'xall', 'freqall' ]]
-    hh2['densityall'] = hh2['freqall'] / hh2['freqall'].sum()    
 
-        
-    hh  = np.histogram( dfm2[ dfm2[ col1 ] == 0 ][ col0 ].values , 
-                     bins=bins, range=None, normed=None, weights=None, density=None)
-    hh2['x0'] = hh[1][:-1]
-    hh2['freq0'] = hh[0]
-    hh2['density0'] = hh2['freq0'] / hh2['freq0'].sum()
-
-  
-    hh  = np.histogram( dfm2[ dfm2[ col1 ] == 1 ][ col0 ].values , 
-                     bins=bins, range=None, normed=None, weights=None, density=None)
-    hh2['x1'] = hh[1][:-1]
-    hh2['freq1'] = hh[0]
-    hh2['density1'] = hh2['freq1'] / hh2['freq1'].sum()
-  
-    return hh2  
 
 
 def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
