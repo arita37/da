@@ -1,6 +1,6 @@
 # da
 
-
+"""
 Naming convention for functions, arguments :
 
 pd_   :  input is pandas dataframe
@@ -19,7 +19,7 @@ _num_  :  name for numerical columns
 col_ :  function name for column list related.
 
 
-
+"""
 
 
 
