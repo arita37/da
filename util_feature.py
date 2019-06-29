@@ -7,33 +7,19 @@ from collections import OrderedDict
 # -*- coding: utf-8 -*-
 import os, sys
 import numpy as np, gc, pandas as pd, copy
-#import sqlalchemy as sql, dask.dataframe as dd, dask
+
+import dask.dataframe as dd, dask
 from attrdict import AttrDict as dict2
 import arrow
 from time import time
 import copy
 import gc
-gc.collect()
-
-
-#####################################################################################
-#####################################################################################
-import matplotlib.pyplot as plt
-from matplotlib.ticker import NullFormatter
-
-import copy
 
 import sklearn as sk
-from sklearn import manifold, datasets
 from sklearn import preprocessing
 
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import make_classification
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import (RandomTreesEmbedding, RandomForestClassifier,
-                              GradientBoostingClassifier)
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import make_pipeline
 
@@ -46,10 +32,7 @@ from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
 
 import random
-import seaborn as sns
 
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.datasets import load_iris
 
 
 import copy
@@ -63,34 +46,20 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import arrow
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pylab as pl
 import requests
 import scipy as sci
 import sklearn as sk
-import statsmodels as sm
+
 from dateutil.parser import parse
 from sklearn import covariance, linear_model, model_selection
-from sklearn.cluster import dbscan, k_means
-from sklearn.decomposition import PCA, pca
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
-                              GradientBoostingClassifier, RandomForestClassifier)
+
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
 
-import datanalysis as da
-import kmodes
 import util
 from attrdict import AttrDict as dict2
-from kmodes.kmodes import KModes
 from tabulate import tabulate
 
 

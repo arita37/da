@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Methods for ML models, model ensembels, metrics etc.
 util_model : input/output is numpy
@@ -14,11 +15,9 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import arrow
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pylab as pl
-import requests
+
 import scipy as sci
 import sklearn as sk
 import statsmodels as sm
@@ -37,9 +36,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-#import datanalysis as da
-#import kmodes
-#import util
+
 from attrdict import AttrDict as dict2
 #from kmodes.kmodes import KModes
 from tabulate import tabulate

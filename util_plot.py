@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn
 import numpy as np
 import pandas as pd
+import scipy
 
 
 
@@ -14,6 +15,7 @@ def plotxy(x,y, color=1, size=1, title= "") :
     plt.scatter( x , y,  c= color, cmap="Spectral", s=size)
     plt.title(   title, fontsize=11 )
     plt.show()
+
 
 #### Histo     
 def np_histo(dfm2, bins=50, col0='diff', col1='y') :
@@ -38,6 +40,7 @@ def np_histo(dfm2, bins=50, col0='diff', col1='y') :
     hh2['density1'] = hh2['freq1'] / hh2['freq1'].sum()
   
     return hh2  
+
 
 def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
     """  Perfom Full Study of the pandas columns"""
@@ -72,6 +75,7 @@ def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars=
 
         break
 
+
 def pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
     if dfY is None:
         yy = dfX[Ycolname].values
@@ -87,9 +91,11 @@ def pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
         plt.title(title1)
         plt.show()
 
+
 # ??? for what if pd_col_pair_plot exist? 
 def plot_col_pair(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
     pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None)
+
 
 def plot_distance_heatmap(Xmat_dist, Xcolname):
     import matplotlib.pyplot as pyplot
