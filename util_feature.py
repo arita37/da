@@ -413,7 +413,7 @@ def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u
         return corr
 
 
-def pd_num_encoding(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
+def pd_cat_tonum(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
     """
     Encoding a data-set with mixed data (numerical and categorical) to a numerical-only data-set,
     using the following logic:
