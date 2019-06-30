@@ -9,20 +9,19 @@ util_feature: input/output is pandas
 
 import copy
 import os
-from collections import OrderedDict
 from collections import Counter
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 import sklearn as sk
 from sklearn import preprocessing
 
-
-
 # import util
-
-
 print('os.getcwd', os.getcwd())
+
+
+
 
 
 
@@ -496,8 +495,19 @@ def convert(data, to):
 
 
 
-#### Calculate KAISO Limit  #########################################################
+
 def pd_segment_limit(df, col_score='scoress', coldefault="y", ntotal_default=491, def_list=None, nblock=20.0):
+    """
+    #### Calculate KAISO Limit  #########################################################
+    :param df:
+    :param col_score:
+    :param coldefault:
+    :param ntotal_default:
+    :param def_list:
+    :param nblock:
+    :return:
+    """
+
     if def_list is None:
         def_list = np.ones(21) * ntotal_default / nblock
 
