@@ -39,6 +39,10 @@ coldate : for date columns
 
 
 
+#########
+Auto formatting
+isort -rc .
+black --line-length 100
 
 
 ```
