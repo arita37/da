@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Methods for feature extraction and preprocessing
 util_feature: input/output is pandas
 
 """
-# -*- coding: utf-8 -*-
+
 
 
 import copy
@@ -16,10 +17,6 @@ import pandas as pd
 import sklearn as sk
 from sklearn import preprocessing
 
-try:
-    from catboost import CatBoostClassifier, Pool, cv
-except Exception as e:
-    print(e)
 
 
 # import util
@@ -29,8 +26,8 @@ print('os.getcwd', os.getcwd())
 
 
 
-########################################################################################################################
-########################################################################################################################
+####################################################################################################
+####################################################################################################
 def pd_col_to_onehot(df, colname):
     for x in colname:
         try:
@@ -142,20 +139,20 @@ def pd_sampling(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
 
 
 #### Histo
-def pd_stat_histo(dfm2, bins=50, col0='diff', col1='y'):
-    hh = np.histogram(dfm2[col0].values,
+def pd_stat_histo(df, bins=50, col0='diff', col1='y'):
+    hh = np.histogram(df[col0].values,
                       bins=bins, range=None, normed=None, weights=None, density=None)
     hh2 = pd.DataFrame({'xall': hh[1][:-1],
                         'freqall': hh[0]})[['xall', 'freqall']]
     hh2['densityall'] = hh2['freqall'] / hh2['freqall'].sum()
 
-    hh = np.histogram(dfm2[dfm2[col1] == 0][col0].values,
+    hh = np.histogram(df[df[col1] == 0][col0].values,
                       bins=bins, range=None, normed=None, weights=None, density=None)
     hh2['x0'] = hh[1][:-1]
     hh2['freq0'] = hh[0]
     hh2['density0'] = hh2['freq0'] / hh2['freq0'].sum()
 
-    hh = np.histogram(dfm2[dfm2[col1] == 1][col0].values,
+    hh = np.histogram(df[df[col1] == 1][col0].values,
                       bins=bins, range=None, normed=None, weights=None, density=None)
     hh2['x1'] = hh[1][:-1]
     hh2['freq1'] = hh[0]
@@ -164,30 +161,30 @@ def pd_stat_histo(dfm2, bins=50, col0='diff', col1='y'):
     return hh2
 
 
-def pd_stat_na_percol(dfm2):
+def pd_stat_na_percol(df):
     ll = []
-    for x in dfm2.columns:
-        nn = dfm2[x].isnull().sum()
-        nn = nn + len(dfm2[dfm2[x] == -1])
+    for x in df.columns:
+        nn = df[x].isnull().sum()
+        nn = nn + len(df[df[x] == -1])
 
         ll.append(nn)
-    dfna_col = pd.DataFrame({'col': list(dfm2.columns), 'n_na': ll})
-    dfna_col['n_tot'] = len(dfm2)
+    dfna_col = pd.DataFrame({'col': list(df.columns), 'n_na': ll})
+    dfna_col['n_tot'] = len(df)
     dfna_col['pct_na'] = dfna_col['n_na'] / dfna_col['n_tot']
     return dfna_col
 
 
-def pd_stat_na_perow(dfm2, n=10 ** 6):
+def pd_stat_na_perow(df, n=10 ** 6):
     ll = [];
     n = 10 ** 6
-    for ii, x in dfm2.iloc[:n, :].iterrows():
+    for ii, x in df.iloc[:n, :].iterrows():
         ii = 0
         for t in x:
             if pd.isna(t) or t == -1:
                 ii = ii + 1
         ll.append(ii)
-    dfna_user = pd.DataFrame({'': dfm2.index.values[:n], 'n_na': ll,
-                              'n_ok': len(dfm2.columns) - np.array(ll)})
+    dfna_user = pd.DataFrame({'': df.index.values[:n], 'n_na': ll,
+                              'n_ok': len(df.columns) - np.array(ll)})
     return dfna_user
 
 
@@ -500,12 +497,12 @@ def convert(data, to):
 
 
 #### Calculate KAISO Limit  #########################################################
-def pd_segment_limit(dfm2, col_score='scoress', coldefault="y", ntotal_default=491, def_list=None, nblock=20.0):
+def pd_segment_limit(df, col_score='scoress', coldefault="y", ntotal_default=491, def_list=None, nblock=20.0):
     if def_list is None:
         def_list = np.ones(21) * ntotal_default / nblock
 
-    dfm2['scoress_bin'] = dfm2[col_score].apply(lambda x: np.floor(x / 1.0) * 1.0)
-    dfs5 = dfm2.groupby('scoress_bin').agg({col_score: 'mean',
+    df['scoress_bin'] = df[col_score].apply(lambda x: np.floor(x / 1.0) * 1.0)
+    dfs5 = df.groupby('scoress_bin').agg({col_score: 'mean',
                                             coldefault: {'sum', 'count'}
                                             }).reset_index()
     dfs5.columns = [x[0] if x[0] == x[1] else x[0] + '_' + x[1] for x in dfs5.columns]
@@ -577,35 +574,35 @@ def pd_col_intersection(df1, df2, colid):
     return n2
 
 
-def pd_col_normalize(dfm2, colnum_log, colproba):
+def pd_col_normalize(df, colnum_log, colproba):
     for x in ['SP1b', 'SP2b']:
-        dfm2[x] = dfm2[x] * 0.01
+        df[x] = df[x] * 0.01
 
-    dfm2['SP1b'] = dfm2['SP1b'].fillna(0.5)
-    dfm2['SP2b'] = dfm2['SP2b'].fillna(0.5)
+    df['SP1b'] = df['SP1b'].fillna(0.5)
+    df['SP2b'] = df['SP2b'].fillna(0.5)
 
     for x in colnum_log:
         try:
-            dfm2[x] = np.log(dfm2[x].values.astype(np.float64) + 1.1)
-            dfm2[x] = dfm2[x].replace(-np.inf, 0)
-            dfm2[x] = dfm2[x].fillna(0)
-            print(x, dfm2[x].min(), dfm2[x].max())
-            dfm2[x] = dfm2[x] / dfm2[x].max()
+            df[x] = np.log(df[x].values.astype(np.float64) + 1.1)
+            df[x] = df[x].replace(-np.inf, 0)
+            df[x] = df[x].fillna(0)
+            print(x, df[x].min(), df[x].max())
+            df[x] = df[x] / df[x].max()
         except:
             pass
 
     for x in colproba:
         print(x)
-        dfm2[x] = dfm2[x].replace(-1, 0.5)
-        dfm2[x] = dfm2[x].fillna(0.5)
+        df[x] = df[x].replace(-1, 0.5)
+        df[x] = df[x].fillna(0.5)
 
-    return dfm2
+    return df
 
 
-def pd_col_check(dfm2):
-    for x in dfm2.columns:
-        if len(dfm2[x].unique()) > 2 and dfm2[x].dtype != np.dtype('O'):
-            print(x, len(dfm2[x].unique()), dfm2[x].min(), dfm2[x].max())
+def pd_col_check(df):
+    for x in df.columns:
+        if len(df[x].unique()) > 2 and df[x].dtype != np.dtype('O'):
+            print(x, len(df[x].unique()), df[x].min(), df[x].max())
 
 
 def pd_col_remove(df, cols):

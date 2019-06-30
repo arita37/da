@@ -47,6 +47,14 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
 
+try:
+    from catboost import CatBoostClassifier, Pool, cv
+except Exception as e:
+    print(e)
+
+
+
+
 
 #########################################################################################################
 # DIRCWD= os.environ["DIRCWD"]; os.chdir(DIRCWD); sys.path.append(DIRCWD + '/aapackage')
