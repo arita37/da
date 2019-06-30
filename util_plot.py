@@ -2,22 +2,31 @@
 Methods for data plotting
 """
 import matplotlib.pyplot as plt
-import seaborn
+import seaborn as sns
 import numpy as np
 import pandas as pd
-import scipy
+import scipy as sci
+import sklearn as sk
+
+import itertools
 
 
 
-def plotxy(x,y, color=1, size=1, title= "") :
-    color = np.zeros(len(x)) if type(color) == int else color  
+try:
+    import plotly
+except Exception as e :
+    print(e)
+
+
+
+
+####################################################################################################
+def plotxy(x, y, color=1, size=1, title=""):
+    color = np.zeros(len(x)) if type(color) == int else color
     fig, ax = plt.subplots(figsize=(12, 10))
-    plt.scatter( x , y,  c= color, cmap="Spectral", s=size)
-    plt.title(   title, fontsize=11 )
+    plt.scatter(x, y, c=color, cmap="Spectral", s=size)
+    plt.title(title, fontsize=11)
     plt.show()
-
-
-
 
 
 def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
@@ -70,7 +79,7 @@ def pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
         plt.show()
 
 
-# ??? for what if pd_col_pair_plot exist? 
+# alias name
 def plot_col_pair(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
     pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None)
 
@@ -98,22 +107,22 @@ def plot_cluster_2D(X_2dim, target_class, target_names):
    """
     colors = itertools.cycle("rgbcmykw")
     target_ids = range(0, len(target_names))
-    pl.figure()
+    plt.figure()
     for i, c, label in zip(target_ids, colors, target_names):
-        pl.scatter(X_2dim[target_class == i, 0], X_2dim[target_class == i, 1], c=c, label=label)
-    pl.legend()
-    pl.show()
+        plt.scatter(X_2dim[target_class == i, 0], X_2dim[target_class == i, 1], c=c, label=label)
+    plt.legend()
+    plt.show()
 
 
 def plot_cluster_tsne(
-    Xmat,
-    Xcluster_label=None,
-    metric="euclidean",
-    perplexity=50,
-    ncomponent=2,
-    savefile="",
-    isprecompute=False,
-    returnval=True,
+        Xmat,
+        Xcluster_label=None,
+        metric="euclidean",
+        perplexity=50,
+        ncomponent=2,
+        savefile="",
+        isprecompute=False,
+        returnval=True,
 ):
     """Plot High dimemnsionnal State using TSNE method
    'euclidean, 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean, 'cosine, 'correlation, 'hamming, 'jaccard, 'chebyshev,
@@ -153,14 +162,14 @@ def plot_cluster_tsne(
 
 
 def plot_cluster_pca(
-    Xmat,
-    Xcluster_label=None,
-    metric="euclidean",
-    dimpca=2,
-    whiten=True,
-    isprecompute=False,
-    savefile="",
-    doreturn=1,
+        Xmat,
+        Xcluster_label=None,
+        metric="euclidean",
+        dimpca=2,
+        whiten=True,
+        isprecompute=False,
+        savefile="",
+        doreturn=1,
 ):
     from sklearn.decomposition import pca
 
@@ -171,7 +180,7 @@ def plot_cluster_pca(
             sci.spatial.distance.pdist(Xmat, metric=metric, p=dimpca, w=None, V=None, VI=None)
         )
 
-    model = PCA(n_components=dimpca, whiten=whiten)
+    model = pca(n_components=dimpca, whiten=whiten)
     X_pca = model.fit_transform(Xmat)
 
     # plot the result
@@ -188,26 +197,26 @@ def plot_cluster_pca(
 
 
 def plot_cluster_hiearchy(
-    Xmat_dist,
-    p=30,
-    truncate_mode=None,
-    color_threshold=None,
-    get_leaves=True,
-    orientation="top",
-    labels=None,
-    count_sort=False,
-    distance_sort=False,
-    show_leaf_counts=True,
-    do_plot=1,
-    no_labels=False,
-    leaf_font_size=None,
-    leaf_rotation=None,
-    leaf_label_func=None,
-    show_contracted=False,
-    link_color_func=None,
-    ax=None,
-    above_threshold_color="b",
-    annotate_above=0,
+        Xmat_dist,
+        p=30,
+        truncate_mode=None,
+        color_threshold=None,
+        get_leaves=True,
+        orientation="top",
+        labels=None,
+        count_sort=False,
+        distance_sort=False,
+        show_leaf_counts=True,
+        do_plot=1,
+        no_labels=False,
+        leaf_font_size=None,
+        leaf_rotation=None,
+        leaf_label_func=None,
+        show_contracted=False,
+        link_color_func=None,
+        ax=None,
+        above_threshold_color="b",
+        annotate_above=0,
 ):
     from scipy.cluster.hierarchy import dendrogram, linkage
     from scipy.cluster.hierarchy import cophenet
@@ -287,7 +296,7 @@ sample_x = brentq(func, -99999999, 99999999)  # read brentq-docs about these con
 
     # Xhist, Xbin_edges= np.histogram(Xsample, bins=bins, range=None, normed=False, weights=None, density=True)
 
-    weights = np.ones_like(Xsample) / len(Xsample)  #  np.ones(len(Xsample))  #
+    weights = np.ones_like(Xsample) / len(Xsample)  # np.ones(len(Xsample))  #
     # ax2.hist(ret5d,50, normed=0,weights=weights,  facecolor='green')
     ax.hist(Xsample, bins=N, normed=0, weights=weights, fc="#AAAAFF")
 
@@ -302,19 +311,19 @@ sample_x = brentq(func, -99999999, 99999999)  # read brentq-docs about these con
 
 
 def plot_Y(
-    Yval,
-    typeplot=".b",
-    tsize=None,
-    labels=None,
-    title="",
-    xlabel="",
-    ylabel="",
-    zcolor_label="",
-    figsize=(8, 6),
-    dpi=75,
-    savefile="",
-    color_dot="Blues",
-    doreturn=0,
+        Yval,
+        typeplot=".b",
+        tsize=None,
+        labels=None,
+        title="",
+        xlabel="",
+        ylabel="",
+        zcolor_label="",
+        figsize=(8, 6),
+        dpi=75,
+        savefile="",
+        color_dot="Blues",
+        doreturn=0,
 ):
     plt.figure(figsize=figsize)
     plt.title("Values " + title)
@@ -323,20 +332,8 @@ def plot_Y(
 
 
 def plot_XY(
-    xx,
-    yy,
-    zcolor=None,
-    tsize=None,
-    labels=None,
-    title="",
-    xlabel="",
-    ylabel="",
-    zcolor_label="",
-    figsize=(8, 6),
-    dpi=75,
-    savefile="",
-    color_dot="Blues",
-    doreturn=0,
+        xx, yy, zcolor=None, tsize=None, labels=None, title="", xlabel="", ylabel="", zcolor_label="",
+        figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
 ):
     """
       labels= numpy array, ---> Generate HTML File with the labels interactives
@@ -472,4 +469,27 @@ def plot_cluster_embedding(Xmat, title=None):
          ax.add_artist(imagebox)
    plt.xticks([]), plt.yticks([])
    if title is not None:  plt.title(title)
+"""
+
+"""
+You can control how many decimal points of precision to display
+In [11]:
+pd.set_option('precision',2)
+
+pd.set_option('float_format', '{:.2f}'.format)
+
+
+Qtopian has a useful plugin called qgrid - https://github.com/quantopian/qgrid
+Import it and install it.
+In [19]:
+import qgrid
+qgrid.nbinstall()
+Showing the data is straighforward.
+In [22]:
+qgrid.show_grid(SALES, remote_js=True)
+
+
+SALES.groupby('name')['quantity'].sum().plot(kind="bar")
+
+
 """

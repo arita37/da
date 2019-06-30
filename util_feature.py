@@ -897,29 +897,6 @@ def pd_validation_struct():
 
 
 
-"""
-You can control how many decimal points of precision to display
-In [11]:
-pd.set_option('precision',2)
-
-pd.set_option('float_format', '{:.2f}'.format)
-
-
-Qtopian has a useful plugin called qgrid - https://github.com/quantopian/qgrid
-Import it and install it.
-In [19]:
-import qgrid
-qgrid.nbinstall()
-Showing the data is straighforward.
-In [22]:
-qgrid.show_grid(SALES, remote_js=True)
-
-
-SALES.groupby('name')['quantity'].sum().plot(kind="bar")
-
-
-"""
-
 
 ######################  Transformation   ###########################################################
 def pd_cat_label_toint(Xmat):
