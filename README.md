@@ -3,6 +3,13 @@
 ```
 Naming convention for functions, arguments :
 
+##################################################################
+For module file has LIMITED dependency and logic flow :
+   util_feature.py  :  Input/Outout should be pandas, pandas-like
+   util_model.py :  Input/Output should be numpy
+   util_plot.py   :  Input * mostly numpy or pandas
+
+
 
 ## Function naming   #################################################
 pd_   :  input is pandas dataframe
@@ -31,11 +38,6 @@ colnum :  For numerical columns
 coldate : for date columns
 
 
-
-##################################################################
-For module file has LIMITED dependency and logic flow :
-   util_feature.py  :  Input/Outout should be pandas, pandas-like
-   util_model.py :  Input/Output should be numpy
 
 
 
