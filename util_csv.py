@@ -29,7 +29,6 @@ from attrdict import AttrDict as dict2
 from tabulate import tabulate
 
 
-
 ######## Read file and extract data pattern:  .csv,  .txt, .xls  ##################################
 ############## Excel processing #######################################################################
 
@@ -89,6 +88,7 @@ def xl_val(ws, colj, rowi):
         return ws[gcol(colj) + str(rowi)].value
     except:
         return None
+
 
 def xl_get_rowcol(ws, i0, j0, imax, jmax):
     rmat = []
@@ -189,7 +189,9 @@ def xl_getschema(dirxl="", filepattern="*.xlsx", dirlevel=1, outfile=".xlsx"):
     if df0 is not None:
         util.pd_toexcel(df0, outfile=outfile, sheet_name="schema", returnfile=1)
 
+
 ############## csv processing #######################################################################
+
 
 def csv_dtypes_getdict(df=None, csvfile=None):
     if df is not None:
@@ -349,7 +351,6 @@ METHOD FOR Unicode / ASCII issue
     print(("_type_guess.pkl", "_schema.pkl"))
     if returntable:
         return schema, type_guess_all
-
 
 
 def csv_col_get_dict_categoryfreq(
@@ -537,6 +538,7 @@ reduce(lambda x, y: x.add(y, fill_value=0),
 def csv_bigcompute():
     pass
 
+
 ######################## DB related items #######################################################################
 def db_getdata():
     pass
@@ -630,6 +632,7 @@ def db_meta_find(ALLDB, query="", filter_db=[], filter_table=[], filter_column=[
 
 ######################  Pre Processing  ###############################################################
 
+
 def str_to_unicode(x, encoding="utf-8"):
     if not isinstance(x, str):
         x = str(x, encoding)
@@ -637,6 +640,6 @@ def str_to_unicode(x, encoding="utf-8"):
     else:
         return x
 
+
 def isnull(x):
     return x is None or x == ""
-

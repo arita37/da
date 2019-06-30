@@ -25,10 +25,6 @@ def optim_is_pareto_efficient(Xmat_cost, epsilon=0.01, ret_boolean=1):
     # return is_efficient
 
 
-
-
-
-
 def pd_validation_struct():
     pass
     """
@@ -38,6 +34,8 @@ def pd_validation_struct():
 
 
   """
+
+
 def pd_checkpoint():
     pass
 
@@ -92,4 +90,3 @@ SALES.groupby('name')['quantity'].sum().plot(kind="bar")
 
 
 """
-

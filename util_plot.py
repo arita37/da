@@ -11,13 +11,10 @@ import sklearn as sk
 import itertools
 
 
-
 try:
     import plotly
-except Exception as e :
+except Exception as e:
     print(e)
-
-
 
 
 ####################################################################################################
@@ -115,14 +112,14 @@ def plot_cluster_2D(X_2dim, target_class, target_names):
 
 
 def plot_cluster_tsne(
-        Xmat,
-        Xcluster_label=None,
-        metric="euclidean",
-        perplexity=50,
-        ncomponent=2,
-        savefile="",
-        isprecompute=False,
-        returnval=True,
+    Xmat,
+    Xcluster_label=None,
+    metric="euclidean",
+    perplexity=50,
+    ncomponent=2,
+    savefile="",
+    isprecompute=False,
+    returnval=True,
 ):
     """Plot High dimemnsionnal State using TSNE method
    'euclidean, 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean, 'cosine, 'correlation, 'hamming, 'jaccard, 'chebyshev,
@@ -162,14 +159,14 @@ def plot_cluster_tsne(
 
 
 def plot_cluster_pca(
-        Xmat,
-        Xcluster_label=None,
-        metric="euclidean",
-        dimpca=2,
-        whiten=True,
-        isprecompute=False,
-        savefile="",
-        doreturn=1,
+    Xmat,
+    Xcluster_label=None,
+    metric="euclidean",
+    dimpca=2,
+    whiten=True,
+    isprecompute=False,
+    savefile="",
+    doreturn=1,
 ):
     from sklearn.decomposition import pca
 
@@ -197,26 +194,26 @@ def plot_cluster_pca(
 
 
 def plot_cluster_hiearchy(
-        Xmat_dist,
-        p=30,
-        truncate_mode=None,
-        color_threshold=None,
-        get_leaves=True,
-        orientation="top",
-        labels=None,
-        count_sort=False,
-        distance_sort=False,
-        show_leaf_counts=True,
-        do_plot=1,
-        no_labels=False,
-        leaf_font_size=None,
-        leaf_rotation=None,
-        leaf_label_func=None,
-        show_contracted=False,
-        link_color_func=None,
-        ax=None,
-        above_threshold_color="b",
-        annotate_above=0,
+    Xmat_dist,
+    p=30,
+    truncate_mode=None,
+    color_threshold=None,
+    get_leaves=True,
+    orientation="top",
+    labels=None,
+    count_sort=False,
+    distance_sort=False,
+    show_leaf_counts=True,
+    do_plot=1,
+    no_labels=False,
+    leaf_font_size=None,
+    leaf_rotation=None,
+    leaf_label_func=None,
+    show_contracted=False,
+    link_color_func=None,
+    ax=None,
+    above_threshold_color="b",
+    annotate_above=0,
 ):
     from scipy.cluster.hierarchy import dendrogram, linkage
     from scipy.cluster.hierarchy import cophenet
@@ -311,19 +308,19 @@ sample_x = brentq(func, -99999999, 99999999)  # read brentq-docs about these con
 
 
 def plot_Y(
-        Yval,
-        typeplot=".b",
-        tsize=None,
-        labels=None,
-        title="",
-        xlabel="",
-        ylabel="",
-        zcolor_label="",
-        figsize=(8, 6),
-        dpi=75,
-        savefile="",
-        color_dot="Blues",
-        doreturn=0,
+    Yval,
+    typeplot=".b",
+    tsize=None,
+    labels=None,
+    title="",
+    xlabel="",
+    ylabel="",
+    zcolor_label="",
+    figsize=(8, 6),
+    dpi=75,
+    savefile="",
+    color_dot="Blues",
+    doreturn=0,
 ):
     plt.figure(figsize=figsize)
     plt.title("Values " + title)
@@ -332,8 +329,20 @@ def plot_Y(
 
 
 def plot_XY(
-        xx, yy, zcolor=None, tsize=None, labels=None, title="", xlabel="", ylabel="", zcolor_label="",
-        figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
+    xx,
+    yy,
+    zcolor=None,
+    tsize=None,
+    labels=None,
+    title="",
+    xlabel="",
+    ylabel="",
+    zcolor_label="",
+    figsize=(8, 6),
+    dpi=75,
+    savefile="",
+    color_dot="Blues",
+    doreturn=0,
 ):
     """
       labels= numpy array, ---> Generate HTML File with the labels interactives

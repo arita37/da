@@ -1,29 +1,17 @@
 # -*- coding: utf-8 -*-
 
 
-
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
 
-
-
-
-
-
-
-
-
-
-
-
 def _display_plot():
-    plt.plot([0, 1], [0, 1], color='grey', lw=1, linestyle='--')
+    plt.plot([0, 1], [0, 1], color="grey", lw=1, linestyle="--")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.02])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver Operating Characteristic')
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Receiver Operating Characteristic")
     plt.legend(loc="lower right")
     plt.show()
 
@@ -49,10 +37,10 @@ def roc_graph_binary(y_true, y_pred, **kwargs):
     kwargs : any key-value pairs
         Different options and configurations
     """
-    y_true = convert(y_true, 'array')
-    y_pred = convert(y_pred, 'array')
+    y_true = convert(y_true, "array")
+    y_pred = convert(y_pred, "array")
     if y_pred.shape != y_true.shape:
-        raise ValueError('y_true and y_pred must have the same shape')
+        raise ValueError("y_true and y_pred must have the same shape")
     elif len(y_pred.shape) == 1:
         y_t = y_true
         y_p = y_pred
@@ -60,24 +48,32 @@ def roc_graph_binary(y_true, y_pred, **kwargs):
         y_t = [np.argmax(x) for x in y_true]
         y_p = [x[1] for x in y_pred]
     fpr, tpr, _ = roc_curve(y_t, y_p)
-    auc_score = auc(fpr,tpr)
-    color = kwargs.get('color','darkorange')
-    lw = kwargs.get('lw', 2)
-    ls = kwargs.get('ls','-')
-    ms = kwargs.get('ms', 10)
-    fmt = kwargs.get('fmt','.2f')
-    if 'class_label' in kwargs:
-        class_label = ': {}'.format(kwargs['class_label'])
+    auc_score = auc(fpr, tpr)
+    color = kwargs.get("color", "darkorange")
+    lw = kwargs.get("lw", 2)
+    ls = kwargs.get("ls", "-")
+    ms = kwargs.get("ms", 10)
+    fmt = kwargs.get("fmt", ".2f")
+    if "class_label" in kwargs:
+        class_label = ": {}".format(kwargs["class_label"])
     else:
-        class_label = ''
-    if kwargs.get('new_figure',True):
+        class_label = ""
+    if kwargs.get("new_figure", True):
         plt.figure()
-    plt.plot(fpr, tpr, color=color, lw=lw, ls=ls, label='ROC curve{class_label} (AUC = {auc:{fmt}})'
-             .format(class_label=class_label,auc=auc_score,fmt=fmt))
-    if kwargs.get('show_graphs',True):
+    plt.plot(
+        fpr,
+        tpr,
+        color=color,
+        lw=lw,
+        ls=ls,
+        label="ROC curve{class_label} (AUC = {auc:{fmt}})".format(
+            class_label=class_label, auc=auc_score, fmt=fmt
+        ),
+    )
+    if kwargs.get("show_graphs", True):
         _display_plot()
-    if kwargs.get('return_pr',False):
-        return {'fpr': fpr, 'tpr': tpr}
+    if kwargs.get("return_pr", False):
+        return {"fpr": fpr, "tpr": tpr}
 
 
 def _plot_macro_roc(fpr, tpr, n, **kwargs):
@@ -89,10 +85,16 @@ def _plot_macro_roc(fpr, tpr, n, **kwargs):
     fpr_macro = all_fpr
     tpr_macro = mean_tpr
     auc_macro = auc(fpr_macro, tpr_macro)
-    fmt = kwargs.get('fmt', '.2f')
-    lw = kwargs.get('lw', 2)
-    plt.plot(fpr_macro, tpr_macro, label='ROC curve: macro (AUC = {auc:{fmt}})'.format(auc=auc_macro,fmt=fmt),
-             color='navy', ls=':', lw=lw)
+    fmt = kwargs.get("fmt", ".2f")
+    lw = kwargs.get("lw", 2)
+    plt.plot(
+        fpr_macro,
+        tpr_macro,
+        label="ROC curve: macro (AUC = {auc:{fmt}})".format(auc=auc_macro, fmt=fmt),
+        color="navy",
+        ls=":",
+        lw=lw,
+    )
 
 
 def roc_graph(y_true, y_pred, micro=True, macro=True, **kwargs):
@@ -121,29 +123,36 @@ def roc_graph(y_true, y_pred, micro=True, macro=True, **kwargs):
     """
     all_fpr = list()
     all_tpr = list()
-    y_true = convert(y_true, 'array')
-    y_pred = convert(y_pred, 'array')
+    y_true = convert(y_true, "array")
+    y_pred = convert(y_pred, "array")
     if y_pred.shape != y_true.shape:
-        raise ValueError('y_true and y_pred must have the same shape')
+        raise ValueError("y_true and y_pred must have the same shape")
     elif len(y_pred.shape) == 1 or y_pred.shape[1] <= 2:
         return binary_roc_graph(y_true, y_pred, **kwargs)
     else:
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        colors = ["b", "g", "r", "c", "m", "y", "k"]
         n = y_pred.shape[1]
         plt.figure()
-        kwargs['new_figure'] = False
-        kwargs['show_graphs'] = False
-        kwargs['return_pr'] = True
-        for i in range(0,n):
-            pr = binary_roc_graph(y_true[:,i], y_pred[:,i],
-                                   color=colors[i % len(colors)],class_label=i, **kwargs)
-            all_fpr.append(pr['fpr'])
-            all_tpr.append(pr['tpr'])
+        kwargs["new_figure"] = False
+        kwargs["show_graphs"] = False
+        kwargs["return_pr"] = True
+        for i in range(0, n):
+            pr = binary_roc_graph(
+                y_true[:, i], y_pred[:, i], color=colors[i % len(colors)], class_label=i, **kwargs
+            )
+            all_fpr.append(pr["fpr"])
+            all_tpr.append(pr["tpr"])
         if micro:
-            binary_roc_graph(y_true.ravel(), y_pred.ravel(), ls=':',
-                              color='deeppink', class_label='micro', **kwargs)
+            binary_roc_graph(
+                y_true.ravel(),
+                y_pred.ravel(),
+                ls=":",
+                color="deeppink",
+                class_label="micro",
+                **kwargs
+            )
         if macro:
-            _plot_macro_roc(all_fpr,all_tpr,n)
+            _plot_macro_roc(all_fpr, all_tpr, n)
         _display_plot()
 
 
@@ -161,13 +170,17 @@ def feature_importance_rf(clf, features, **kwargs):
     kwargs : any key-value pairs
         Different options and configurations
     """
-    return sorted(zip(map(lambda x: round(x, kwargs.get('precision',4)), clf.feature_importances_), features),
-                  reverse=True)
+    return sorted(
+        zip(
+            map(lambda x: round(x, kwargs.get("precision", 4)), clf.feature_importances_), features
+        ),
+        reverse=True,
+    )
 
 
 def convert(data, to):
     converted = None
-    if to == 'array':
+    if to == "array":
         if isinstance(data, np.ndarray):
             converted = data
         elif isinstance(data, pd.Series):
@@ -176,14 +189,14 @@ def convert(data, to):
             converted = np.array(data)
         elif isinstance(data, pd.DataFrame):
             converted = data.as_matrix()
-    elif to == 'list':
+    elif to == "list":
         if isinstance(data, list):
             converted = data
         elif isinstance(data, pd.Series):
             converted = data.values.tolist()
         elif isinstance(data, np.ndarray):
             converted = data.tolist()
-    elif to == 'dataframe':
+    elif to == "dataframe":
         if isinstance(data, pd.DataFrame):
             converted = data
         elif isinstance(data, np.ndarray):
@@ -191,7 +204,7 @@ def convert(data, to):
     else:
         raise ValueError("Unknown data conversion: {}".format(to))
     if converted is None:
-        raise TypeError('cannot handle data conversion of type: {} to {}'.format(type(data),to))
+        raise TypeError("cannot handle data conversion of type: {} to {}".format(type(data), to))
     else:
         return converted
 
@@ -202,10 +215,8 @@ import seaborn as sns
 import scipy.stats as ss
 import matplotlib.pyplot as plt
 from collections import Counter
+
 # from dython._private import convert
-
-
-
 
 
 import numpy as np
@@ -225,10 +236,9 @@ def np_sampling_weighted(numbers, k=1, with_replacement=False, **kwargs):
         Allow replacement or not
     """
     sampled = np.random.choice(numbers, size=k, replace=with_replacement)
-    if (isinstance(numbers, list) or kwargs.get('to_list', False)) and k is not None:
+    if (isinstance(numbers, list) or kwargs.get("to_list", False)) and k is not None:
         sampled = sampled.tolist()
     return sampled
-
 
 
 def np_sampling_boltzmann(numbers, k=1, with_replacement=False):
@@ -247,24 +257,8 @@ def np_sampling_boltzmann(numbers, k=1, with_replacement=False):
     exp_func = np.vectorize(lambda x: np.exp(x))
     exp_numbers = exp_func(numbers)
     exp_sum = exp_numbers.sum()
-    scaling_func = np.vectorize(lambda x: x/exp_sum)
+    scaling_func = np.vectorize(lambda x: x / exp_sum)
     b_numbers = scaling_func(exp_numbers)
-    return np_weighted_sampling(b_numbers, k=k, with_replacement=with_replacement, to_list=isinstance(numbers, list))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return np_weighted_sampling(
+        b_numbers, k=k, with_replacement=with_replacement, to_list=isinstance(numbers, list)
+    )

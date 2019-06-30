@@ -26,8 +26,12 @@ from sklearn import covariance, linear_model, model_selection
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
-                              GradientBoostingClassifier, RandomForestClassifier)
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    ExtraTreesClassifier,
+    GradientBoostingClassifier,
+    RandomForestClassifier,
+)
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
@@ -38,7 +42,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 from attrdict import AttrDict as dict2
-#from kmodes.kmodes import KModes
+
+# from kmodes.kmodes import KModes
 from tabulate import tabulate
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve
@@ -51,9 +56,6 @@ try:
     from catboost import CatBoostClassifier, Pool, cv
 except Exception as e:
     print(e)
-
-
-
 
 
 #########################################################################################################
@@ -70,13 +72,12 @@ def np_transform_pca(Xmat, dimpca=2, whiten=True):
     return pca.transform(Xmat)
 
 
-
 def sk_feature_impt_logis(clf, cols2):
-    dfeatures = pd.DataFrame({'feature': cols2, 'coef': clf.coef_[0],
-                              'coef_abs': np.abs(clf.coef_[0])}).sort_values('coef_abs', ascending=False)
-    dfeatures['rank'] = np.arange(0, len(dfeatures))
+    dfeatures = pd.DataFrame(
+        {"feature": cols2, "coef": clf.coef_[0], "coef_abs": np.abs(clf.coef_[0])}
+    ).sort_values("coef_abs", ascending=False)
+    dfeatures["rank"] = np.arange(0, len(dfeatures))
     return dfeatures
-
 
 
 def sk_feature_importance(clfrf, feature_name):
@@ -89,59 +90,68 @@ def sk_feature_importance(clfrf, feature_name):
             )
 
 
+def split_train(df1, ntrain=10000, ntest=100000, colused=None):
+    n1 = len(df1[df1["y"] == 0])
+    dft = pd.concat(
+        (
+            df1[df1["y"] == 0].iloc[np.random.choice(n1, ntest, False), :],
+            df1[(df1["y"] == 1) & (df1["def"] > 201803)].iloc[:, :],
+        )
+    )
+
+    X_test = dft[colused].values
+    y_test = dft["y"].values
+    print("test", sum(y_test))
+
+    ######## Train data
+    n1 = len(df1[df1["y"] == 0])
+    dft2 = pd.concat(
+        (
+            df1[df1["y"] == 0].iloc[np.random.choice(n1, ntrain, False), :],
+            df1[(df1["y"] == 1) & (df1["def"] > 201703) & (df1["def"] < 201804)].iloc[:, :],
+        )
+    )
+    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
+
+    X_train = dft2[colused].values
+    y_train = dft2["y"].values
+    print("train", sum(y_train))
+    return X_train, X_test, y_train, y_test
 
 
+def split_train2(df1, ntrain=10000, ntest=100000, colused=None, nratio=0.4):
+    n1 = len(df1[df1["y"] == 0])
+    n2 = len(df1[df1["y"] == 1])
+    n2s = int(n2 * nratio)  # 80% of default
+
+    #### Test data
+    dft = pd.concat(
+        (
+            df1[df1["y"] == 0].iloc[np.random.choice(n1, ntest, False), :],
+            df1[(df1["y"] == 1)].iloc[:, :],
+        )
+    )
+
+    X_test = dft[colused].values
+    y_test = dft["y"].values
+    print("test", sum(y_test))
+
+    ######## Train data
+    n1 = len(df1[df1["y"] == 0])
+    dft2 = pd.concat(
+        (
+            df1[df1["y"] == 0].iloc[np.random.choice(n1, ntrain, False), :],
+            df1[(df1["y"] == 1)].iloc[np.random.choice(n2, n2s, False), :],
+        )
+    )
+    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
+
+    X_train = dft2[colused].values
+    y_train = dft2["y"].values
+    print("train", sum(y_train))
+    return X_train, X_test, y_train, y_test
 
 
-def split_train(df1, ntrain=10000, ntest=100000, colused=None ) :
-    n1  = len( df1[ df1['y'] == 0 ] )
-    dft = pd.concat(( df1[ df1['y'] == 0 ].iloc[  np.random.choice( n1 , ntest, False), : ]  , 
-                    df1[ (df1['y'] == 1) & (df1['def'] > 201803 ) ].iloc[ : , :]  ))
-
-    X_test = dft[ colused ].values 
-    y_test = dft[ 'y'  ].values
-    print('test', sum(y_test))
-
-  ######## Train data   
-    n1   = len( df1[ df1['y'] == 0 ] )
-    dft2 = pd.concat(( df1[ df1['y'] == 0 ].iloc[  np.random.choice( n1 , ntrain, False), : ]  , 
-                      df1[ ( df1['y'] == 1) & (df1['def'] > 201703 ) & (df1['def'] < 201804 )  ].iloc[ : , :]  ))
-    dft2 = dft2.iloc[ np.random.choice( len(dft2) , len(dft2), False) , : ]
-
-    X_train = dft2[ colused ].values 
-    y_train = dft2[ 'y' ].values
-    print('train', sum(y_train))
-    return X_train, X_test, y_train, y_test 
-
-
-
-def split_train2(df1, ntrain=10000, ntest=100000, colused=None, nratio =0.4 ) :
-    n1  =  len( df1[ df1['y'] == 0 ] )
-    n2  =  len( df1[ df1['y'] == 1 ] ) 
-    n2s =  int(n2*nratio)  # 80% of default
-      
-  #### Test data
-    dft = pd.concat(( df1[ df1['y'] == 0 ].iloc[  np.random.choice( n1 , ntest, False), : ]  , 
-                    df1[ (df1['y'] == 1)  ].iloc[: , :]  ))
-
-    X_test = dft[ colused ].values 
-    y_test = dft[ 'y'  ].values
-    print('test', sum(y_test))
-
-  ######## Train data   
-    n1   = len( df1[ df1['y'] == 0 ] )
-    dft2 = pd.concat(( df1[ df1['y'] == 0 ].iloc[  np.random.choice( n1 , ntrain, False), : ]  , 
-                     df1[ (df1['y'] == 1)  ].iloc[ np.random.choice( n2 , n2s, False) , :]   ))
-    dft2 = dft2.iloc[ np.random.choice( len(dft2) , len(dft2), False) , : ]
-
-    X_train = dft2[ colused ].values 
-    y_train = dft2[ 'y' ].values
-    print('train', sum(y_train))
-    return X_train, X_test, y_train, y_test 
-
-
-
-    
 ######################  Category Classifier Trees  #########################################################################
 """
 Category Classifier
@@ -271,7 +281,6 @@ preds_proba = model.predict_proba(test_pool)
     return clf, cm, cm_norm
 
 
-
 def sk_catboost_regressor():
     pass
 
@@ -287,7 +296,7 @@ def sk_model_auto_tpot(
     population_size=5,
     verbosity=2,
 ):
-    
+
     """ Automatic training of Xmat--->Y, Generate SKlearn code in outfile
       Very Slow Process, use lower number of Sample
   :param Xmat:
@@ -325,7 +334,6 @@ def sk_model_auto_tpot(
     )
     tpot.export(file1)
     return file1
-    
 
 
 def sk_params_search_best(
@@ -715,6 +723,7 @@ def sk_optim_de(obj_fun, bounds, maxiter=1, name1="", solver1=None, isreset=1, p
 
     return fbest, xbest, solver
 
+
 ######## Valuation model template  ##########################################################
 class sk_model_template1(sk.base.BaseEstimator):
     def __init__(self, alpha=0.5, low_y_cut=-0.09, high_y_cut=0.09, ww0=0.95):
@@ -786,7 +795,6 @@ def sk_feature_importance(clfrf, feature_name):
             print(
                 str(f + 1), str(indices[f]), feature_name[indices[f]], str(importances[indices[f]])
             )
-
 
 
 # -------- SK Learn TREE UTIL----------------------------------------------------------------
@@ -1137,69 +1145,74 @@ from examples.source_data.loaders import get_mushroom_data, get_cars_data, get_s
 
 #### ML metrics
 
-def sk_showmetrics(y_test, ytest_pred, ytest_proba,target_names=['0', '1']) :
-  #### Confusion matrix
-  mtest  = sk_showconfusion( y_test, ytest_pred, isprint=False)
-  # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
-  auc  =  roc_auc_score( y_test, ytest_proba)   # 
-  gini =  2*auc -1
-  acc  =  accuracy_score(  y_test, ytest_pred )
-  f1macro = sk.metrics.f1_score(y_test, ytest_pred, average='macro')
-  
-  print('Test confusion matrix')
-  print(mtest[0]) ; print(mtest[1])
-  print('auc ' + str(auc) )
-  print('gini '+str(gini) )
-  print('acc ' + str(acc) )
-  print('f1macro ' + str(f1macro) )
-  print('Nsample ' + str(len(y_test)) )
-  
-  print(classification_report(y_test, ytest_pred, target_names=target_names))
 
-  # calculate roc curve
-  fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
-  plt.plot([0, 1], [0, 1], linestyle='--')
-  plt.plot(fpr, tpr, marker='.')
-  plt.xlabel('False positive rate'); plt.ylabel('True positive rate'); plt.title('ROC curve')
-  plt.show()
+def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
+    #### Confusion matrix
+    mtest = sk_showconfusion(y_test, ytest_pred, isprint=False)
+    # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
+    auc = roc_auc_score(y_test, ytest_proba)  #
+    gini = 2 * auc - 1
+    acc = accuracy_score(y_test, ytest_pred)
+    f1macro = sk.metrics.f1_score(y_test, ytest_pred, average="macro")
 
+    print("Test confusion matrix")
+    print(mtest[0])
+    print(mtest[1])
+    print("auc " + str(auc))
+    print("gini " + str(gini))
+    print("acc " + str(acc))
+    print("f1macro " + str(f1macro))
+    print("Nsample " + str(len(y_test)))
 
+    print(classification_report(y_test, ytest_pred, target_names=target_names))
 
-def sk_showmetrics2(y_test, ytest_pred, ytest_proba,target_names=['0', '1']) :
-  #### Confusion matrix
-  # mtest  = sk_showconfusion( y_test, ytest_pred, isprint=False)
-  # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
-  auc  =  roc_auc_score( y_test, ytest_proba)   # 
-  gini =  2*auc -1
-  acc  =  accuracy_score(  y_test, ytest_pred )
-  return auc, gini, acc
+    # calculate roc curve
+    fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
+    plt.plot([0, 1], [0, 1], linestyle="--")
+    plt.plot(fpr, tpr, marker=".")
+    plt.xlabel("False positive rate")
+    plt.ylabel("True positive rate")
+    plt.title("ROC curve")
+    plt.show()
 
 
+def sk_showmetrics2(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
+    #### Confusion matrix
+    # mtest  = sk_showconfusion( y_test, ytest_pred, isprint=False)
+    # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
+    auc = roc_auc_score(y_test, ytest_proba)  #
+    gini = 2 * auc - 1
+    acc = accuracy_score(y_test, ytest_pred)
+    return auc, gini, acc
 
-def clf_prediction_score(clf, df1 , cols, outype='score') :
-  def score_calc(yproba , pnorm = 1000.0 ) :
-    yy =  np.log( 0.00001 + (1 - yproba )  / (yproba + 0.001) )   
-    # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )
-    # return  np.maximum( 0.01 , yy )    ## Error it bias proba
-    return yy
 
+def clf_prediction_score(clf, df1, cols, outype="score"):
+    def score_calc(yproba, pnorm=1000.0):
+        yy = np.log(0.00001 + (1 - yproba) / (yproba + 0.001))
+        # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )
+        # return  np.maximum( 0.01 , yy )    ## Error it bias proba
+        return yy
 
-  X_all = df1[ cols ].values 
+    X_all = df1[cols].values
 
-  yall_proba   = clf.predict_proba(X_all)[:, 1]
-  yall_pred    = clf.predict(X_all)
-  try :
-    y_all = df1[ 'y'  ].values
-    sk_showmetrics(y_all, yall_pred, yall_proba)
-  except : pass
+    yall_proba = clf.predict_proba(X_all)[:, 1]
+    yall_pred = clf.predict(X_all)
+    try:
+        y_all = df1["y"].values
+        sk_showmetrics(y_all, yall_pred, yall_proba)
+    except:
+        pass
 
-  yall_score   = score_calc( yall_proba )
-  yall_score   = 1000 * ( yall_score - np.min( yall_score ) ) / (  np.max(yall_score) - np.min(yall_score) )
+    yall_score = score_calc(yall_proba)
+    yall_score = (
+        1000 * (yall_score - np.min(yall_score)) / (np.max(yall_score) - np.min(yall_score))
+    )
 
-  if outype == 'score' :
-      return yall_score
-  if  outype == 'proba' :
-      return yall_proba, yall_pred
+    if outype == "score":
+        return yall_score
+    if outype == "proba":
+        return yall_proba, yall_pred
+
 
 def sk_showconfusion(clfrf, X_train, Y_train, isprint=True):
     Y_pred = clfrf.predict(X_train)
