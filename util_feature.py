@@ -28,6 +28,12 @@ print('os.getcwd', os.getcwd())
 ####################################################################################################
 ####################################################################################################
 def pd_col_to_onehot(df, colname):
+    """
+
+    :param df:
+    :param colname:
+    :return:
+    """
     for x in colname:
         try:
             nunique = len(df[x].unique())
@@ -59,7 +65,7 @@ def pd_col_to_onehot(df, nan_as_category=True, categorical_columns=None):
 
 
 
-def pd_num_tocat(df, colname = None,  colexclude=None, method=""):
+def pd_colnum_tocat(df, colname = None,  colexclude=None, method=""):
     """
     :param df:
     :param method:
@@ -330,8 +336,8 @@ def np_correlation_ratio(categories, measurements):
     return eta
 
 
-def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u=False, plot=True,
-                 return_results = False, **kwargs):
+def pd_correl_associations(df, colcat=None, mark_columns=False, theil_u=False, plot=True,
+                           return_results = False, **kwargs):
     """
     Calculate the correlation/strength-of-association of features in data-set with both categorical (eda_tools) and
     continuous features using:
@@ -344,12 +350,12 @@ def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u
     ----------
     df : NumPy ndarray / Pandas DataFrame
         The data-set for which the features' correlation is computed
-    nominal_columns : string / list / NumPy ndarray
+    colcat : string / list / NumPy ndarray
         Names of columns of the data-set which hold categorical values. Can also be the string 'all' to state that all
         columns are categorical, or None (default) to state none are categorical
     mark_columns : Boolean, default = False
         if True, output's columns' names will have a suffix of '(nom)' or '(con)' based on there type (eda_tools or
-        continuous), as provided by nominal_columns
+        continuous), as provided by colcat
     theil_u : Boolean, default = False
         In the case of categorical-categorical feaures, use Theil's U instead of Cramer's V
     plot : Boolean, default = True
@@ -360,42 +366,42 @@ def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u
         Arguments to be passed to used function and methods
     """
     df = convert(df, 'dataframe')
-    columns = df.columns
-    if nominal_columns is None:
-        nominal_columns = list()
-    elif nominal_columns == 'all':
-        nominal_columns = columns
-    corr = pd.DataFrame(index=columns, columns=columns)
-    for i in range(0,len(columns)):
-        for j in range(i,len(columns)):
+    col = df.columns
+    if colcat is None:
+        colcat = list()
+    elif colcat == 'all':
+        colcat = col
+    corr = pd.DataFrame(index=col, columns=col)
+    for i in range(0,len(col)):
+        for j in range(i,len(col)):
             if i == j:
-                corr[columns[i]][columns[j]] = 1.0
+                corr[col[i]][col[j]] = 1.0
             else:
-                if columns[i] in nominal_columns:
-                    if columns[j] in nominal_columns:
+                if col[i] in colcat:
+                    if col[j] in colcat:
                         if theil_u:
-                            corr[columns[j]][columns[i]] = np_theils_u(df[columns[i]], df[columns[j]])
-                            corr[columns[i]][columns[j]] = np_theils_u(df[columns[j]], df[columns[i]])
+                            corr[col[j]][col[i]] = np_theils_u(df[col[i]], df[col[j]])
+                            corr[col[i]][col[j]] = np_theils_u(df[col[j]], df[col[i]])
                         else:
-                            cell = np_cramers_v(df[columns[i]], df[columns[j]])
-                            corr[columns[i]][columns[j]] = cell
-                            corr[columns[j]][columns[i]] = cell
+                            cell = np_cramers_v(df[col[i]], df[col[j]])
+                            corr[col[i]][col[j]] = cell
+                            corr[col[j]][col[i]] = cell
                     else:
-                        cell = np_correlation_ratio(df[columns[i]], df[columns[j]])
-                        corr[columns[i]][columns[j]] = cell
-                        corr[columns[j]][columns[i]] = cell
+                        cell = np_correlation_ratio(df[col[i]], df[col[j]])
+                        corr[col[i]][col[j]] = cell
+                        corr[col[j]][col[i]] = cell
                 else:
-                    if columns[j] in nominal_columns:
-                        cell = np_correlation_ratio(df[columns[j]], df[columns[i]])
-                        corr[columns[i]][columns[j]] = cell
-                        corr[columns[j]][columns[i]] = cell
+                    if col[j] in colcat:
+                        cell = np_correlation_ratio(df[col[j]], df[col[i]])
+                        corr[col[i]][col[j]] = cell
+                        corr[col[j]][col[i]] = cell
                     else:
-                        cell, _ = ss.pearsonr(df[columns[i]], df[columns[j]])
-                        corr[columns[i]][columns[j]] = cell
-                        corr[columns[j]][columns[i]] = cell
+                        cell, _ = ss.pearsonr(df[col[i]], df[col[j]])
+                        corr[col[i]][col[j]] = cell
+                        corr[col[j]][col[i]] = cell
     corr.fillna(value=np.nan, inplace=True)
     if mark_columns:
-        marked_columns = ['{} (nom)'.format(col) if col in nominal_columns else '{} (con)'.format(col) for col in columns]
+        marked_columns = ['{} (nom)'.format(col) if col in colcat else '{} (con)'.format(col) for col in col]
         corr.columns = marked_columns
         corr.index = marked_columns
     if plot:
@@ -409,7 +415,7 @@ def pd_correl_associations(df, nominal_columns=None, mark_columns=False, theil_u
         return corr
 
 
-def pd_cat_tonum(df, nominal_columns='all', drop_single_label=False, drop_fact_dict=True):
+def pd_colcat_tonum(df, colcat='all', drop_single_label=False, drop_fact_dict=True):
     """
     Encoding a data-set with mixed data (numerical and categorical) to a numerical-only data-set,
     using the following logic:
@@ -425,7 +431,7 @@ def pd_cat_tonum(df, nominal_columns='all', drop_single_label=False, drop_fact_d
     ----------
     df : NumPy ndarray / Pandas DataFrame
         The data-set to encode
-    nominal_columns : sequence / string
+    colcat : sequence / string
         A sequence of the nominal (categorical) columns in the dataset. If string, must be 'all' to state that
         all columns are nominal. If None, nothing happens. Default: 'all'
     drop_single_label : Boolean, default = False
@@ -435,14 +441,14 @@ def pd_cat_tonum(df, nominal_columns='all', drop_single_label=False, drop_fact_d
         the DataFrame and the dictionary of the binary factorization (originating from pd.factorize)
     """
     df = convert(df, 'dataframe')
-    if nominal_columns is None:
+    if colcat is None:
         return df
-    elif nominal_columns == 'all':
-        nominal_columns = df.columns
+    elif colcat == 'all':
+        colcat = df.columns
     converted_dataset = pd.DataFrame()
     binary_columns_dict = dict()
     for col in df.columns:
-        if col not in nominal_columns:
+        if col not in colcat:
             converted_dataset.loc[:,col] = df[col]
         else:
             unique_values = pd.unique(df[col])
@@ -906,7 +912,7 @@ def pd_validation_struct():
 
 
 ######################  Transformation   ###########################################################
-def pd_cat_label_toint(Xmat):
+def pd_colcat_label_toint(Xmat):
     """
      # ["paris", "paris", "tokyo", "amsterdam"]  --> 2 ,5,6
      # np.array(le.inverse_transform([2, 2, 1]))
