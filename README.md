@@ -45,6 +45,17 @@ isort -rc .
 black --line-length 100
 
 
+
+
+#########
+conda create -n py36_tf13 python=3.6.5  -y
+source activate py36_tf13
+conda install  -c anaconda  tensorflow=1.13.1
+conda install -c anaconda scikit-learn pandas matplotlib seaborn -y
+conda install -c anaconda  ipykernel -y
+
+
+
 ```
 
 

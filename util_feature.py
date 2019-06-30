@@ -256,16 +256,8 @@ def pd_stat_col_imbalance(df):
     ll = {
         x: []
         for x in [
-            "col",
-            "xmin_freq",
-            "nunique",
-            "xmax_freq",
-            "xmax",
-            "xmin",
-            "n",
-            "n_na",
-            "n_notna",
-        ]
+            "col", "xmin_freq", "nunique", "xmax_freq", "xmax", "xmin", "n", "n_na",
+            "n_notna",]
     }
 
     nn = len(df)

@@ -60,14 +60,14 @@ def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars=
         break
 
 
-def pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
-    if dfY is None:
-        yy = dfX[Ycolname].values
+def pd_col_pair_plot(df, Xcolname=None,  Ycolname=None):
+    if df is None:
+        yy = df[Ycolname].values
     else:
-        yy = dfY[Ycolname].values
+        yy = df[Ycolname].values
 
-    for coli in Xcolname_selectlist:
-        xx = dfX[coli].values
+    for coli in Xcolname:
+        xx = df[coli].values
         title1 = "X: " + str(coli) + ", Y: " + str(Ycolname[0])
         plt.scatter(xx, yy, s=1)
         plt.autoscale(enable=True, axis="both", tight=None)
