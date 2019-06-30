@@ -55,9 +55,9 @@ def pd_col_to_onehot(df, colname):
     return df
 
 
-def pd_colnum_tocat(df, colname=None, colexclude=None, method=""):
+def pd_colnum_tocat(df, colname=None, colexclude=None,  suffix="_bin", method=""):
     """
-    preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
+    Preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
 
     https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
     :param df:
@@ -65,9 +65,11 @@ def pd_colnum_tocat(df, colname=None, colexclude=None, method=""):
     :return:
     """
     colname = colname if colname is not None else list(df.columns)
+    colnew  = []
     for c in df.columns:
         if c in colexclude:
             continue
+
         df[c] = df[c].astype(np.float32)
         mi, ma = df[c].min(), df[c].max()
         space = (ma - mi) / 5
@@ -75,8 +77,55 @@ def pd_colnum_tocat(df, colname=None, colexclude=None, method=""):
         bins[0] -= 0.0000001
 
         labels = np.arange(0, len(bins))
-        df[c] = pd.cut(df[c], bins=bins, labels=labels)
+        colnew.append( c + suffix )
+        df[c + suffix ] = pd.cut(df[c], bins=bins, labels=labels)
     return df
+
+
+def pd_colnum_tocat2(df, colname=None, colexclude=None, suffix="_bin",
+                     method="uniform", bins=None):
+    """
+    preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
+
+    https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
+    :param df:
+    :param method: uniform,
+    :return:
+
+    strategy : {‘uniform’, ‘quantile’, ‘kmeans’}, (default=’quantile’)
+Strategy used to define the widths of the bins.
+
+uniform
+All bins in each feature have identical widths.
+
+quantile
+All bins in each feature have the same number of points.
+
+kmeans
+Values in each bin have the same nearest center of a 1D k-means cluster.
+
+https://scikit-learn.org/stable/auto_examples/preprocessing/plot_discretization_classification.html#sphx-glr-auto-examples-preprocessing-plot-discretization-classification-py
+
+    """
+    colname = colname if colname is not None else list(df.columns)
+
+    # transform the dataset with KBinsDiscretizer
+    from sklearn.preprocessing import KBinsDiscretizer
+    enc = KBinsDiscretizer(n_bins=bins, encode='ordinal', strategy=method)
+
+    for c in df.columns:
+        if c in colexclude:
+            continue
+        df[c] = df[c].astype(np.float32)
+
+        X_binned = enc.fit_transform(df[c].values)
+        df[c + suffix ] = X_binned
+
+    return df
+
+
+
+
 
 
 def pd_col_merge(df, ll0):
