@@ -815,10 +815,6 @@ def pd_num_correl_pair(df, coltarget=None, colname=None):
     return df_correl
 
 
-def pd_num_pair_interaction(df, colname, coltarget):
-    """ random forest for pairwise interaction """
-    pass
-
 
 def pd_col_study_summary(df, colname, isprint=0):
     """
