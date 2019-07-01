@@ -19,6 +19,14 @@ except Exception as e:
 
 ####################################################################################################
 def plotxy(x, y, color=1, size=1, title=""):
+    """
+    :param x:
+    :param y:
+    :param color:
+    :param size:
+    :param title:
+    """
+
     color = np.zeros(len(x)) if type(color) == int else color
     fig, ax = plt.subplots(figsize=(12, 10))
     plt.scatter(x, y, c=color, cmap="Spectral", s=size)
@@ -26,8 +34,13 @@ def plotxy(x, y, color=1, size=1, title=""):
     plt.show()
 
 
-def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
-    """  Perfom Full Study of the pandas columns"""
+def col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
+    """  Retrives all the information of the column
+    :param df:
+    :param col_include:
+    :param col_exclude:
+    :param pars:
+    """
     if col_include is not None:
         features = [feature for feature in df.columns.values if feature in col_include]
     elif col_exclude is not None:
@@ -60,7 +73,14 @@ def pd_col_study_distribution_show(df, col_include=None, col_exclude=None, pars=
         break
 
 
-def pd_col_pair_plot(df, Xcolname=None,  Ycolname=None):
+def pair_plot(df, Xcolname=None,  Ycolname=None):
+    """
+    :param df:
+    :param Xcolname:
+    :param Ycolname:
+ 
+    """
+
     if df is None:
         yy = df[Ycolname].values
     else:
@@ -78,6 +98,13 @@ def pd_col_pair_plot(df, Xcolname=None,  Ycolname=None):
 
 # alias name
 def plot_col_pair(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
+    """
+    :param df:
+    :param Xcolname:
+    :param Ycolname:
+    :return:
+    """
+    
     pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None)
 
 
