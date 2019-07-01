@@ -225,6 +225,10 @@ def pd_stat_histogram_groupby(df, bins=50, coltarget="diff", colgroupby="y"):
 
 
 def pd_stat_na_percol(df):
+    """
+    :param df:
+    :return:
+    """
     ll = []
     for x in df.columns:
         nn = df[x].isnull().sum()
@@ -238,6 +242,12 @@ def pd_stat_na_percol(df):
 
 
 def pd_stat_na_perow(df, n=10 ** 6):
+
+    """
+    :param df:
+    :param n:
+    :return:
+    """
     ll = []
     n = 10 ** 6
     for ii, x in df.iloc[:n, :].iterrows():
@@ -253,6 +263,10 @@ def pd_stat_na_perow(df, n=10 ** 6):
 
 
 def pd_stat_col_imbalance(df):
+    """
+    :param df:
+    :return:
+    """
     ll = {
         x: []
         for x in [
