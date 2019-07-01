@@ -763,8 +763,8 @@ def col_remove(cols, colsremove):
 def col_remove_fuzzy(cols, colsremove):
     # cols = list(df1.columns)
     """
-    :param cols
-    :param colsremove
+    :param cols:
+    :param colsremove:
     :return:
 
       colsremove = [
@@ -975,6 +975,10 @@ def pd_stat_describe(df):
 
 
 def pd_df_stack(df_list):
+    """
+    :param df_list:
+    :return:
+    """
     df0 = None
     for i, dfi in enumerate(df_list):
         if df0 is None:
@@ -1001,18 +1005,18 @@ def pd_validation_struct():
 ######################  Transformation   ###########################################################
 def pd_colcat_label_toint(df):
     """
-     # ["paris", "paris", "tokyo", "amsterdam"]  --> 2 ,5,6
-     # np.array(le.inverse_transform([2, 2, 1]))
-     le = preprocessing.LabelEncoder()
-     le.fit(["paris", "paris", "tokyo", "amsterdam"])
-LabelEncoder()
-list(le.classes_)
-['amsterdam', 'paris', 'tokyo']
-le.transform(["tokyo", "tokyo", "paris"])
-array([2, 2, 1]...)
-list(le.inverse_transform([2, 2, 1]))
-['tokyo', 'tokyo', 'paris']
-   """
+    # ["paris", "paris", "tokyo", "amsterdam"]  --> 2 ,5,6
+    # np.array(le.inverse_transform([2, 2, 1]))
+    le = preprocessing.LabelEncoder()
+    le.fit(["paris", "paris", "tokyo", "amsterdam"])
+    LabelEncoder()
+    list(le.classes_)
+    ['amsterdam', 'paris', 'tokyo']
+    le.transform(["tokyo", "tokyo", "paris"])
+    array([2, 2, 1]...)
+    list(le.inverse_transform([2, 2, 1]))
+    ['tokyo', 'tokyo', 'paris']
+    """
     Xmat = df.values
     le = sk.preprocessing.LabelEncoder()
     ncol = Xmat.shape[1]
