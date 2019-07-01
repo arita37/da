@@ -129,6 +129,11 @@ https://scikit-learn.org/stable/auto_examples/preprocessing/plot_discretization_
 
 
 def pd_col_merge(df, ll0):
+    """
+    :param df:
+    :param ll0:
+    :return :
+    """
     dd = {}
     for x in ll0:
         ll2 = []
@@ -140,6 +145,12 @@ def pd_col_merge(df, ll0):
 
 
 def pd_col_merge2(df, l, x0):
+    """
+    :param df:
+    :param l:
+    :param x0:
+    :return:
+    """
     dfz = pd.DataFrame({"easy_id": df["easy_id"].values})
     for t in l:
         ix = t.rfind("_")
@@ -548,6 +559,11 @@ def pd_colcat_tonum(df, colcat="all", drop_single_label=False, drop_fact_dict=Tr
 
 
 def convert(data, to):
+    """
+    :param data:
+    :param to:
+    :return :
+    """
     converted = None
     if to == "array":
         if isinstance(data, np.ndarray):
@@ -627,6 +643,11 @@ def pd_num_segment_limit(
 
 ##### Get Kaiso limit ###############################################################
 def fun_get_segmentlimit(x, l1):
+    """
+    :param x:
+    :param l1:
+    :return :
+    """
     for i in range(0, len(l1)):
         if x >= l1[i]:
             return i + 1
@@ -634,13 +655,17 @@ def fun_get_segmentlimit(x, l1):
 
 
 def np_drop_duplicates(l1):
+    """
+    :param l1:
+    :return :
+    """
     l0 = list(OrderedDict((x, True) for x in l1).keys())
     return l0
 
 
 def col_extractname_colbin(cols2):
     """
-        1hot column name to generic column names
+    1hot column name to generic column names
     :param cols2:
     :return:
     """
@@ -658,6 +683,10 @@ def col_extractname_colbin(cols2):
 
 
 def pd_stat_col(df):
+    """
+    :param df:
+    :return :
+    """
     ll = {"col": [], "nunique": []}
     for x in df.columns:
         ll["col"].append(x)
@@ -671,6 +700,12 @@ def pd_stat_col(df):
 
 
 def pd_col_intersection(df1, df2, colid):
+    """
+    :param df1:
+    :param df2:
+    :param colid:
+    :return :
+    """
     n2 = list(set(df1[colid].values).intersection(df2[colid]))
     print("total matchin", len(n2), len(df1), len(df2))
     return n2
@@ -704,6 +739,10 @@ def pd_col_normalize(df, colnum_log, colproba):
 
 
 def pd_col_check(df):
+    """
+    :param df:
+    :return :
+    """
     for x in df.columns:
         if len(df[x].unique()) > 2 and df[x].dtype != np.dtype("O"):
             print(x, len(df[x].unique()), df[x].min(), df[x].max())
@@ -788,6 +827,11 @@ def col_remove_fuzzy(cols, colsremove):
 
 
 def pd_col_filter(dfxx, cols):
+    """
+    :param dfxx:
+    :param cols:
+    :return:
+    """
     df1 = copy.deepcopy(dfxx[cols + ["def", "y"]])
     df1 = df1[df1["def"] < 201905]
     df1 = df1[(df1["def"] > 201703) | (df1["def"] == -1)]
