@@ -707,6 +707,8 @@ def pd_col_remove(df, cols):
 def col_extractname(col_onehot):
     """
     Column extraction 
+    :param col_onehot
+    :return:
     """
     colnew = []
     for x in col_onehot:
@@ -747,6 +749,10 @@ def col_remove(cols, colsremove):
 def col_remove_fuzzy(cols, colsremove):
     # cols = list(df1.columns)
     """
+    :param cols
+    :param colsremove
+    :return:
+
       colsremove = [
          'y', 'def',
          'segment',  'flg_target', 'SP1', 'SP2', 'SP3', 'SP4', 'SP5',        
