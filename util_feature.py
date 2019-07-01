@@ -791,16 +791,28 @@ def col_study_getcategorydict_freq(catedict):
 
 
 
-def pd_num_pair_correl(df, colname):
-    """Genearte correletion between the column and target column
-    df represents the dataframe comprising the column and colname comprising the target column 
+def pd_num_correl_pair(df, coltarget=None, colname=None):
+    """
+      Genearte correletion between the column and target column
+      df represents the dataframe comprising the column and colname comprising the target column
+    :param df:
+    :param colname: list of columns
+    :param coltarget : target column
+
+    :return:
     """
     from scipy.stats import pearsonr
-    feature_target_corr = {}
-    for col in df:
-        feature_target_corr[col + '_' + colname] = pearsonr(df[col], colname)[0]
-    print("Feature-Target Correlations")
-    print(feature_target_corr)
+
+    colname = colname if colname is not None else list(df.columns)
+    target_corr = []
+    for col in colname:
+        target_corr.append( pearsonr(df[col].values, df[coltarget].values)[0])
+
+    df_correl = pd.DataFrame({ "colx": [""]*len(colname),
+                               "coly": colname,
+                               "correl": target_corr  })
+    df_correl[coltarget] = colname
+    return df_correl
 
 
 def pd_num_pair_interaction(df, colname, coltarget):
