@@ -109,6 +109,11 @@ def plot_col_pair(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
 
 
 def plot_distance_heatmap(Xmat_dist, Xcolname):
+    """
+    :param Xmat_dist:
+    :param Xcolname:
+    :return:
+    """
     import matplotlib.pyplot as pyplot
 
     df = pd.DataFrame(Xmat_dist)
@@ -126,8 +131,13 @@ def plot_distance_heatmap(Xmat_dist, Xcolname):
 
 
 def plot_cluster_2D(X_2dim, target_class, target_names):
-    """ Plot 2d of Clustering Class,
-       X2d: Nbsample x 2 dim  (projection on 2D sub-space)
+    """ 
+    :param X_2dim:
+    :param target_class:
+    :param target_names:
+    :return: 
+    Plot 2d of Clustering Class,
+    X2d: Nbsample x 2 dim  (projection on 2D sub-space)
    """
     colors = itertools.cycle("rgbcmykw")
     target_ids = range(0, len(target_names))
@@ -148,7 +158,18 @@ def plot_cluster_tsne(
     isprecompute=False,
     returnval=True,
 ):
-    """Plot High dimemnsionnal State using TSNE method
+    """
+    :param Xmat:
+    :param Xcluster_label:
+    :param metric:
+    :param perplexity:
+    :param ncomponent:
+    :param savefile:
+    :param isprecomputer:
+    :param returnval:
+    :return:
+    
+    Plot High dimemnsionnal State using TSNE method
    'euclidean, 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean, 'cosine, 'correlation, 'hamming, 'jaccard, 'chebyshev,
    'canberra, 'braycurtis, 'mahalanobis', VI=None) 'yule, 'matching, 'dice, 'kulsinski, 'rogerstanimoto, 'russellrao, 'sokalmichener, 'sokalsneath,
 
@@ -195,6 +216,17 @@ def plot_cluster_pca(
     savefile="",
     doreturn=1,
 ):
+"""
+:param Xmat:
+:param Xcluster_label:
+:param metric:
+:param dimpca:
+:param whiten:
+:param isprecomputer:
+:param savefile:
+:param doreturn:
+:return:
+"""
     from sklearn.decomposition import pca
 
     if isprecompute:
