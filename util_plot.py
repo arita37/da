@@ -521,6 +521,12 @@ def plot_XY_plotly(xx, yy, towhere="url"):
 
 
 def plot_XY_seaborn(X, Y, Zcolor=None):
+    """
+    :param X:
+    :param Y:
+    :param Zcolor:
+    :return:
+    """
     import seaborn as sns
 
     sns.set_context("poster")
