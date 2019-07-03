@@ -274,6 +274,29 @@ def plot_cluster_hiearchy(
     above_threshold_color="b",
     annotate_above=0,
 ):
+    """
+    :param Xmat_dist:
+    :param p:
+    :param truncate_mode:
+    :param color_threshold:
+    :param get_leaves:
+    :param orientation:
+    :param labels:
+    :param count_sort:
+    :param distance_sort:
+    :param show_leaf_counts:
+    :param do_plot:
+    :param no_labels:
+    :param leaf_font_size:
+    :param leaf_rotation:
+    :param leaf_label_func:
+    :param show_contracted:
+    :param link_color_func:
+    :param ax:
+    :param above_threshold_color:
+    :param annotate_above:
+    :return:
+    """
     from scipy.cluster.hierarchy import dendrogram, linkage
     from scipy.cluster.hierarchy import cophenet
     from scipy.spatial.distance import pdist
