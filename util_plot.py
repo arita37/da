@@ -498,7 +498,11 @@ def plot_XY(
 
 
 def plot_XY_plotly(xx, yy, towhere="url"):
-    """ Create Interactive Plotly   """
+    """ Create Interactive Plotly  
+    :param xx:
+    :param yy:
+    :param towhere: 
+    """
     import plotly.plotly as py
     import plotly.graph_objs as go
     from plotly.graph_objs import Marker, ColorBar
