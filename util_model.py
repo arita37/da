@@ -4,17 +4,11 @@ Methods for ML models, model ensembels, metrics etc.
 util_model : input/output is numpy
 
 """
-import copy
-import itertools
-import math
 import os
-import re
-import sys
-from calendar import isleap
+import copy
 from collections import OrderedDict
-from datetime import datetime, timedelta
 
-import arrow
+
 import numpy as np
 import pandas as pd
 
@@ -58,12 +52,10 @@ except Exception as e:
     print(e)
 
 
-#########################################################################################################
-# DIRCWD= os.environ["DIRCWD"]; os.chdir(DIRCWD); sys.path.append(DIRCWD + '/aapackage')
-# import configmy; CFG, DIRCWD= configmy.get(config_file="_ROOT", output= ["_CFG", "DIRCWD"])
-DIRCWD = "./"
+####################################################################################################
+DIRCWD = os.get_cwd()
 
-##############################################################################
+####################################################################################################
 
 
 def np_transform_pca(Xmat, dimpca=2, whiten=True):
@@ -79,15 +71,6 @@ def sk_feature_impt_logis(clf, cols2):
     dfeatures["rank"] = np.arange(0, len(dfeatures))
     return dfeatures
 
-
-def sk_feature_importance(clfrf, feature_name):
-    importances = clfrf.feature_importances_
-    indices = np.argsort(importances)[::-1]
-    for f in range(0, len(feature_name)):
-        if importances[indices[f]] > 0.0001:
-            print(
-                str(f + 1), str(indices[f]), feature_name[indices[f]], str(importances[indices[f]])
-            )
 
 
 def split_train(df1, ntrain=10000, ntest=100000, colused=None):
@@ -675,53 +658,6 @@ def sk_cluster_kmeans(Xmat, nbcluster=5, isprint=False, isnorm=False) :
 """
 
 
-def sk_optim_de(obj_fun, bounds, maxiter=1, name1="", solver1=None, isreset=1, popsize=15):
-    """ Optimization and Save Data into file"""
-    import copy
-
-    if isreset == 2:
-        print("Traditionnal Optim, no saving")
-        res = sci.optimize.differential_evolution(obj_fun, bounds=bounds, maxiter=maxiter)
-        xbest, fbest, solver, i = res.x, res.fun, "", maxiter
-    else:  # iterative solver
-        print("Iterative Solver ")
-        if name1 != "":  # wtih file
-            print("/batch/" + name1)
-            solver2 = load_obj("/batch/" + name1)
-            imin = int(name1[-3:]) + 1
-            solver = sci.optimize._differentialevolution.DifferentialEvolutionSolver(
-                obj_fun, bounds=bounds, popsize=popsize
-            )
-            solver.population = copy.deepcopy(solver2.population)
-            solver.population_energies = copy.deepcopy(solver2.population_energies)
-            del solver2
-
-        elif solver1 is not None:  # Start from zero
-            solver = copy.deepcopy(solver1)
-            imin = 0
-        else:
-            solver = sci.optimize._differentialevolution.DifferentialEvolutionSolver(
-                obj_fun, bounds=bounds, popsize=popsize
-            )
-            imin = 0
-
-        name1 = "/batch/solver_" + name1
-        fbest0 = 1500000.0
-        for i in range(imin, imin + maxiter):
-            xbest, fbest = next(solver)
-            print(0, i, fbest, xbest)
-            res = (copy.deepcopy(solver), i, xbest, fbest)
-            try:
-                util.save_obj(solver, name1 + util.date_now() + "_" + util.np_int_tostr(i))
-                print((name1 + util.date_now() + "_" + util.np_int_tostr(i)))
-            except:
-                pass
-            if np.mod(i + 1, 11) == 0:
-                if np.abs(fbest - fbest0) < 0.001:
-                    break
-                fbest0 = fbest
-
-    return fbest, xbest, solver
 
 
 ######## Valuation model template  ##########################################################
@@ -787,7 +723,7 @@ class sk_model_template1(sk.base.BaseEstimator):
 """
 
 
-def sk_feature_importance(clfrf, feature_name):
+def sk_feature_impt_rf(clfrf, feature_name):
     importances = clfrf.feature_importances_
     indices = np.argsort(importances)[::-1]
     for f in range(0, len(feature_name)):
@@ -1167,26 +1103,27 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
     print(classification_report(y_test, ytest_pred, target_names=target_names))
 
     # calculate roc curve
-    fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
-    plt.plot([0, 1], [0, 1], linestyle="--")
-    plt.plot(fpr, tpr, marker=".")
-    plt.xlabel("False positive rate")
-    plt.ylabel("True positive rate")
-    plt.title("ROC curve")
-    plt.show()
-
-
-def sk_showmetrics2(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
-    #### Confusion matrix
-    # mtest  = sk_showconfusion( y_test, ytest_pred, isprint=False)
-    # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
-    auc = roc_auc_score(y_test, ytest_proba)  #
-    gini = 2 * auc - 1
-    acc = accuracy_score(y_test, ytest_pred)
-    return auc, gini, acc
+    try :
+      fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
+      plt.plot([0, 1], [0, 1], linestyle="--")
+      plt.plot(fpr, tpr, marker=".")
+      plt.xlabel("False positive rate")
+      plt.ylabel("True positive rate")
+      plt.title("ROC curve")
+      plt.show()
+    except Exception as e :
+      print(e)
 
 
 def clf_prediction_score(clf, df1, cols, outype="score"):
+    """
+
+    :param clf:
+    :param df1:
+    :param cols:
+    :param outype:
+    :return:
+    """
     def score_calc(yproba, pnorm=1000.0):
         yy = np.log(0.00001 + (1 - yproba) / (yproba + 0.001))
         # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )

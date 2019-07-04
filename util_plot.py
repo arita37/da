@@ -34,7 +34,7 @@ def plotxy(x, y, color=1, size=1, title=""):
     plt.show()
 
 
-def col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
+def plot_col_distribution(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
     """  Retrives all the information of the column
     :param df:
     :param col_include:
@@ -43,6 +43,7 @@ def col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"b
     """
     if col_include is not None:
         features = [feature for feature in df.columns.values if feature in col_include]
+
     elif col_exclude is not None:
         features = [feature for feature in df.columns.values if not feature in col_exclude]
 
@@ -70,25 +71,20 @@ def col_study_distribution_show(df, col_include=None, col_exclude=None, pars={"b
         plt.plot(list(range(5, 100, 5)), np.percentile(values, list(range(5, 100, 5))), ".b")
         plt.show()
 
-        break
 
 
-def pair_plot(df, Xcolname=None,  Ycolname=None):
+def plot_pair(df, Xcolname=None, Ycoltarget=None):
     """
     :param df:
     :param Xcolname:
-    :param Ycolname:
+    :param Ycoltarget:
  
     """
-
-    if df is None:
-        yy = df[Ycolname].values
-    else:
-        yy = df[Ycolname].values
+    yy = df[Ycoltarget].values
 
     for coli in Xcolname:
         xx = df[coli].values
-        title1 = "X: " + str(coli) + ", Y: " + str(Ycolname[0])
+        title1 = "X: " + str(coli) + ", Y: " + str(Ycoltarget[0])
         plt.scatter(xx, yy, s=1)
         plt.autoscale(enable=True, axis="both", tight=None)
         #  plt.axis([-3, 3, -3, 3])  #gaussian
@@ -96,19 +92,14 @@ def pair_plot(df, Xcolname=None,  Ycolname=None):
         plt.show()
 
 
-# alias name
-def plot_col_pair(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None):
-    """
-    :param df:
-    :param Xcolname:
-    :param Ycolname:
-    :return:
-    """
-    
-    pd_col_pair_plot(dfX, Xcolname_selectlist=None, dfY=None, Ycolname=None)
-
 
 def plot_distance_heatmap(Xmat_dist, Xcolname):
+    """
+
+    :param Xmat_dist:
+    :param Xcolname:
+    :return:
+    """
     import matplotlib.pyplot as pyplot
 
     df = pd.DataFrame(Xmat_dist)
@@ -139,14 +130,8 @@ def plot_cluster_2D(X_2dim, target_class, target_names):
 
 
 def plot_cluster_tsne(
-    Xmat,
-    Xcluster_label=None,
-    metric="euclidean",
-    perplexity=50,
-    ncomponent=2,
-    savefile="",
-    isprecompute=False,
-    returnval=True,
+    Xmat, Xcluster_label=None, metric="euclidean", perplexity=50, ncomponent=2, savefile="",
+    isprecompute=False, returnval=True,
 ):
     """Plot High dimemnsionnal State using TSNE method
    'euclidean, 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean, 'cosine, 'correlation, 'hamming, 'jaccard, 'chebyshev,
@@ -186,15 +171,21 @@ def plot_cluster_tsne(
 
 
 def plot_cluster_pca(
-    Xmat,
-    Xcluster_label=None,
-    metric="euclidean",
-    dimpca=2,
-    whiten=True,
-    isprecompute=False,
-    savefile="",
-    doreturn=1,
+    Xmat, Xcluster_label=None, metric="euclidean", dimpca=2, whiten=True, isprecompute=False,
+    savefile="", doreturn=1,
 ):
+    """
+
+    :param Xmat:
+    :param Xcluster_label:
+    :param metric:
+    :param dimpca:
+    :param whiten:
+    :param isprecompute:
+    :param savefile:
+    :param doreturn:
+    :return:
+    """
     from sklearn.decomposition import pca
 
     if isprecompute:
@@ -221,51 +212,26 @@ def plot_cluster_pca(
 
 
 def plot_cluster_hiearchy(
-    Xmat_dist,
-    p=30,
-    truncate_mode=None,
-    color_threshold=None,
-    get_leaves=True,
-    orientation="top",
-    labels=None,
-    count_sort=False,
-    distance_sort=False,
-    show_leaf_counts=True,
-    do_plot=1,
-    no_labels=False,
-    leaf_font_size=None,
-    leaf_rotation=None,
-    leaf_label_func=None,
-    show_contracted=False,
-    link_color_func=None,
-    ax=None,
-    above_threshold_color="b",
+    Xmat_dist, p=30, truncate_mode=None, color_threshold=None, get_leaves=True,
+    orientation="top", labels=None, count_sort=False, distance_sort=False, show_leaf_counts=True,
+    do_plot=1, no_labels=False, leaf_font_size=None, leaf_rotation=None, leaf_label_func=None,
+    show_contracted=False, link_color_func=None, ax=None, above_threshold_color="b",
     annotate_above=0,
 ):
+    """
+
+    :return:
+    """
     from scipy.cluster.hierarchy import dendrogram, linkage
     from scipy.cluster.hierarchy import cophenet
     from scipy.spatial.distance import pdist
 
     ddata = dendrogram(
-        Xmat_dist,
-        p=30,
-        truncate_mode=truncate_mode,
-        color_threshold=color_threshold,
-        get_leaves=get_leaves,
-        orientation="top",
-        labels=None,
-        count_sort=False,
-        distance_sort=False,
-        show_leaf_counts=True,
-        no_plot=1 - do_plot,
-        no_labels=False,
-        leaf_font_size=None,
-        leaf_rotation=None,
-        leaf_label_func=None,
-        show_contracted=False,
-        link_color_func=None,
-        ax=None,
-        above_threshold_color="b",
+        Xmat_dist, p=30, truncate_mode=truncate_mode, color_threshold=color_threshold,
+        get_leaves=get_leaves, orientation="top", labels=None,
+        count_sort=False, distance_sort=False, show_leaf_counts=True, no_plot=1 - do_plot,
+        no_labels=False, leaf_font_size=None, leaf_rotation=None, leaf_label_func=None,
+        show_contracted=False, link_color_func=None, ax=None, above_threshold_color="b",
     )
 
     if do_plot:
@@ -334,47 +300,28 @@ sample_x = brentq(func, -99999999, 99999999)  # read brentq-docs about these con
     return kde
 
 
-def plot_Y(
-    Yval,
-    typeplot=".b",
-    tsize=None,
-    labels=None,
-    title="",
-    xlabel="",
-    ylabel="",
-    zcolor_label="",
-    figsize=(8, 6),
-    dpi=75,
-    savefile="",
-    color_dot="Blues",
-    doreturn=0,
+
+def plot_Y( Yval, typeplot=".b", tsize=None, labels=None, title="", xlabel="", ylabel="",
+            zcolor_label="", figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
 ):
+    """
+     Return plot values
+    """
     plt.figure(figsize=figsize)
     plt.title("Values " + title)
     plt.plot(Yval, typeplot)
     plt.show()
 
 
+
 def plot_XY(
-    xx,
-    yy,
-    zcolor=None,
-    tsize=None,
-    labels=None,
-    title="",
-    xlabel="",
-    ylabel="",
-    zcolor_label="",
-    figsize=(8, 6),
-    dpi=75,
-    savefile="",
-    color_dot="Blues",
-    doreturn=0,
+    xx, yy, zcolor=None, tsize=None, labels=None, title="", xlabel="", ylabel="",
+    zcolor_label="", figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
 ):
     """
       labels= numpy array, ---> Generate HTML File with the labels interactives
       Color: Plasma
-  """
+    """
 
     # Color change
     if zcolor is None:
@@ -443,7 +390,14 @@ def plot_XY(
 
 
 def plot_XY_plotly(xx, yy, towhere="url"):
-    """ Create Interactive Plotly   """
+    """
+     Create Interactive Plotly
+    :param xx:
+    :param yy:
+    :param towhere:
+    :return:
+    """
+
     import plotly.plotly as py
     import plotly.graph_objs as go
     from plotly.graph_objs import Marker, ColorBar
@@ -466,7 +420,14 @@ def plot_XY_plotly(xx, yy, towhere="url"):
 
 
 def plot_XY_seaborn(X, Y, Zcolor=None):
-    import seaborn as sns
+    """
+
+    :param X:
+    :param Y:
+    :param Zcolor:
+    :return:
+    """
+
 
     sns.set_context("poster")
     sns.set_color_codes()
@@ -478,6 +439,11 @@ def plot_XY_seaborn(X, Y, Zcolor=None):
     frame.axes.get_xaxis().set_visible(False)
     frame.axes.get_yaxis().set_visible(False)
     plt.title("X:   , Y:   ,Z:", fontsize=18)
+
+
+
+
+
 
 
 """

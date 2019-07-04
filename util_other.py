@@ -4,6 +4,55 @@ Some special methods
 """
 
 
+def optim_de(obj_fun, bounds, maxiter=1, name1="", solver1=None, isreset=1, popsize=15):
+    """ Optimization and Save Data into file"""
+    import copy
+
+    if isreset == 2:
+        print("Traditionnal Optim, no saving")
+        res = sci.optimize.differential_evolution(obj_fun, bounds=bounds, maxiter=maxiter)
+        xbest, fbest, solver, i = res.x, res.fun, "", maxiter
+    else:  # iterative solver
+        print("Iterative Solver ")
+        if name1 != "":  # wtih file
+            print("/batch/" + name1)
+            solver2 = load_obj("/batch/" + name1)
+            imin = int(name1[-3:]) + 1
+            solver = sci.optimize._differentialevolution.DifferentialEvolutionSolver(
+                obj_fun, bounds=bounds, popsize=popsize
+            )
+            solver.population = copy.deepcopy(solver2.population)
+            solver.population_energies = copy.deepcopy(solver2.population_energies)
+            del solver2
+
+        elif solver1 is not None:  # Start from zero
+            solver = copy.deepcopy(solver1)
+            imin = 0
+        else:
+            solver = sci.optimize._differentialevolution.DifferentialEvolutionSolver(
+                obj_fun, bounds=bounds, popsize=popsize
+            )
+            imin = 0
+
+        name1 = "/batch/solver_" + name1
+        fbest0 = 1500000.0
+        for i in range(imin, imin + maxiter):
+            xbest, fbest = next(solver)
+            print(0, i, fbest, xbest)
+            res = (copy.deepcopy(solver), i, xbest, fbest)
+            try:
+                util.save_obj(solver, name1 + util.date_now() + "_" + util.np_int_tostr(i))
+                print((name1 + util.date_now() + "_" + util.np_int_tostr(i)))
+            except:
+                pass
+            if np.mod(i + 1, 11) == 0:
+                if np.abs(fbest - fbest0) < 0.001:
+                    break
+                fbest0 = fbest
+
+    return fbest, xbest, solver
+
+
 ######################### OPTIM   ###################################################
 def optim_is_pareto_efficient(Xmat_cost, epsilon=0.01, ret_boolean=1):
     """ Calculate Pareto Frontier of Multi-criteria Optimization program

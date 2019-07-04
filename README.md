@@ -15,6 +15,8 @@ For module file has LIMITED dependency and logic flow :
 pd_   :  input is pandas dataframe
 np_ : input is numpy
 sk_  :  inout is related to sklearn (ie sklearn model)
+plot_
+
 
 _col_  :  name for colums
 _colcat_  :  name for category columns
