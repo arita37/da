@@ -100,6 +100,11 @@ def plot_distance_heatmap(Xmat_dist, Xcolname):
     :param Xcolname:
     :return:
     """
+    """
+    :param Xmat_dist:
+    :param Xcolname:
+    :return:
+    """
     import matplotlib.pyplot as pyplot
 
     df = pd.DataFrame(Xmat_dist)
@@ -117,8 +122,13 @@ def plot_distance_heatmap(Xmat_dist, Xcolname):
 
 
 def plot_cluster_2D(X_2dim, target_class, target_names):
-    """ Plot 2d of Clustering Class,
-       X2d: Nbsample x 2 dim  (projection on 2D sub-space)
+    """ 
+    :param X_2dim:
+    :param target_class:
+    :param target_names:
+    :return: 
+    Plot 2d of Clustering Class,
+    X2d: Nbsample x 2 dim  (projection on 2D sub-space)
    """
     colors = itertools.cycle("rgbcmykw")
     target_ids = range(0, len(target_names))
@@ -133,7 +143,18 @@ def plot_cluster_tsne(
     Xmat, Xcluster_label=None, metric="euclidean", perplexity=50, ncomponent=2, savefile="",
     isprecompute=False, returnval=True,
 ):
-    """Plot High dimemnsionnal State using TSNE method
+    """
+    :param Xmat:
+    :param Xcluster_label:
+    :param metric:
+    :param perplexity:
+    :param ncomponent:
+    :param savefile:
+    :param isprecomputer:
+    :param returnval:
+    :return:
+    
+    Plot High dimemnsionnal State using TSNE method
    'euclidean, 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean, 'cosine, 'correlation, 'hamming, 'jaccard, 'chebyshev,
    'canberra, 'braycurtis, 'mahalanobis', VI=None) 'yule, 'matching, 'dice, 'kulsinski, 'rogerstanimoto, 'russellrao, 'sokalmichener, 'sokalsneath,
 
@@ -186,6 +207,7 @@ def plot_cluster_pca(
     :param doreturn:
     :return:
     """
+
     from sklearn.decomposition import pca
 
     if isprecompute:
@@ -219,7 +241,26 @@ def plot_cluster_hiearchy(
     annotate_above=0,
 ):
     """
-
+    :param Xmat_dist:
+    :param p:
+    :param truncate_mode:
+    :param color_threshold:
+    :param get_leaves:
+    :param orientation:
+    :param labels:
+    :param count_sort:
+    :param distance_sort:
+    :param show_leaf_counts:
+    :param do_plot:
+    :param no_labels:
+    :param leaf_font_size:
+    :param leaf_rotation:
+    :param leaf_label_func:
+    :param show_contracted:
+    :param link_color_func:
+    :param ax:
+    :param above_threshold_color:
+    :param annotate_above:
     :return:
     """
     from scipy.cluster.hierarchy import dendrogram, linkage
@@ -227,6 +268,7 @@ def plot_cluster_hiearchy(
     from scipy.spatial.distance import pdist
 
     ddata = dendrogram(
+        ax=None,
         Xmat_dist, p=30, truncate_mode=truncate_mode, color_threshold=color_threshold,
         get_leaves=get_leaves, orientation="top", labels=None,
         count_sort=False, distance_sort=False, show_leaf_counts=True, no_plot=1 - do_plot,
@@ -397,7 +439,6 @@ def plot_XY_plotly(xx, yy, towhere="url"):
     :param towhere:
     :return:
     """
-
     import plotly.plotly as py
     import plotly.graph_objs as go
     from plotly.graph_objs import Marker, ColorBar
@@ -421,14 +462,11 @@ def plot_XY_plotly(xx, yy, towhere="url"):
 
 def plot_XY_seaborn(X, Y, Zcolor=None):
     """
-
     :param X:
     :param Y:
     :param Zcolor:
     :return:
     """
-
-
     sns.set_context("poster")
     sns.set_color_codes()
     plot_kwds = {"alpha": 0.35, "s": 60, "linewidths": 0}
