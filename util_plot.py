@@ -13,11 +13,38 @@ import itertools
 
 try:
     import plotly
+    import cufflinks as cf
 except Exception as e:
     print(e)
 
 
+
 ####################################################################################################
+def plot_plotly(df):
+    """
+    pip install plotly # Plotly is a pre-requisite before installing cufflinks
+pip install cufflinks
+
+    #importing Pandas
+import pandas as pd
+#importing plotly and cufflinks in offline mode
+import cufflinks as cf
+import plotly.offline
+cf.go_offline()
+cf.set_config_file(offline=False, world_readable=True)
+
+
+    :param df:
+    :return:
+    """
+    import cufflinks as cf
+    import plotly.offline
+    cf.go_offline()
+    cf.set_config_file(offline=False, world_readable=True)
+    df.iplot()
+
+
+
 def plotxy(x, y, color=1, size=1, title=""):
     """
     :param x:
@@ -144,14 +171,6 @@ def plot_cluster_tsne(
     isprecompute=False, returnval=True,
 ):
     """
-    :param Xmat:
-    :param Xcluster_label:
-    :param metric:
-    :param perplexity:
-    :param ncomponent:
-    :param savefile:
-    :param isprecomputer:
-    :param returnval:
     :return:
     
     Plot High dimemnsionnal State using TSNE method
@@ -196,15 +215,6 @@ def plot_cluster_pca(
     savefile="", doreturn=1,
 ):
     """
-
-    :param Xmat:
-    :param Xcluster_label:
-    :param metric:
-    :param dimpca:
-    :param whiten:
-    :param isprecompute:
-    :param savefile:
-    :param doreturn:
     :return:
     """
 
@@ -241,26 +251,6 @@ def plot_cluster_hiearchy(
     annotate_above=0,
 ):
     """
-    :param Xmat_dist:
-    :param p:
-    :param truncate_mode:
-    :param color_threshold:
-    :param get_leaves:
-    :param orientation:
-    :param labels:
-    :param count_sort:
-    :param distance_sort:
-    :param show_leaf_counts:
-    :param do_plot:
-    :param no_labels:
-    :param leaf_font_size:
-    :param leaf_rotation:
-    :param leaf_label_func:
-    :param show_contracted:
-    :param link_color_func:
-    :param ax:
-    :param above_threshold_color:
-    :param annotate_above:
     :return:
     """
     from scipy.cluster.hierarchy import dendrogram, linkage
@@ -268,7 +258,6 @@ def plot_cluster_hiearchy(
     from scipy.spatial.distance import pdist
 
     ddata = dendrogram(
-        ax=None,
         Xmat_dist, p=30, truncate_mode=truncate_mode, color_threshold=color_threshold,
         get_leaves=get_leaves, orientation="top", labels=None,
         count_sort=False, distance_sort=False, show_leaf_counts=True, no_plot=1 - do_plot,
@@ -424,7 +413,7 @@ def plot_XY(
 
     plt.show()
     if savefile != "":
-        util.os_folder_create(os.path.split(savefile)[0])
+        os_folder_create(os.path.split(savefile)[0])
         plt.savefig(savefile)
 
     if doreturn:

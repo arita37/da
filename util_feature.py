@@ -21,7 +21,14 @@ from sklearn import preprocessing
 import scipy as sci
 
 
-# import util
+try :
+    import pandas_profiling
+
+except Exception as e :
+    print(e)
+
+
+
 print("os.getcwd", os.getcwd())
 
 
@@ -947,32 +954,16 @@ def pd_col_filter2(df_client_product, filter_val=[], iscol=1):
     return df2
 
 
-def pd_stat_na_missing_show():
+
+def pd_jupyter_profile(df):
+    """ Describe the tables
+        #Pandas-Profiling 2.0.0
+        df.profile_report()
     """
-   https://blog.modeanalytics.com/python-data-visualization-libraries/
+    import pandas_profiling
+    df.profile_report()
 
 
-   Missing Data
-
-     missingno
-import missingno as msno
-%matplotlib inline
-msno.matrix(collisions.sample(250))
-At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
-
-The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.
-
-This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
-
-
-Heatmap
-The missingno correlation heatmap lets you measure how strongly the presence of one variable positively or negatively affect the presence of another:
-msno.heatmap(collisions)
-
-
-https://github.com/ResidentMario/missingno
-
-   """
 
 
 def pd_stat_describe(df):
@@ -981,20 +972,8 @@ def pd_stat_describe(df):
 
    """
     coldes = [
-        "col",
-        "coltype",
-        "dtype",
-        "count",
-        "min",
-        "max",
-        "nb_na",
-        "pct_na",
-        "median",
-        "mean",
-        "std",
-        "25%",
-        "75%",
-        "outlier",
+        "col", "coltype", "dtype", "count", "min", "max", "nb_na", "pct_na", "median",
+        "mean", "std", "25%", "75%", "outlier",
     ]
 
     def getstat(col, type1="num"):
@@ -1083,3 +1062,56 @@ def pd_colcat_label_toint(df):
         mapping_cat_int[k] = le.get_params()
 
     return Xnew, mapping_cat_int
+
+
+
+
+
+
+
+"""
+def pd_stat_na_missing_show():
+
+   https://blog.modeanalytics.com/python-data-visualization-libraries/
+
+
+   Missing Data
+
+     missingno
+import missingno as msno
+%matplotlib inline
+msno.matrix(collisions.sample(250))
+At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
+
+The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.
+
+This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
+
+
+Heatmap
+The missingno correlation heatmap lets you measure how strongly the presence of one variable positively or negatively affect the presence of another:
+msno.heatmap(collisions)
+
+
+https://github.com/ResidentMario/missingno
+
+
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
