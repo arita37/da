@@ -1,0 +1,10 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "da"
+author = "Nono"
+author-email = "brookm291@gmail.com"
+home-page = "https://github.com/arita37"
+
