@@ -5,9 +5,6 @@ util_feature: input/output is pandas
 
 
 
-
-
-
 """
 import copy
 import os
@@ -32,11 +29,11 @@ except Exception as e :
 print("os.getcwd", os.getcwd())
 
 
+
 ####################################################################################################
 ####################################################################################################
 def pd_col_to_onehot(df, colname):
     """
-
     :param df:
     :param colname:
     :return:
