@@ -97,18 +97,18 @@ def pd_colnum_tocat2(df, colname=None, colexclude=None, suffix="_bin",
     :return:
 
     strategy : {‘uniform’, ‘quantile’, ‘kmeans’}, (default=’quantile’)
-Strategy used to define the widths of the bins.
+    Strategy used to define the widths of the bins.
 
-uniform
-All bins in each feature have identical widths.
+    uniform
+    All bins in each feature have identical widths.
 
-quantile
-All bins in each feature have the same number of points.
+    quantile
+    All bins in each feature have the same number of points.
 
-kmeans
-Values in each bin have the same nearest center of a 1D k-means cluster.
+    kmeans
+    Values in each bin have the same nearest center of a 1D k-means cluster.
 
-https://scikit-learn.org/stable/auto_examples/preprocessing/plot_discretization_classification.html#sphx-glr-auto-examples-preprocessing-plot-discretization-classification-py
+    https://scikit-learn.org/stable/auto_examples/preprocessing/plot_discretization_classification.html#sphx-glr-auto-examples-preprocessing-plot-discretization-classification-py
 
     """
     colname = colname if colname is not None else list(df.columns)
