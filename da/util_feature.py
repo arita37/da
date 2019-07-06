@@ -1068,11 +1068,10 @@ def pd_colcat_label_toint(df):
 
 '''
 def pd_stat_na_missing_show():
-    '''
-    https://blog.modeanalytics.com/python-data-visualization-libraries/
-    Missing Data
-    missingno
-    '''
+    #https://blog.modeanalytics.com/python-data-visualization-libraries/
+    #Missing Data
+    #missingno
+   
     import missingno as msno
     %matplotlib inline
     msno.matrix(collisions.sample(250))
@@ -1084,10 +1083,10 @@ def pd_stat_na_missing_show():
     msno.bar(collisions.sample(1000))
     #The missingno correlation heatmap measures nullity correlation: how strongly the presence or absence of one variable affects the presence of another
     msno.heatmap(collisions)
-    '''At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
-    The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
-    https://github.com/ResidentMario/missingno
-    '''
+    #At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
+    #The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
+    #https://github.com/ResidentMario/missingno
+    
     # dendrogram allows you to more fully correlate variable completion, revealing trends deeper than the pairwise ones visible in the correlation heatmap
     msno.dendrogram(collisions)
     #geographic distribution. 
