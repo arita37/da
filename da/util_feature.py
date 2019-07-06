@@ -1066,7 +1066,7 @@ def pd_colcat_label_toint(df):
 
 
 
-
+'''
 def pd_stat_na_missing_show():
     '''
     https://blog.modeanalytics.com/python-data-visualization-libraries/
@@ -1093,8 +1093,7 @@ def pd_stat_na_missing_show():
     #geographic distribution. 
     msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE')
     msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE', by='ZIP CODE')
-    
-
+'''
 
 
 
