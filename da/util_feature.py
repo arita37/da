@@ -1066,35 +1066,36 @@ def pd_colcat_label_toint(df):
 
 
 
-"""
+
 def pd_stat_na_missing_show():
+    '''
+    https://blog.modeanalytics.com/python-data-visualization-libraries/
+    Missing Data
+    missingno
+    '''
+    import missingno as msno
+    %matplotlib inline
+    msno.matrix(collisions.sample(250))
+    
+    null_pattern = (np.random.random(1000).reshape((50, 20)) > 0.5).astype(bool)
+    null_pattern = pd.DataFrame(null_pattern).replace({False: None})
+    msno.matrix(null_pattern.set_index(pd.period_range('1/1/2011', '2/1/2015', freq='M')) , freq='BQ')
+    #msno.bar is a simple visualization of nullity by column
+    msno.bar(collisions.sample(1000))
+    #The missingno correlation heatmap measures nullity correlation: how strongly the presence or absence of one variable affects the presence of another
+    msno.heatmap(collisions)
+    '''At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
+    The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
+    https://github.com/ResidentMario/missingno
+    '''
+    # dendrogram allows you to more fully correlate variable completion, revealing trends deeper than the pairwise ones visible in the correlation heatmap
+    msno.dendrogram(collisions)
+    #geographic distribution. 
+    msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE')
+    msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE', by='ZIP CODE')
+    
 
-   https://blog.modeanalytics.com/python-data-visualization-libraries/
 
-
-   Missing Data
-
-     missingno
-import missingno as msno
-%matplotlib inline
-msno.matrix(collisions.sample(250))
-At a glance, date, time, the distribution of injuries, and the contribution factor of the first vehicle appear to be completely populated, while geographic information seems mostly complete, but spottier.
-
-The sparkline at right summarizes the general shape of the data completeness and points out the maximum and minimum rows.
-
-This visualization will comfortably accommodate up to 50 labelled variables. Past that range labels begin to overlap or become unreadable, and by default large displays omit them.
-
-
-Heatmap
-The missingno correlation heatmap lets you measure how strongly the presence of one variable positively or negatively affect the presence of another:
-msno.heatmap(collisions)
-
-
-https://github.com/ResidentMario/missingno
-
-
-
-"""
 
 
 
