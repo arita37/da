@@ -7,15 +7,15 @@ util_model : input/output is numpy
 import os
 import copy
 from collections import OrderedDict
-
+from dateutil.parser import parse
 
 import numpy as np
 import pandas as pd
 
 import scipy as sci
 import sklearn as sk
-import statsmodels as sm
-from dateutil.parser import parse
+
+
 from sklearn import covariance, linear_model, model_selection
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
@@ -35,16 +35,18 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 
-from attrdict import AttrDict as dict2
-
-# from kmodes.kmodes import KModes
-from tabulate import tabulate
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
+
+
+# from attrdict import AttrDict as dict2
+# from kmodes.kmodes import KModes
+# from tabulate import tabulate
+
 
 try:
     from catboost import CatBoostClassifier, Pool, cv
@@ -53,9 +55,13 @@ except Exception as e:
 
 
 ####################################################################################################
-DIRCWD = os.get_cwd()
+DIRCWD = os.getcwd()
 
 ####################################################################################################
+class dict2(object):
+    def __init__(self, d):
+        self.__dict__ = d
+
 
 
 def np_transform_pca(Xmat, dimpca=2, whiten=True):
