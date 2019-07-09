@@ -10,13 +10,14 @@ import copy
 import os
 from collections import Counter
 from collections import OrderedDict
+import math
+
 
 import numpy as np
 import pandas as pd
+import scipy as sci
 import sklearn as sk
 from sklearn import preprocessing
-import scipy as sci
-
 
 try :
     import pandas_profiling
@@ -31,6 +32,11 @@ print("os.getcwd", os.getcwd())
 
 ####################################################################################################
 ####################################################################################################
+def pd_stat_statistics(df) :
+    pass
+
+
+
 def pd_col_to_onehot(df, colname):
     """
     :param df:
@@ -58,7 +64,7 @@ def pd_col_to_onehot(df, colname):
     return df
 
 
-def pd_colnum_tocat(df, colname=None, colexclude=None,  suffix="_bin", method=""):
+def pd_colnum_tocat(df, colname=None, colexclude=None, bins=5, suffix="_bin", method=""):
     """
     Preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
 
@@ -69,19 +75,57 @@ def pd_colnum_tocat(df, colname=None, colexclude=None,  suffix="_bin", method=""
     """
     colname = colname if colname is not None else list(df.columns)
     colnew  = []
-    for c in df.columns:
+    for c in colname:
+        print(c)
         if c in colexclude:
             continue
 
         df[c] = df[c].astype(np.float32)
         mi, ma = df[c].min(), df[c].max()
-        space = (ma - mi) / 5
-        bins = [mi + i * space for i in range(6)]
-        bins[0] -= 0.0000001
+        space = (ma - mi) / bins
+        bins = [mi + i * space for i in range(bins+1)]
+        bins[0] -= 0.0001
 
         labels = np.arange(0, len(bins))
         colnew.append( c + suffix )
         df[c + suffix ] = pd.cut(df[c], bins=bins, labels=labels)
+        print(c + suffix )
+    return df
+
+
+def pd_colnum_tocat_quantile(df, colname=None, colexclude=[],  bins=5,
+                             suffix="_bin", method="", include_na=True):
+    """
+    NA Handling process
+    Preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
+
+    https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
+    :param df:
+    :param method:
+    :return:
+    """
+    colname = colname if colname is not None else list(df.columns)
+    colnew  = []
+    for c in colname:
+        print(c)
+        if c in colexclude:
+            continue
+
+        df[c] = df[c].astype(np.float32)
+        # mi, ma = df[c].min(), df[c].max()
+
+        qt_list_ref = np.arange(0, 1.00001  , 1.0 / bins)
+        #print(qt_list_ref )
+            
+        qt_list = df[c].quantile(  qt_list_ref    )
+        #print(qt_list )
+        lbins = list( qt_list.values)
+        lbins[0] -= 0.0000001
+        #print("lbins", lbins)
+        labels = np.arange(0, len(lbins)-1)
+        colnew.append( c + suffix )
+        df[c + suffix ] = pd.cut(df[c], bins=lbins, labels=labels)
+        df[c + suffix ] = df[c + suffix ].astype("int")
     return df
 
 
@@ -315,7 +359,8 @@ def pd_stat_col_imbalance(df):
     return ll
 
 
-import math
+def pd_col_histogram():
+    pass
 
 
 def np_conditional_entropy(x, y):
@@ -786,13 +831,7 @@ def col_extractname(col_onehot):
 def col_remove(cols, colsremove):
     # cols = list(df1.columns)
     """
-    colsremove = [
-    'y', 'def',
-    'segment',  'flg_target', 'SP1', 'SP2', 'SP3', 'SP4', 'SP5',        
-    'score' ,   'segment2' ,
-    'scoreb', 'score_kaisob', 'segmentb', 'def_test'
-    ]
-    colsremove = colsremove + [ 'SP6',  ' score_kaiso'  ]
+      remove column name from list
     """
     for x in colsremove:
         try:
@@ -809,13 +848,7 @@ def col_remove_fuzzy(cols, colsremove):
     :param colsremove:
     :return:
 
-      colsremove = [
-         'y', 'def',
-         'segment',  'flg_target', 'SP1', 'SP2', 'SP3', 'SP4', 'SP5',        
-         'score' ,   'segment2' ,
-         'scoreb', 'score_kaisob', 'segmentb', 'def_test'
-      ]
-      colsremove = colsremove + [ 'SP6',  ' score_kaiso'  ]
+      Remove column from Fuzzy matching.
     """
     cols3 = []
     for t in cols:
@@ -956,7 +989,6 @@ def pd_jupyter_profile(df):
         #Pandas-Profiling 2.0.0
         df.profile_report()
     """
-    import pandas_profiling
     df.profile_report()
 
 
