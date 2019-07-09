@@ -101,7 +101,7 @@ def xl_get_rowcol(ws, i0, j0, imax, jmax):
         rmat.append(rmatj)
     return rmat
 
-
+'''
 def xl_getschema(dirxl="", filepattern="*.xlsx", dirlevel=1, outfile=".xlsx"):
     """Take All excel in a folder and provide Table, Column Schema, type into master file
  """
@@ -188,7 +188,7 @@ def xl_getschema(dirxl="", filepattern="*.xlsx", dirlevel=1, outfile=".xlsx"):
 
     if df0 is not None:
         util.pd_toexcel(df0, outfile=outfile, sheet_name="schema", returnfile=1)
-
+'''
 
 ############## csv processing #######################################################################
 
