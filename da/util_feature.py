@@ -1190,7 +1190,7 @@ def pd_coltext_extract_tag(df, col_new, col_rawtext):
 
 from collections import Counter
 
-def pd_coltext__word_frequency(df, coltext, nb_to_show=20):
+def pd_coltext_word_frequency(df, coltext, nb_to_show=20):
     results = Counter()
     for col in coltext:
         df[col].str.strip('{}') \
