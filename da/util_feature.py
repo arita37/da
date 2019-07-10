@@ -1161,7 +1161,8 @@ def pd_col_fill_na(df, col_list, value):
             pass
         else:
             print(f'there were {nb_nans} empty values in {col}')
-            df[col].fillna(value, inplace=True)
+            df = df
+            df[col].fillna(value)
             nb_nans = df[col].isna().sum()
     
         print(f'there are {nb_nans} empty values in {col}')
@@ -1194,8 +1195,9 @@ def pd_row_drop_above_thresh(df, col, thresh):
     Returns:
         df:     dataframe with outliers removed
     '''
-     
-    df.drop(df[ (df[col] > thresh )].index, axis=0, inplace=True)
+    
+    df = df
+    df.drop(df[ (df[col] > thresh )].index, axis=0)
     return df
 
 
