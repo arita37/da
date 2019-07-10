@@ -1,19 +1,156 @@
-
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan 26 17:29:50 2017
-"""
+import datetime
+datetime.datetime.strptime('20-Nov-2002','%d-%b-%Y').strftime('%Y%m%d')
+'20021120'
+Formats -
 
-############################################################################################
-fm t ='YYYY-MM-DD'
+%d - 2 digit date
+%b - 3-letter month abbreviation
+%Y - 4 digit year
+%m - 2 digit month
+%a
+
+
+df = DataFrame(dict(date = date_range('20130101',periods=10)))
+
+
+
+"""
+from datetime import datetime
+import numpy as np
+import scipy as sci
+import pandas as pd
+
+
+
+
+
+def datestring_todatetime(datelist, fmt="%Y%m%d%H%M%S" ) :
+    """
+      'Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p'
+
+    :param datelist:
+    :param fmt:
+    :return:
+    """
+    if isinstance(datelist, list):
+        return [datetime.strptime(x, fmt) for x in datelist]
+    else :
+         return datetime.strptime(datelist, fmt)
+
+
+
+def datetime_tostring(datelist, fmt="%Y%m%d%H%M%S" ) :
+  """
+  https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
+  :param x:
+  :param fmt:
+  :return:
+  """
+  if isinstance(datelist, list):
+    ll  = [datetime.strftime(x, fmt) for x in datelist ]
+    return ll
+  else:
+    return datetime.strftime(datelist, fmt)
+
+
+
+
+def datetime_tointhour(datelist):
+    if not isinstance(datelist, list):
+        x = datelist
+        y = x.year * 10000 * 10000 * 100 + x.month * 10000 * 10000 \
+        + x.day * 100 * 10000 \
+        + x.hour * 10000 \
+        + x.minute * 100 + x.second
+        return y
+    yy2 = []
+    for x in datelist:
+        yy2.append(
+            x.year * 10000 * 10000 * 100 \
+            + x.month * 10000 * 10000 \
+            + x.day * 100 * 10000 \
+            + x.hour * 10000 \
+            + x.minute * 100 \
+            + x.second
+        )
+    return np.array(yy2)
+
+
+
+def datetime_toint(datelist):
+    if not isinstance(datelist, list):
+        x = datelist
+        return  x.year * 10000 + x.month * 100 + x.day
+    yy2 = []
+    for x in datelist:
+        yy2.append(
+            x.year * 10000 + x.month * 100 + x.day
+        )
+    return np.array(yy2)
+
+
+
+def datetime_to_milisec(datelist ):
+    if not isinstance(datelist, list):
+       return  (datelist - datetime(1970, 1, 1)).total_seconds()
+    else :
+       ll = [  (t - datetime.datetime(1970, 1, 1)).total_seconds() for t in datelist ]
+       return ll
+
+
+def datetime_weekday(datelist) :
+    if not isinstance(datelist, list):
+      return int( datelist.strftime("%w"))
+    else :
+      return [ int( x.strftime("%w")) for x in datelist ]
+
+
+dd_weekday={}
+def datetime_weekday_fast(dateval) :
+    """
+      date values
+    :param dateval:
+    :return:
+    """
+    try :
+        return dd_weekday[dateval]
+    except :
+        d = datetime_weekday(dateval)
+        dd_weekday[dateval] = d
+        return d
+
+
+
+
+def datenumpy_todatetime(tt, islocaltime=True):
+    #  http://stackoverflow.com/questions/29753060/how-to-convert-numpy-datetime64-into-datetime
+    if type(tt) == np.datetime64:
+        if islocaltime:
+            return datetime.fromtimestamp(tt.astype("O") / 1e9)
+        else:
+            return datetime.utcfromtimestamp(tt.astype("O") / 1e9)
+    elif type(tt[0]) == np.datetime64:
+        if islocaltime:
+            v = [datetime.fromtimestamp(t.astype("O") / 1e9) for t in tt]
+        else:
+            v = [datetime.utcfromtimestamp(t.astype("O") / 1e9) for t in tt]
+        return v
+    else:
+        return tt  # datetime case
+
+
+def datetime_tonumpypdate(t, islocaltime=True):
+    #  http://stackoverflow.com/questions/29753060/how-to-convert-numpy-datetime64-into-datetime
+    return np.datetime64(t)
+
+
+"""
 def date_diffsecond(str_t1, str_t0, fmt='YYYY-MM-DD HH:mm:SS') :
     d d= arrow.get(str_t1, fmt) - arrow.get(str_t0, fmt)
     return dd.total_seconds()
-
-
-def date_diffstart(t) : return date_diffsecond(str_t1=t, str_t0=t0)
-def date_diffend(t) :   return date_diffsecond(str_t1=t1, str_t0=t)
-
+"""
 
 def np_dict_tolist(dd) :
     return [ val  for _, val in list(dd.items()) ]
@@ -25,39 +162,31 @@ def np_dict_tostr_key(dd) :
     return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
 
 
-###################Faster one   ############################################################
-# 'YYYY-MM-DD    HH:mm:ss'
-# "0123456789_10_11
-import arrow, copy
-"""
-def day(s):    return int(s[8:10])
-def month(s):  return int(s[5:7])
-def year(s):   return int(s[0:4])
-def hour(s):   return int(s[11:13])
-"""
 
 
-cache_weekda y= {}
-def weekday(s, fmt='YYYY-MM-DD', i0=0, i1=10):
+"""
+cache_weekday= {}
+def weekday(datelist, fmt='YYYY-MM-DD', i0=0, i1=10):
     ###Super Fast because of caching
-    s 2= s[i0:i1]
+    w = datelist
     try :
         return  cache_weekday[s2]
     except KeyError:
         w d= arrow.get(s2, fmt).weekday()
         cache_weekday[s2 ]= wd
     return wd
+"""
 
 
-
-def season(d): m=  int( d[5:7])
+def season(datelist):
+    m=  int( d[5:7])
     if m > 3 and m  < 10:
         return 1
     else:
         return 0
 
 
-def daytime(d):
+def daytime(datelist):
     h= int(d[11:13])
     if   h < 11 :
         return 0
@@ -71,30 +200,196 @@ def daytime(d):
         return 4  # Night
 
 
-def pd_date_splitall(df, coldate='purchased_at') :
-    df= copy.deepcopy(df)
-    df['year']= df[coldate].apply(year)
-    df['month']= df[coldate].apply(month)
-    df['day']= df[coldate].apply(day)
-    df['weekday']= df[coldate].apply(weekday)
-    df['daytime']= df[coldate].apply(daytime)
-    df['season']= df[coldate].apply(season)
-    return df
-
-
-def date_tosecond(dd,  format1="YYYYMMDDHHmm", unit="second") :
- try :
-   t= arrow.get(str(dd), "YYYYMMDDHHmmss")
-   return t.timestamp
- except :
-    try :
-       t= arrow.get(str(dd), "YYYYMMDDHHmm")
-       return t.timestamp
-    except :
-       return -1
-
-df['datesec']= df['datetime'].apply(  date_tosecond  )
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+"""
+>>> import datetime
+>>> datetime.datetime.strptime('20-Nov-2002','%d-%b-%Y').strftime('%Y%m%d')
+'20021120'
+Formats -
+
+%d - 2 digit date
+%b - 3-letter month abbreviation
+%Y - 4 digit year
+%m - 2 digit month
+%a
+
+Weekday as locale’s abbreviated name.
+Sun, Mon, …, Sat (en_US);
+So, Mo, …, Sa (de_DE)
+(1)
+
+
+%A
+Weekday as locale’s full name.
+Sunday, Monday, …, Saturday (en_US);
+Sonntag, Montag, …, Samstag (de_DE)
+(1)
+
+%w
+Weekday as a decimal number, where 0 is Sunday and 6 is Saturday.
+0, 1, …, 6
+
+%d
+Day of the month as a zero-padded decimal number.
+01, 02, …, 31
+(9)
+
+%b
+Month as locale’s abbreviated name.
+Jan, Feb, …, Dec (en_US);
+Jan, Feb, …, Dez (de_DE)
+(1)
+
+%B
+Month as locale’s full name.
+January, February, …, December (en_US);
+Januar, Februar, …, Dezember (de_DE)
+(1)
+
+%m
+Month as a zero-padded decimal number.
+01, 02, …, 12
+
+(9)
+%y
+Year without century as a zero-padded decimal number.
+00, 01, …, 99
+
+(9)
+%Y
+Year with century as a decimal number.
+0001, 0002, …, 2013, 2014, …, 9998, 9999
+
+(2)
+
+%H
+
+Hour (24-hour clock) as a zero-padded decimal number.
+
+00, 01, …, 23
+
+(9)
+
+%I
+
+Hour (12-hour clock) as a zero-padded decimal number.
+
+01, 02, …, 12
+
+(9)
+
+%p
+
+Locale’s equivalent of either AM or PM.
+
+AM, PM (en_US);
+am, pm (de_DE)
+(1), (3)
+
+%M
+
+Minute as a zero-padded decimal number.
+
+00, 01, …, 59
+
+(9)
+
+%S
+
+Second as a zero-padded decimal number.
+
+00, 01, …, 59
+
+(4), (9)
+
+%f
+
+Microsecond as a decimal number, zero-padded on the left.
+
+000000, 000001, …, 999999
+
+(5)
+
+%z
+
+UTC offset in the form ±HHMM[SS[.ffffff]] (empty string if the object is naive).
+
+(empty), +0000, -0400, +1030, +063415, -030712.345216
+
+(6)
+
+%Z
+
+Time zone name (empty string if the object is naive).
+
+(empty), UTC, EST, CST
+
+%j
+
+Day of the year as a zero-padded decimal number.
+
+001, 002, …, 366
+
+(9)
+
+%U
+
+Week number of the year (Sunday as the first day of the week) as a zero padded decimal number. All days in a new year preceding the first Sunday are considered to be in week 0.
+
+00, 01, …, 53
+
+(7), (9)
+
+%W
+
+Week number of the year (Monday as the first day of the week) as a decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
+
+00, 01, …, 53
+
+(7), (9)
+
+%c
+
+Locale’s appropriate date and time representation.
+
+Tue Aug 16 21:30:00 1988 (en_US);
+Di 16 Aug 21:30:00 1988 (de_DE)
+(1)
+
+%x
+
+Locale’s appropriate date representation.
+
+08/16/88 (None);
+08/16/1988 (en_US);
+16.08.1988 (de_DE)
+(1)
+
+%X
+
+Locale’s appropriate time representation.
+
+21:30:00 (en_US);
+21:30:00 (de_DE)
+(1)
+
+%%
+
+A literal '%' character.
+
+%
+
+"""
