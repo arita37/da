@@ -1114,7 +1114,7 @@ def pd_dflist_shape(list_df):
     
 
 
-def pd_col_remove_text(df, col_list, txt_to_remove):
+def pd_coltext_remove_text(df, col_list, txt_to_remove):
     '''
     Function to remove some text from a list of columns
     Arguments:
