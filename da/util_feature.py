@@ -1113,20 +1113,6 @@ def pd_dflist_shape(list_df):
         nb+=1 
    
     
-    
-def pd_col_keep(df, col_list, set_index_col):
-    '''
-    Function to make a smaller dataframe with only the columns given
-    Arguments:
-        df:            dataframe
-        col_list:      list of columns we want to keep
-        set_index_col: column set as index
-    Returns:
-        new_df:        dataframe only containing the given columns
-    '''
-    new_df = df[col_list].set_index(set_index_col)
-    return new_df
-
 
 
 def pd_col_remove_text(df, col_list, txt_to_remove):
@@ -1201,21 +1187,44 @@ def pd_row_drop_above_thresh(df, col, thresh):
     return df
 
 
-def pd_col_add_col_from_comment(df, col_add, col_comment):
+def pd_coltext_extract_tag(df, col_new, col_rawtext):
     '''
     Function that one hot encodes a feature from a comment column
     Arguments:
         df:           dataframe
-        col_add:      column to create
-        col_comment:  column where the comments are
+        col_new:      column to create
+        col_rawtext:  column where the comments are
     Returns:
-        df:           dataframe with new one hot encoded column
+        df:           dataframe with new column
     '''
-    df[col_add] = df[col_comment].str.contains(col_add)
+    df[col_new] = df[col_rawtext].str.contains(col_new)
     
     #One hot encode that feature:
-    df = pd_col_to_onehot(df, [col_add])
+    # df = pd_col_to_onehot(df, [col_new])
     return df
+
+
+from collections import Counter
+
+def pd_coltext__word_frequency(df, coltext, nb_to_show=20):
+    results = Counter()
+    for col in coltext:
+        df[col].str.strip('{}') \
+            .str.replace('"', '') \
+            .str.lstrip('\"') \
+            .str.rstrip('\"') \
+            .str.split(',') \
+            .apply(results.update)
+
+    ll = {"text": [], "freq": []}
+    for amenity in results.most_common(nb_to_show):
+        ll["text"].append[amenity[0]]
+        ll["freq"].append[amenity[0]]
+    ll = pd.DataFrame(ll)
+    return ll
+
+
+
 
 '''
 def pd_stat_na_missing_show():

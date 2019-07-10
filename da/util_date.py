@@ -107,7 +107,7 @@ def datetime_weekday(datelist) :
       return [ int( x.strftime("%w")) for x in datelist ]
 
 
-dd_weekday={}
+dd_weekday_cache={}
 def datetime_weekday_fast(dateval) :
     """
       date values
@@ -115,13 +115,30 @@ def datetime_weekday_fast(dateval) :
     :return:
     """
     try :
-        return dd_weekday[dateval]
+        return dd_weekday_cache[dateval]
     except :
         d = datetime_weekday(dateval)
-        dd_weekday[dateval] = d
+        dd_weekday_cache[dateval] = d
         return d
 
 
+def datetime_quarter(datetimex):
+    m=  datetimex.month
+    return int(m // 3) + 1
+
+
+def dateime_daytime(datetimex):
+    h =  datetimex.hour
+    if   h < 11 :
+        return 0
+    elif h < 14 :
+        return 1  # lunch
+    elif h < 18 :
+        return 2  # Afternoon
+    elif h < 21 :
+        return 3  # Dinner
+    else :
+        return 4  # Night
 
 
 def datenumpy_todatetime(tt, islocaltime=True):
@@ -164,40 +181,9 @@ def np_dict_tostr_key(dd) :
 
 
 
-"""
-cache_weekday= {}
-def weekday(datelist, fmt='YYYY-MM-DD', i0=0, i1=10):
-    ###Super Fast because of caching
-    w = datelist
-    try :
-        return  cache_weekday[s2]
-    except KeyError:
-        w d= arrow.get(s2, fmt).weekday()
-        cache_weekday[s2 ]= wd
-    return wd
-"""
 
 
-def season(datelist):
-    m=  int( d[5:7])
-    if m > 3 and m  < 10:
-        return 1
-    else:
-        return 0
 
-
-def daytime(datelist):
-    h= int(d[11:13])
-    if   h < 11 :
-        return 0
-    elif h < 14 :
-        return 1  # lunch
-    elif h < 18 :
-        return 2  # Afternoon
-    elif h < 21 :
-        return 3  # Dinner
-    else :
-        return 4  # Night
 
 
 

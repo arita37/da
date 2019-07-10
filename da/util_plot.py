@@ -520,21 +520,7 @@ def plot_col_correl_target(df, cols, coltarget, nb_to_show=10, ascending=False):
         state = 'Least'
     print(f'{state} correlated features to {str(coltarget)} are: \n{corr_target}')
 
-    
-def plot_col_frequency_text_appears(df, col_comment, nb_to_show=20):
-    results = Counter()
-    for col in col_comment:
-        df[col].str.strip('{}')\
-               .str.replace('"', '')\
-               .str.lstrip('\"')\
-               .str.rstrip('\"')\
-               .str.split(',')\
-               .apply(results.update)
 
-    for amenity in results.most_common(nb_to_show):
-        print(amenity)
-        
-        
         
 
 """
