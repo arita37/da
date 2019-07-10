@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import scipy as sci
 import sklearn as sk
+from collections import Counter
 
 import itertools
 
@@ -469,9 +470,72 @@ def plot_XY_seaborn(X, Y, Zcolor=None):
 
 
 
+############## Added functions
+######################################
 
+def plot_cols_with_NaNs(df, nb_to_show):
+    '''
+    Function to plot highest missing value columns
+    Arguments:
+        df:         dataframe
+        nb_to_show: number of columns to show
+    Prints:
+        nb_to_show columns with most missing values
+    '''
+    print(f'Out of {df.shape[0]} columns, the columns with most missing values are :\n{df.isna().sum().sort_values(ascending=False)[:nb_to_show]}')
 
+    
+def plot_col_correl_matrix(df, cols, annot=True, size=30):
+    '''
+    Function to plot correlation matrix
+    Arguments:
+        df:    dataframe
+        cols:  columns to correlate
+        annot: annotate or not (default = True)
+        size:  size of correlation matrix (default = 30)
+    Prints:
+        correlation matrix of columns to each other
+    '''
+    sns.heatmap(df[cols].corr(),cmap='coolwarm',annot=annot).set_title('Correlation Matrix', size=size)
 
+    
+    
+def plot_col_correl_target(df, cols, coltarget, nb_to_show=10, ascending=False):
+    '''
+    Function to plot correlated columns to target
+    Arguments:
+        df:          dataframe
+        cols:        columns to correlate to target
+        coltarget:   target column
+        nb_to_show:  number of columns to show. Default = 10
+        ascending:   show most correlated (False) or least correlated (True). Default=False
+    Prints:
+        correlation columns to target
+    '''
+    correlation = df[cols].corr()
+    corr_target = correlation[coltarget].sort_values(by=coltarget, ascending=ascending)[:nb_to_show]
+    if ascending==False:
+        state = 'Most'
+    else:
+        state = 'Least'
+    print(f'{state} correlated features to {str(coltarget)} are: \n{corr_target}')
+
+    
+def plot_col_frequency_text_appears(df, col_comment, nb_to_show=20):
+    results = Counter()
+    for col in col_comment:
+        df[col].str.strip('{}')\
+               .str.replace('"', '')\
+               .str.lstrip('\"')\
+               .str.rstrip('\"')\
+               .str.split(',')\
+               .apply(results.update)
+
+    for amenity in results.most_common(nb_to_show):
+        print(amenity)
+        
+        
+        
 
 """
 def plot_cluster_embedding(Xmat, title=None):
