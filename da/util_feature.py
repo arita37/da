@@ -1152,7 +1152,6 @@ def pd_col_fill_na(df, colname, value):
     return df
 
 
-
 def pd_row_drop_above_thresh(df, col, thresh):
     '''
     Function to remove outliers above a certain threshold
@@ -1225,6 +1224,35 @@ def pd_coltext_tfidf(df, coltext, word_tokeep):
     df_new = pd.concat([df, df_vector],axis=1)
     
     return df_new
+
+
+def pd_coltext_hashing(df, coltext, word_tokeep, n_features=20):
+    '''
+    Function that adds tf-idf of a given column for words in a text corpus.
+    Arguments:
+        df:             original dataframe
+        word_tokeep: corpus of words to look into
+        col_tofilter:   column of df to apply tf-idf to
+    Returns:
+        concat_df:      dataframe with a new column for each word
+    '''
+    from sklearn.feature_extraction.text import HashingVectorizer
+    # create the transform
+    vectorizer = HashingVectorizer(n_features=n_features)
+    # encode document
+    vector = vectorizer.transform(df[coltext])
+    # summarize encoded vector
+    print(vector.shape)
+    print(vector.toarray())
+
+    df_vector = pd.DataFrame(vector.toarray(), columns=word_tokeep)
+    df_new = pd.concat([df, df_vector], axis=1)
+
+    return df_new
+
+
+
+
 
 
 '''
