@@ -18,6 +18,7 @@ import pandas as pd
 import scipy as sci
 import sklearn as sk
 from sklearn import preprocessing
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 try :
     import pandas_profiling
@@ -1109,9 +1110,7 @@ def pd_dflist_shape(list_df):
     nb=1    
     for df in list_df :
         print(f'shape of dataframe {nb} is: {df.shape}')  
-        nb+=1 
-   
-    
+        nb+=1
 
 
 def pd_coltext_remove_text(df, col_list, txt_to_remove):
@@ -1187,7 +1186,6 @@ def pd_coltext_extract_tag(df, col_new, col_rawtext):
     # df = pd_col_to_onehot(df, [col_new])
     return df
 
-
 from collections import Counter
 
 def pd_coltext_word_frequency(df, coltext, nb_to_show=20):
@@ -1202,12 +1200,31 @@ def pd_coltext_word_frequency(df, coltext, nb_to_show=20):
 
     ll = {"text": [], "freq": []}
     for amenity in results.most_common(nb_to_show):
-        ll["text"].append[amenity[0]]
-        ll["freq"].append[amenity[0]]
+        ll["text"].append(amenity[0])
+        ll["freq"].append(amenity[1])
     ll = pd.DataFrame(ll)
     return ll
 
-
+def pd_coltext_tfidf(df, words_tofilter, col_tofilter):
+    '''
+    Function that adds tf-idf of a given column for words in a text corpus.
+    Arguments:
+        df:             original dataframe
+        words_tofilter: corpus of words to look into
+        col_tofilter:   column of df to apply tf-idf to
+    Returns:
+        concat_df:      dataframe with a new column for each word
+    '''
+    df = df[df[col_tofilter].isna()==False]
+    vectorizer = TfidfVectorizer()
+    vectorizer.fit(words_tofilter)
+    vector = vectorizer.transform(df[col_tofilter])
+    print(vector.toarray().shape)
+    
+    df_vector = pd.DataFrame(vector.toarray(), columns=words_tofilter)
+    concat_df = pd.concat([df, df_vector],axis=1)
+    
+    return concat_df
 
 
 '''
