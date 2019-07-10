@@ -1113,41 +1113,40 @@ def pd_dflist_shape(list_df):
         nb+=1
 
 
-def pd_coltext_remove_text(df, col_list, txt_to_remove):
+def pd_coltext_remove_text(df, colname, txt_to_remove):
     '''
     Function to remove some text from a list of columns
     Arguments:
         df:            dataframe
-        col_list:      list of columns to remove text
+        colname:      list of columns to remove text
         txt_to_remove: text to remove
     Returns:
         df:            new dataframe with text removed
     '''
-    for col in col_list:
-        df[col] = df[col].str.replace(txt_to_remove, '').str.replace(',','').astype(float)
+    for col in colname:
+        df[col] = df[col].str.replace(txt_to_remove, '')
     return df
 
 
-def pd_col_fill_na(df, col_list, value):
+def pd_col_fill_na(df, colname, value):
     '''
     Function to fill NaNs with a specific value in certain columns
     Arguments:
         df:            dataframe
-        col_list:      list of columns to remove text
+        colname:      list of columns to remove text
         value:         value to replace NaNs with
     Returns:
         df:            new dataframe with filled values
     '''
     
-    for col in col_list:
+    for col in colname:
         nb_nans = df[col].isna().sum()
         if nb_nans == 0:
             pass
         else:
             print(f'there were {nb_nans} empty values in {col}')
-            df = df
-            df[col].fillna(value)
-            nb_nans = df[col].isna().sum()
+            df = df[col].fillna(value)
+            nb_nans = df[col].isnull().sum()
     
         print(f'there are {nb_nans} empty values in {col}')
     return df
@@ -1164,27 +1163,27 @@ def pd_row_drop_above_thresh(df, col, thresh):
     Returns:
         df:     dataframe with outliers removed
     '''
-    
-    df = df
-    df.drop(df[ (df[col] > thresh )].index, axis=0)
+
+    df = df.drop(df[ (df[col] > thresh )].index, axis=0)
     return df
 
 
-def pd_coltext_extract_tag(df, col_new, col_rawtext):
+def pd_coltext_extract_tag(df, col_new, coltext):
     '''
     Function that one hot encodes a feature from a comment column
     Arguments:
         df:           dataframe
         col_new:      column to create
-        col_rawtext:  column where the comments are
+        coltext:  column where the comments are
     Returns:
         df:           dataframe with new column
     '''
-    df[col_new] = df[col_rawtext].str.contains(col_new)
+    df[col_new] = df[coltext].str.contains(col_new)
     
     #One hot encode that feature:
     # df = pd_col_to_onehot(df, [col_new])
     return df
+
 
 from collections import Counter
 
@@ -1205,26 +1204,27 @@ def pd_coltext_word_frequency(df, coltext, nb_to_show=20):
     ll = pd.DataFrame(ll)
     return ll
 
-def pd_coltext_tfidf(df, words_tofilter, col_tofilter):
+
+def pd_coltext_tfidf(df, coltext, word_tokeep):
     '''
     Function that adds tf-idf of a given column for words in a text corpus.
     Arguments:
         df:             original dataframe
-        words_tofilter: corpus of words to look into
+        word_tokeep: corpus of words to look into
         col_tofilter:   column of df to apply tf-idf to
     Returns:
         concat_df:      dataframe with a new column for each word
     '''
-    df = df[df[col_tofilter].isna()==False]
+    # df = df[df[col_tofilter].isna()==False]
     vectorizer = TfidfVectorizer()
-    vectorizer.fit(words_tofilter)
-    vector = vectorizer.transform(df[col_tofilter])
-    print(vector.toarray().shape)
+    vectorizer.fit(word_tokeep)
+    vector = vectorizer.transform(df[coltext])
+    print(word_tokeep, vector.toarray().shape)
     
-    df_vector = pd.DataFrame(vector.toarray(), columns=words_tofilter)
-    concat_df = pd.concat([df, df_vector],axis=1)
+    df_vector = pd.DataFrame(vector.toarray(), columns=word_tokeep)
+    df_new = pd.concat([df, df_vector],axis=1)
     
-    return concat_df
+    return df_new
 
 
 '''
