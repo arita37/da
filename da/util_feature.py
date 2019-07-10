@@ -11,6 +11,7 @@ import os
 from collections import Counter
 from collections import OrderedDict
 import math
+from geopy.distance import great_circle
 
 
 import numpy as np
@@ -32,62 +33,8 @@ print("os.getcwd", os.getcwd())
 
 ####################################################################################################
 ####################################################################################################
-def pd_dflist_shape(df_list):
-    """
-        return shape and type   to be included into util_feature
-    :param df_list:
-    :return:
-    """
-    if type(df_list) is not list:
-        df_list = [df_list]
-
-    dd = {}
-    for df in df_list:
-        name = [x for x in globals() if globals()[x] is df][0]
-        dd[name] = (df.shape, df.dtypes)
-
-    return dd
-    # print(f'shape of {name} is: {df.shape}')
-
-
-
-
-def pd_col_findtype(df) :
-  """
-  :param df:
-  :return:
-  """
-  n = len(df) + 0.0
-  colcat , colnum, coldate, colother = [], [], [], []
-  for x in df.columns :
-      nunique = len( df[x].unique())
-      ntype = str(df[x].dtype)
-      r =  nunique /n
-      print(r, nunique, ntype )
-
-      if r > 0.90 :
-          colother.append(x)
-
-
-      elif nunique < 3 :
-          colcat.append(x)
-
-      elif ntype == "o" and nunique < 100 :
-          colcat.append(x)
-
-      elif nunique > 50 and ( "float" in ntype or  "int" in ntype ):
-          colnum.append(x)
-
-      else :
-          colother.append(x)
-
-  return colcat , colnum, coldate, colother
-
-
-
-# pd_col_findtype(df)
-
-
+def pd_stat_statistics(df) :
+    pass
 
 
 
@@ -374,8 +321,7 @@ def pd_stat_na_perow(df, n=10 ** 6):
     return dfna_user
 
 
-
-def pd_stat_col(df):
+def pd_stat_col_imbalance(df):
     """
     :param df:
     :return:
@@ -384,7 +330,7 @@ def pd_stat_col(df):
         x: []
         for x in [
             "col", "xmin_freq", "nunique", "xmax_freq", "xmax", "xmin", "n", "n_na",
-            "n_notna", "coltype"]
+            "n_notna",]
     }
 
     nn = len(df)
@@ -403,12 +349,8 @@ def pd_stat_col(df):
             ll["n_na"].append(nn - n_notna)
             ll["n"].append(nn)
 
-            nunique = df[x].nunique()
-            ll["nunique"].append( nunique )
+            ll["nunique"].append(df[x].nunique())
             ll["col"].append(x)
-
-            ll["coltype"] = "cat" if nunique < 100 else "num"
-
         except:
             pass
 
@@ -416,7 +358,6 @@ def pd_stat_col(df):
     ll["xmin_ratio"] = ll["xmin_freq"] / nn
     ll["xmax_ratio"] = ll["xmax_freq"] / nn
     return ll
-
 
 
 def pd_col_histogram():
@@ -790,6 +731,21 @@ def col_extractname_colbin(cols2):
     return coln
 
 
+def pd_stat_col(df):
+    """
+    :param df:
+    :return :
+    """
+    ll = {"col": [], "nunique": []}
+    for x in df.columns:
+        ll["col"].append(x)
+        ll["nunique"].append(df[x].nunique())
+    ll = pd.DataFrame(ll)
+    n = len(df) + 0.0
+    ll["ratio"] = ll["nunique"] / n
+    ll["coltype"] = ll["nunique"].apply(lambda x: "cat" if x < 100 else "num")
+
+    return ll
 
 
 def pd_col_intersection(df1, df2, colid):
@@ -1137,10 +1093,127 @@ def pd_colcat_label_toint(df):
     return Xnew, mapping_cat_int
 
 
+########################## Added functions 
+###########################################
+
+def pd_dflist_shape(list_df):
+    '''
+    Function that returns the shape of all the dataframes in a list
+    Arguments:
+        df_list:  list of dataframe
+    Prints:
+        shape of the dataframes in order they appear in list:
+    '''
+    if type(list_df) is not list :
+        list_df = [ list_df ]
+
+    nb=1    
+    for df in list_df :
+        print(f'shape of dataframe {nb} is: {df.shape}')  
+        nb+=1 
+   
+    
+    
+def pd_col_keep(df, col_list, set_index_col):
+    '''
+    Function to make a smaller dataframe with only the columns given
+    Arguments:
+        df:            dataframe
+        col_list:      list of columns we want to keep
+        set_index_col: column set as index
+    Returns:
+        new_df:        dataframe only containing the given columns
+    '''
+    new_df = df[col_list].set_index(set_index_col)
+    return new_df
 
 
 
+def pd_col_remove_text(df, col_list, txt_to_remove):
+    '''
+    Function to remove some text from a list of columns
+    Arguments:
+        df:            dataframe
+        col_list:      list of columns to remove text
+        txt_to_remove: text to remove
+    Returns:
+        df:            new dataframe with text removed
+    '''
+    for col in col_list:
+        df[col] = df[col].str.replace(txt_to_remove, '').str.replace(',','').astype(float)
+    return df
 
+
+def pd_col_fill_na(df, col_list, value):
+    '''
+    Function to fill NaNs with a specific value in certain columns
+    Arguments:
+        df:            dataframe
+        col_list:      list of columns to remove text
+        value:         value to replace NaNs with
+    Returns:
+        df:            new dataframe with filled values
+    '''
+    
+    for col in col_list:
+        nb_nans = df[col].isna().sum()
+        if nb_nans == 0:
+            pass
+        else:
+            print(f'there were {nb_nans} empty values in {col}')
+            df[col].fillna(value, inplace=True)
+            nb_nans = df[col].isna().sum()
+    
+        print(f'there are {nb_nans} empty values in {col}')
+    return df
+
+
+def pd_col_add_distance_to_point(df, center_point):
+    '''
+    Function adding a column with distance to a point
+    Arguments:
+        df:            dataframe (requires latitude / longitude)
+        center_point:  tuple with lat / long of point
+    Returns:
+        df:            dataframe with new column ['distance'] (in km)
+    '''
+    if 'latitude' and 'longitude' not in df.columns:
+        print('There are no lat / long data in the dataframe')
+    else:    
+        df['distance']=df.apply(lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1)
+    return df
+
+
+def pd_row_drop_above_thresh(df, col, thresh):
+    '''
+    Function to remove outliers above a certain threshold
+    Arguments:
+        df:     dataframe
+        col:    col from which to remove outliers
+        thresh: value above which to remove row
+    Returns:
+        df:     dataframe with outliers removed
+    '''
+     
+    df.drop(df[ (df[col] > thresh )].index, axis=0, inplace=True)
+    return df
+
+
+def pd_col_add_col_from_comment(df, col_add, col_comment):
+    '''
+    Function that one hot encodes a feature from a comment column
+    Arguments:
+        df:           dataframe
+        col_add:      column to create
+        col_comment:  column where the comments are
+    Returns:
+        df:           dataframe with new one hot encoded column
+    '''
+    df[col_add] = df[col_comment].str.contains(col_add)
+    
+    #One hot encode that feature:
+    df = pd_col_to_onehot(df, [col_add])
+    return df
 
 '''
 def pd_stat_na_missing_show():
