@@ -11,7 +11,6 @@ import os
 from collections import Counter
 from collections import OrderedDict
 import math
-from geopy.distance import great_circle
 
 
 import numpy as np
@@ -1168,21 +1167,6 @@ def pd_col_fill_na(df, col_list, value):
         print(f'there are {nb_nans} empty values in {col}')
     return df
 
-
-def pd_col_add_distance_to_point(df, center_point):
-    '''
-    Function adding a column with distance to a point
-    Arguments:
-        df:            dataframe (requires latitude / longitude)
-        center_point:  tuple with lat / long of point
-    Returns:
-        df:            dataframe with new column ['distance'] (in km)
-    '''
-    if 'latitude' and 'longitude' not in df.columns:
-        print('There are no lat / long data in the dataframe')
-    else:    
-        df['distance']=df.apply(lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1)
-    return df
 
 
 def pd_row_drop_above_thresh(df, col, thresh):
