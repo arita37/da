@@ -32,6 +32,26 @@ print("os.getcwd", os.getcwd())
 
 ####################################################################################################
 ####################################################################################################
+def pd_dflist_shape(df_list):
+    """
+        return shape and type   to be included into util_feature
+    :param df_list:
+    :return:
+    """
+    if type(df_list) is not list:
+        df_list = [df_list]
+
+    dd = {}
+    for df in df_list:
+        name = [x for x in globals() if globals()[x] is df][0]
+        dd[name] = (df.shape, df.dtypes)
+
+    return dd
+    # print(f'shape of {name} is: {df.shape}')
+
+
+
+
 def pd_col_findtype(df) :
   """
   :param df:
@@ -354,7 +374,8 @@ def pd_stat_na_perow(df, n=10 ** 6):
     return dfna_user
 
 
-def pd_stat_col_imbalance(df):
+
+def pd_stat_col(df):
     """
     :param df:
     :return:
@@ -363,7 +384,7 @@ def pd_stat_col_imbalance(df):
         x: []
         for x in [
             "col", "xmin_freq", "nunique", "xmax_freq", "xmax", "xmin", "n", "n_na",
-            "n_notna",]
+            "n_notna", "coltype"]
     }
 
     nn = len(df)
@@ -382,8 +403,12 @@ def pd_stat_col_imbalance(df):
             ll["n_na"].append(nn - n_notna)
             ll["n"].append(nn)
 
-            ll["nunique"].append(df[x].nunique())
+            nunique = df[x].nunique()
+            ll["nunique"].append( nunique )
             ll["col"].append(x)
+
+            ll["coltype"] = "cat" if nunique < 100 else "num"
+
         except:
             pass
 
@@ -391,6 +416,7 @@ def pd_stat_col_imbalance(df):
     ll["xmin_ratio"] = ll["xmin_freq"] / nn
     ll["xmax_ratio"] = ll["xmax_freq"] / nn
     return ll
+
 
 
 def pd_col_histogram():
@@ -764,21 +790,6 @@ def col_extractname_colbin(cols2):
     return coln
 
 
-def pd_stat_col(df):
-    """
-    :param df:
-    :return :
-    """
-    ll = {"col": [], "nunique": []}
-    for x in df.columns:
-        ll["col"].append(x)
-        ll["nunique"].append(df[x].nunique())
-    ll = pd.DataFrame(ll)
-    n = len(df) + 0.0
-    ll["ratio"] = ll["nunique"] / n
-    ll["coltype"] = ll["nunique"].apply(lambda x: "cat" if x < 100 else "num")
-
-    return ll
 
 
 def pd_col_intersection(df1, df2, colid):
