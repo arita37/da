@@ -1253,27 +1253,14 @@ def pd_coltext_hashing(df, coltext, word_tokeep, n_features=20):
 
 
 
-def pd_df_one_hot_encode(df):
+def pd_df_one_hot_encode(df, colname):
     '''
     Function to one hot encode all the object columns in a dataframe
     '''
-    for col in df.select_dtypes(include=[object]).columns:
+    #for col in df.select_dtypes(include=[object]).columns:
+    for col in colname :
         df = pd_col_to_onehot(df, [col])
     return df
-
-
-def col_coltext_merge(col, text_corpus):
-    '''
-    Function to merge columns we want to keep and the words in the text corpus from tf-idf
-    Arguments:
-        col:         columns we want to keep
-        text_corpus: list of words used in tf-idf
-    Returns:
-        col:         list of columns to keep
-    '''
-    for word in text_corpus:
-        col.append(word)
-    return col
 
 
 '''

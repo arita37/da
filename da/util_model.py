@@ -1173,23 +1173,27 @@ def sk_showconfusion(clfrf, X_train, Y_train, isprint=True):
     return cm, cm_norm, cm_norm[0, 0] + cm_norm[1, 1]
 
 
-def sk_LogReg(train_X, train_y, val_X, val_y):
 
-    logReg = LogisticRegression(random_state=42)
+def sk_model_eval(clf, istrain=1,  Xtrain=None, ytrain=None, Xval=None, yval=None):
 
-    logReg_model = logReg.fit(train_X, train_y)
+    if istrain :
+      clf.fit(Xtrain, ytrain)
     
-    CV_score = -cross_val_score(logReg_model, train_X, train_y, scoring='neg_mean_absolute_error', cv=4)
+    CV_score = -cross_val_score(clf, Xtrain, ytrain, scoring='neg_mean_absolute_error', cv=4)
     
     print('CV score: ', CV_score)
     print('CV mean: ', CV_score.mean())
     print('CV std:', CV_score.std())
     
-    train_y_predicted_logReg = logReg_model.predict(train_X)
-    val_y_predicted_logReg = logReg_model.predict(val_X)
+    train_y_predicted_logReg = clf.predict(Xtrain)
+    val_y_predicted_logReg = clf.predict(Xval)
     
     print('\n')
-    print('Score on logReg training set:',mean_absolute_error(train_y, train_y_predicted_logReg))
-    print('Score on logReg validation set:',mean_absolute_error(val_y, val_y_predicted_logReg))
+    print('Score on logReg training set:', mean_absolute_error(ytrain, train_y_predicted_logReg))
+    print('Score on logReg validation set:', mean_absolute_error(yval, val_y_predicted_logReg))
     
-    return logReg_model, train_y_predicted_logReg, val_y_predicted_logReg
+    return clf, train_y_predicted_logReg, val_y_predicted_logReg
+
+
+
+
