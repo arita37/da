@@ -1113,7 +1113,7 @@ def pd_dflist_shape(list_df):
         nb+=1
 
 
-def pd_coltext_remove_text(df, colname, txt_to_remove):
+def pd_coltext_remove_text_from_number(df, colname, txt_to_remove):
     '''
     Function to remove some text from a list of columns
     Arguments:
@@ -1124,7 +1124,7 @@ def pd_coltext_remove_text(df, colname, txt_to_remove):
         df:            new dataframe with text removed
     '''
     for col in colname:
-        df[col] = df[col].str.replace(txt_to_remove, '')
+        df[col] = df[col].str.replace(txt_to_remove, '').str.replace(',','').astype(float)
     return df
 
 
@@ -1145,7 +1145,7 @@ def pd_col_fill_na(df, colname, value):
             pass
         else:
             print(f'there were {nb_nans} empty values in {col}')
-            df = df[col].fillna(value)
+            df[col] = df[col].fillna(value)
             nb_nans = df[col].isnull().sum()
     
         print(f'there are {nb_nans} empty values in {col}')
@@ -1214,7 +1214,7 @@ def pd_coltext_tfidf(df, coltext, word_tokeep):
     Returns:
         concat_df:      dataframe with a new column for each word
     '''
-    # df = df[df[col_tofilter].isna()==False]
+    df = df[df[coltext].isna()==False]
     vectorizer = TfidfVectorizer()
     vectorizer.fit(word_tokeep)
     vector = vectorizer.transform(df[coltext])
@@ -1224,6 +1224,7 @@ def pd_coltext_tfidf(df, coltext, word_tokeep):
     df_new = pd.concat([df, df_vector],axis=1)
     
     return df_new
+
 
 
 def pd_coltext_hashing(df, coltext, word_tokeep, n_features=20):
@@ -1252,7 +1253,27 @@ def pd_coltext_hashing(df, coltext, word_tokeep, n_features=20):
 
 
 
+def pd_df_one_hot_encode(df):
+    '''
+    Function to one hot encode all the object columns in a dataframe
+    '''
+    for col in df.select_dtypes(include=[object]).columns:
+        df = pd_col_to_onehot(df, [col])
+    return df
 
+
+def col_coltext_merge(col, text_corpus):
+    '''
+    Function to merge columns we want to keep and the words in the text corpus from tf-idf
+    Arguments:
+        col:         columns we want to keep
+        text_corpus: list of words used in tf-idf
+    Returns:
+        col:         list of columns to keep
+    '''
+    for word in text_corpus:
+        col.append(word)
+    return col
 
 
 '''
