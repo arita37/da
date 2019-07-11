@@ -27,12 +27,16 @@ from sklearn.ensemble import (
     RandomForestClassifier,
 )
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
 
 
 from sklearn.metrics import confusion_matrix
@@ -41,6 +45,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn import preprocessing
+from sklearn.metrics import mean_absolute_error, make_scorer
 
 
 # from attrdict import AttrDict as dict2
@@ -1166,3 +1171,25 @@ def sk_showconfusion(clfrf, X_train, Y_train, isprint=True):
         print(cm_norm)
         print(cm)
     return cm, cm_norm, cm_norm[0, 0] + cm_norm[1, 1]
+
+
+def sk_LogReg(train_X, train_y, val_X, val_y):
+
+    logReg = LogisticRegression(random_state=42)
+
+    logReg_model = logReg.fit(train_X, train_y)
+    
+    CV_score = -cross_val_score(logReg_model, train_X, train_y, scoring='neg_mean_absolute_error', cv=4)
+    
+    print('CV score: ', CV_score)
+    print('CV mean: ', CV_score.mean())
+    print('CV std:', CV_score.std())
+    
+    train_y_predicted_logReg = logReg_model.predict(train_X)
+    val_y_predicted_logReg = logReg_model.predict(val_X)
+    
+    print('\n')
+    print('Score on logReg training set:',mean_absolute_error(train_y, train_y_predicted_logReg))
+    print('Score on logReg validation set:',mean_absolute_error(val_y, val_y_predicted_logReg))
+    
+    return logReg_model, train_y_predicted_logReg, val_y_predicted_logReg
