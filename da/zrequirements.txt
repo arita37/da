@@ -4,3 +4,24 @@
 conda install -c anaconda pandas-profiling
 
 
+
+
+
+##Kaggle dataset
+
+https://www.kaggle.com/c/house-prices-advanced-regression-techniques/kernels
+
+
+
+https://www.kaggle.com/c/dont-overfit-ii/data
+
+
+https://www.kaggle.com/c/web-traffic-time-series-forecasting/data
+
+
+
+
+https://www.kaggle.com/malekzadeh/motionsense-dataset#data_subjects_info.csv
+
+
+
