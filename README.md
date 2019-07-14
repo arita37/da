@@ -3,25 +3,34 @@
 ```
 Naming convention for functions, arguments :
 
-##################################################################
+########################################################################
 For module file has LIMITED dependency and logic flow :
    util_feature.py  :  Input/Outout should be pandas, pandas-like
    util_model.py :  Input/Output should be numpy
    util_plot.py   :  Input * mostly numpy or pandas
+   util_date.py : for dates related
+
+
+#### Dependencies and usage ###########################################
+pandas, numpy, scipy, sklearn
+from util_feature import *
+from util_date import *
 
 
 
-## Function naming   #################################################
+
+## Function naming   ##################################################
 pd_   :  input is pandas dataframe
-np_ : input is numpy
-sk_  :  inout is related to sklearn (ie sklearn model)
+np_   :  input is numpy
+sk_   :  inout is related to sklearn (ie sklearn model), input is numpy array
 plot_
 
 
 _col_  :  name for colums
 _colcat_  :  name for category columns
-_colnum_  :  name for numerical columns
-
+_colnum_  :  name for numerical columns (folat)
+_coltext_  : name for text data
+_colid_  : for unique ID columns\
 
 _stat_ : show statistics
 _df_  : dataframe
@@ -31,13 +40,14 @@ col_ :  function name for column list related.
 
 
 
-### Variables naming  ############################################
+### Variables naming  ###############################################
 df     :  variable name for dataframe
-colname
+colname  : for list of columns
 colexclude
 colcat : For category column
 colnum :  For numerical columns
 coldate : for date columns
+coltext : for raw text columns
 
 
 
@@ -49,7 +59,13 @@ black --line-length 100
 
 
 
-#########
+###### Auto Doc
+https://pypi.org/project/publish-sphinx-docs/
+
+
+
+
+#########Conda install
 conda create -n py36_tf13 python=3.6.5  -y
 source activate py36_tf13
 conda install  -c anaconda  tensorflow=1.13.1

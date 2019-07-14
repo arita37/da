@@ -2,8 +2,22 @@
 %load_ext autoreload
 %autoreload 2
 
+import os
+dir0 = os.getcwd()
+os.chdir( dir0 + "/da/")
+print( os.getcwd() )
 
+
+from util_date import *
 from util_feature import *
+from util_plot import *
+from util_model import *
+
+
+
+
+datestring_to
+
 
 
 

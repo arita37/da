@@ -31,6 +31,7 @@ print("os.getcwd", os.getcwd())
 
 
 
+
 ####################################################################################################
 ####################################################################################################
 def pd_stat_statistics(df) :
@@ -38,7 +39,7 @@ def pd_stat_statistics(df) :
 
 
 
-def pd_col_to_onehot(df, colname):
+def pd_col_to_onehot(df, colname, returncol=0):
     """
     :param df:
     :param colname:
@@ -51,18 +52,20 @@ def pd_col_to_onehot(df, colname):
 
             if nunique > 2:
                 df = pd.concat([df, pd.get_dummies(df[x], prefix=x)], axis=1).drop([x], axis=1)
-                # df = pd.get_dummies(df, columns=cat_col, dummy_na=nan_as_category)
-                # coli =   [ x +'_' + str(t) for t in  lb.classes_ ]
-                # df = df.join( pd.DataFrame(vv,  columns= coli,   index=df.index) )
-                # del df[x]
             else:
                 lb = preprocessing.LabelBinarizer()
                 vv = lb.fit_transform(df[x])
                 df[x] = vv
         except Exception as e:
             print(x, e)
-    # new_columns = [c for c in df.columns if c not in original_columns]
-    return df
+    
+    if returncol :
+      col_new =  [c for c in df.columns if c not in colname]
+      return df, col_new
+    else :
+      return df
+    
+    
 
 
 def pd_colnum_tocat(df, colname=None, colexclude=None, bins=5, suffix="_bin", method=""):
@@ -130,7 +133,7 @@ def pd_colnum_tocat_quantile(df, colname=None, colexclude=[],  bins=5,
     return df
 
 
-def pd_colnum_tocat2(df, colname=None, colexclude=None, suffix="_bin",
+def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
                      method="uniform", bins=None):
     """
     preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
@@ -170,10 +173,6 @@ def pd_colnum_tocat2(df, colname=None, colexclude=None, suffix="_bin",
         df[c + suffix ] = X_binned
 
     return df
-
-
-
-
 
 
 def pd_col_merge(df, ll0):
@@ -219,24 +218,16 @@ def pd_df_sampling(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
     """
         DownSampler
     :param df:
-    :param coltarget:
+    :param coltarget: binary class
     :param n1max:
     :param n2max:
     :param isconcat:
     :return:
     """
-    # n0  = len( df1 )
-    # l1  = np.random.choice( len(df1) , n1max, replace=False)
-
     df1 = df[df[coltarget] == 0].sample(n=n1max)
 
-    # df1   = df[ df[coltarget] == 1 ]
-    # n1    = len(df1 )
-    # print(n1)
     n2max = len(df[df[coltarget] == 1]) if n2max == -1 else n2max
-    # l1    = np.random.choice(len(df1) , n2max, replace=False)
     df0 = df[df[coltarget] == 1].sample(n=n2max)
-    # print(len(df0))
 
     if isconcat:
         df2 = pd.concat((df1, df0))
@@ -262,6 +253,7 @@ def pd_stat_histogram(df, bins=50, coltarget="diff"):
     hh2 = pd.DataFrame({"bins": hh[1][:-1], "freq": hh[0]})
     hh2["density"] = hh2["freqall"] / hh2["freqall"].sum()
     return hh2
+
 
 
 def pd_stat_histogram_groupby(df, bins=50, coltarget="diff", colgroupby="y"):
