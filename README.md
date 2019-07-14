@@ -6,9 +6,9 @@ Naming convention for functions, arguments :
 ########################################################################
 For module file has LIMITED dependency and logic flow :
    util_feature.py  :  Input/Outout should be pandas, pandas-like
-   util_model.py :  Input/Output should be numpy
+   util_model.py :  Input/Output should be numpy, all model evaluation related.
    util_plot.py   :  Input * mostly numpy or pandas
-   util_date.py : for dates related
+   util_date.py : for dates related, mostly for pandas processing
 
 
 #### Dependencies and usage ###########################################
@@ -40,7 +40,7 @@ col_ :  function name for column list related.
 
 
 
-### Variables naming  ###############################################
+### Argument Variables naming  ###############################################
 df     :  variable name for dataframe
 colname  : for list of columns
 colexclude
