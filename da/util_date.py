@@ -179,27 +179,59 @@ def np_dict_tostr_key(dd) :
     return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
 
 
+def convert_date(self,J,df_full_date,coldate):
+    S = list()
+    l = [str(i) for i in list(df_full_date[coldate[J]])]
+    for i in l:
+        i = self.datestring_todatetime(i, fmt='%Y-%m-%d %H:%M:%S')
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 
 
+def Get_Quarter(self,J,df_full_date,coldate):
+    S = list()
+    for i in list(df_full_date[coldate[J]]):
+        i = self.datetime_quarter(i)
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 
 
+def Get_week(self, J,df_full_date,coldate):
+    S = list()
+    for i in list(df_full_date[coldate[J]]):
+        i = self.datetime_weekday(i)
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 
 
+def Get_hour(self,J,df_full_date,coldate):
+    S = list()
+    for i in list(df_full_date[coldate[J]]):
+        i = self.datetime_tointhour(i)
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 
 
+def Get_milisec(self,J,df_full_date,coldate):
+    S = list()
+    for i in list(df_full_date[coldate[J]]):
+        i = self.datetime_to_milisec(i)
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 
 
-
-
-
-
-
-
-
-
-
-
-
+def Get_int(self,J,df_full_date,coldate):
+    S = list()
+    for i in list(df_full_date[coldate[J]]):
+        i = self.datetime_toint(i)
+        S.append(i)
+    # df_full_date.drop(coldate[J])
+    return S
 """
 >>> import datetime
 >>> datetime.datetime.strptime('20-Nov-2002','%d-%b-%Y').strftime('%Y%m%d')
