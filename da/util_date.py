@@ -179,7 +179,7 @@ def np_dict_tostr_key(dd) :
     return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
 
 
-def convert_date(self,J,df_full_date,coldate):
+def datetime_convert_date(self,J,df_full_date,coldate):
     S = list()
     l = [str(i) for i in list(df_full_date[coldate[J]])]
     for i in l:
@@ -189,7 +189,7 @@ def convert_date(self,J,df_full_date,coldate):
     return S
 
 
-def Get_Quarter(self,J,df_full_date,coldate):
+def datetime_get_Quarter(self,J,df_full_date,coldate):
     S = list()
     for i in list(df_full_date[coldate[J]]):
         i = self.datetime_quarter(i)
@@ -198,7 +198,7 @@ def Get_Quarter(self,J,df_full_date,coldate):
     return S
 
 
-def Get_week(self, J,df_full_date,coldate):
+def datetime_get_week(self, J,df_full_date,coldate):
     S = list()
     for i in list(df_full_date[coldate[J]]):
         i = self.datetime_weekday(i)
@@ -207,7 +207,7 @@ def Get_week(self, J,df_full_date,coldate):
     return S
 
 
-def Get_hour(self,J,df_full_date,coldate):
+def datetime_get_hour(self,J,df_full_date,coldate):
     S = list()
     for i in list(df_full_date[coldate[J]]):
         i = self.datetime_tointhour(i)
@@ -216,7 +216,7 @@ def Get_hour(self,J,df_full_date,coldate):
     return S
 
 
-def Get_milisec(self,J,df_full_date,coldate):
+def datetime_get_milisec(self,J,df_full_date,coldate):
     S = list()
     for i in list(df_full_date[coldate[J]]):
         i = self.datetime_to_milisec(i)
@@ -225,7 +225,7 @@ def Get_milisec(self,J,df_full_date,coldate):
     return S
 
 
-def Get_int(self,J,df_full_date,coldate):
+def datetime_get_int(self,J,df_full_date,coldate):
     S = list()
     for i in list(df_full_date[coldate[J]]):
         i = self.datetime_toint(i)
