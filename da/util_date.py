@@ -179,7 +179,7 @@ def np_dict_tostr_key(dd) :
     return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
 
 
-def datetime_convert_date(self,index,df,coldate):
+def datetime_convert_date(index,df,coldate):
     """
            :param index:
            :param df:
@@ -190,13 +190,13 @@ def datetime_convert_date(self,index,df,coldate):
     yy2 = list()
     l = [str(i) for i in list(df[coldate[index]])]
     for i in l:
-        i = self.datestring_todatetime(i, fmt='%Y-%m-%d %H:%M:%S')
+        i = datestring_todatetime(i, fmt='%Y-%m-%d %H:%M:%S')
         yy2.append(i)
 
     return yy2
 
 
-def datetime_get_quarter(self,index,df,coldate):
+def datetime_get_quarter(index,df,coldate):
     """
            :param index:
            :param df:
@@ -205,13 +205,13 @@ def datetime_get_quarter(self,index,df,coldate):
            """
     yy2 = list()
     for i in list(df[coldate[index]]):
-        i = self.datetime_quarter(i)
+        i = datetime_quarter(i)
         yy2.append(i)
 
     return yy2
 
 
-def datetime_get_week(self, index,df,coldate):
+def datetime_get_week(index,df,coldate):
     """
            :param index:
            :param df:
@@ -220,13 +220,13 @@ def datetime_get_week(self, index,df,coldate):
            """
     yy2 = list()
     for i in list(df[coldate[index]]):
-        i = self.datetime_weekday(i)
+        i = datetime_weekday(i)
         yy2.append(i)
 
     return yy2
 
 
-def datetime_get_hour(self,index,df,coldate):
+def datetime_get_hour(index,df,coldate):
     """
            :param index:
            :param df:
@@ -235,13 +235,13 @@ def datetime_get_hour(self,index,df,coldate):
            """
     yy2 = list()
     for i in list(df[coldate[index]]):
-        i = self.datetime_tointhour(i)
+        i = datetime_tointhour(i)
         yy2.append(i)
     # df_full_date.drop(coldate[J])
     return yy2
 
 
-def datetime_get_milisec(self,index,df,coldate):
+def datetime_get_milisec(index,df,coldate):
     """
            :param index:
            :param df:
@@ -250,13 +250,13 @@ def datetime_get_milisec(self,index,df,coldate):
            """
     yy2 = list()
     for i in list(df[coldate[index]]):
-        i = self.datetime_to_milisec(i)
+        i = datetime_to_milisec(i)
         yy2.append(i)
 
     return yy2
 
 
-def datetime_get_int(self,index,df,coldate):
+def datetime_get_int(index,df,coldate):
     """
        :param index:
        :param df:
@@ -265,7 +265,7 @@ def datetime_get_int(self,index,df,coldate):
        """
     yy2 = list()
     for i in list(df[coldate[index]]):
-        i = self.datetime_toint(i)
+        i = datetime_toint(i)
         yy2.append(i)
 
     return yy2

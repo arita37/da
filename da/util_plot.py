@@ -69,11 +69,15 @@ def plot_col_distribution(df, col_include=None, col_exclude=None, pars={"binsize
     :param col_exclude:
     :param pars:
     """
+    features = list()
+
     if col_include is not None:
         features = [feature for feature in df.columns.values if feature in col_include]
 
     elif col_exclude is not None:
         features = [feature for feature in df.columns.values if not feature in col_exclude]
+    elif col_exclude is  None and col_include is None:
+        features = [feature for feature in df.columns.values]
 
     for feature in features:
         values = df[feature].values
