@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jan 26 17:29:50 2017
@@ -10,23 +9,22 @@ from datetime import datetime
 import numpy as np
 import scipy as sci
 import pandas as pd
+import copy
 
 
+FMT = 'YYYY-MM-DD'
+FMTTIME = '%Y%m%d%H%M%S'
+FMTTIME1 = 'YYYY-MM-DD HH:mm:SS'
+CACHEWEEKDAY = {}
 
 
-
-def datestring_todatetime(x, fmt="%Y%m%d%H%M%S" ) :
+def datestring_todatetime(x, fmt=FMTTIME) :
     pass
-
-
-
-
-
 
 
 def datetime_tointhour(datelist1):
     if isinstance(datelist1, datetime.date):
-        return int(datelist1.strftime("%Y%m%d%H%M%S"))
+        return int(datelist1.strftime(FMTTIME))
     yy2 = []
     for x in spdateref1:
         yy2.append(
@@ -40,26 +38,25 @@ def datetime_tointhour(datelist1):
     return np.array(yy2)
 
 
-
-
-
-
 ############################################################################################
-fm t ='YYYY-MM-DD'
-def date_diffsecond(str_t1, str_t0, fmt='YYYY-MM-DD HH:mm:SS') :
-    d d= arrow.get(str_t1, fmt) - arrow.get(str_t0, fmt)
+def date_diffsecond(str_t1, str_t0, fmt=FMTTIME1) :
+    dd = arrow.get(str_t1, fmt) - arrow.get(str_t0, fmt)
     return dd.total_seconds()
 
 
 def date_diffstart(t) : return date_diffsecond(str_t1=t, str_t0=t0)
+
+
 def date_diffend(t) :   return date_diffsecond(str_t1=t1, str_t0=t)
 
 
 def np_dict_tolist(dd) :
     return [ val  for _, val in list(dd.items()) ]
 
+
 def np_dict_tostr_val(dd) :
     return ','.join([ str(val)  for _, val in list(dd.items()) ])
+
 
 def np_dict_tostr_key(dd) :
     return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
@@ -68,7 +65,6 @@ def np_dict_tostr_key(dd) :
 ###################Faster one   ############################################################
 # 'YYYY-MM-DD    HH:mm:ss'
 # "0123456789_10_11
-import arrow, copy
 """
 def day(s):    return int(s[8:10])
 def month(s):  return int(s[5:7])
@@ -77,20 +73,20 @@ def hour(s):   return int(s[11:13])
 """
 
 
-cache_weekda y= {}
-def weekday(s, fmt='YYYY-MM-DD', i0=0, i1=10):
+def weekday(s, fmt=FMT, i0=0, i1=10):
     ###Super Fast because of caching
-    s 2= s[i0:i1]
+    s2= s[i0:i1]
     try :
-        return  cache_weekday[s2]
+        return CACHEWEEKDAY[s2]
     except KeyError:
-        w d= arrow.get(s2, fmt).weekday()
-        cache_weekday[s2 ]= wd
+        wd= arrow.get(s2, fmt).weekday()
+        CACHEWEEKDAY[s2 ] = wd
     return wd
 
 
 
-def season(d): m=  int( d[5:7])
+def season(d): 
+    m =  int( d[5:7])
     if m > 3 and m  < 10:
         return 1
     else:
@@ -133,13 +129,8 @@ def date_tosecond(dd,  format1="YYYYMMDDHHmm", unit="second") :
     except :
        return -1
 
-df['datesec']= df['datetime'].apply(  date_tosecond  )
 
-
-
-
-
-
+# df['datesec']= df['datetime'].apply(  date_tosecond  )
 #########################Date manipulation ##########################################
 def date_earningquater(t1):
     qdate = quater = None
@@ -194,7 +185,6 @@ def date_find_kday_fromintradaydate(kintraday, intradaydate, dailydate):
 
 
 def date_find_kintraday_fromdate(d1, intradaydate1, h1=9, m1=30):
-
     d1 = datetime.datetime(d1.year, d1.month, d1.day, h1, m1)
     return util.np_find(d1, intradaydate1)
 
@@ -206,27 +196,21 @@ def date_find_intradateid(datetimelist, stringdate=None):
         tt = datestring_todatetime(t)
         k = util.np_find(tt, datetimelist)
         print(str(k) + ",", tt)
-
-
 # kday= date_find_kday_fromintradaydate(k, spdateref2, spdailyq.date)
 
 
 def datetime_convertzone1_tozone2(tt, fromzone="Japan", tozone="US/Eastern"):
     import pytz, dateutil
-
     tz = pytz.timezone(fromzone)
     tmz = pytz.timezone(tozone)
-
     if type(tt) == datetime:
         localtime = tz.localize(tt).astimezone(tmz)
         return dateutil.parser.parse(localtime.strftime("%Y-%m-%d %H:%M:%S"))
-
     t2 = []
     for t in tt:
         localtime = tz.localize(t).astimezone(tmz)
         t2.append(dateutil.parser.parse(localtime.strftime("%Y-%m-%d %H:%M:%S")))
     return t2
-
     # --------- Find Daily Open / Close Time  --------------------------------------
 
 
@@ -478,7 +462,7 @@ def date_getspecificdate(
     outputype1="intdate",
     includelastdate=True,
     includefirstdate=False,
-):
+    ):
     vec2 = []
 
     if isint(datelist[0]):
@@ -578,7 +562,7 @@ def date_alignfromdateref(array1, dateref):  # 2 column array time, data
     return close
 
 
-@jit(numba.float32[:](numba.int32[:], numba.int32[:], int32, numba.float32[:]))
+# @jit(numba.float32[:](numba.int32[:], numba.int32[:], int32, numba.float32[:]))
 def _date_align(dateref, datei, tmax, closei):
     close2 = np.zeros(tmax, dtype=np.float16)
     for t in range(0, tmax):
