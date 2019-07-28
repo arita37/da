@@ -307,16 +307,9 @@ clf.fit(train_df, labels, cat_features=cat_features_ids)
 """
 
 
-def sk_catboost_classifier(
-    Xtrain,
-    Ytrain,
-    Xcolname=None,
-    pars={
-        "learning_rate": 0.1,
-        "iterations": 1000,
-        "random_seed": 0,
-        "loss_function": "MultiClass",
-    },
+def model_catboost_classifier(
+    Xtrain, Ytrain, Xcolname=None,
+    pars={"learning_rate": 0.1, "iterations": 1000, "random_seed": 0, "loss_function": "MultiClass",},
     isprint=0,
 ):
     """
@@ -371,9 +364,6 @@ preds_proba = model.predict_proba(test_pool)
     return clf, cm, cm_norm
 
 
-def sk_catboost_regressor():
-    pass
-
 
 ######################  ALGO  #########################################################################
 def sk_model_auto_tpot(
@@ -424,40 +414,44 @@ def sk_model_auto_tpot(
     return file1
 
 
-def sk_params_search_best(
-    Xmat,
-    Ytarget,
-    model1,
-    param_grid={"alpha": np.linspace(0, 1, 5)},
-    method="gridsearch",
-    param_search={"scoretype": "r2", "cv": 5, "population_size": 5, "generations_number": 3},
-):
-    """
-   genetic: population_size=5, ngene_mutation_prob=0.10,,gene_crossover_prob=0.5, tournament_size=3,  generations_number=3
 
-  :param Xmat:
-  :param Ytarget:
-  :param model1:
-  :param param_grid:
-  :param method:
-  :param param_search:
-  :return:
+def sk_score_get(name="r2"):
+    from sklearn.metrics import make_scorer, r2_score, roc_auc_score,mean_squared_error
+
+    if name == "r2":
+      return sk.metrics.make_scorer(r2_score, sample_weight=None)
+
+    if name == "auc":
+      return sk.metrics.make_scorer(r2_score, sample_weight=None)
+
+
+
+def sk_params_search_best(clf, X, y,
+                          param_grid={"alpha": np.linspace(0, 1, 5)},
+                          method="gridsearch",
+                          param_search={"scorename": "r2", "cv": 5,
+                                        "population_size": 5, "generations_number": 3},
+                          ):
+    """
+   Genetic: population_size=5, ngene_mutation_prob=0.10,,gene_crossover_prob=0.5, tournament_size=3,  generations_number=3
+
+    :param X:
+    :param y:
+    :param clf:
+    :param param_grid:
+    :param method:
+    :param param_search:
+    :return:
   """
     p = param_search
-
-    from sklearn.metrics import make_scorer, r2_score
-
-    if param_search["scoretype"] == "r2":
-        myscore = make_scorer(r2_score, sample_weight=None)
+    myscore= sk_score_get(p["scorename"])
 
     if method == "gridsearch":
         from sklearn.model_selection import GridSearchCV
-
-        grid = GridSearchCV(
-            model1, param_grid, cv=p["cv"], scoring=myscore
-        )  # 20-fold cross-validation
-        grid.fit(Xmat, Ytarget)
+        grid = GridSearchCV( clf, param_grid, cv=p["cv"], scoring=myscore)
+        grid.fit(X, y)
         return grid.best_score_, grid.best_params_
+
 
     if method == "genetic":
         from evolutionary_search import EvolutionaryAlgorithmSearchCV
@@ -465,10 +459,10 @@ def sk_params_search_best(
 
         # paramgrid = {"alpha":  np.linspace(0,1, 20) , "l1_ratio": np.linspace(0,1, 20) }
         cv = EvolutionaryAlgorithmSearchCV(
-            estimator=model1,
+            estimator=clf,
             params=param_grid,
-            scoring=p["scoretype"],
-            cv=StratifiedKFold(Ytarget, n_folds=p["cv"]),
+            scoring=myscore,
+            cv=StratifiedKFold(y, n_folds=p["cv"]),
             verbose=True,
             population_size=p["population_size"],
             gene_mutation_prob=0.10,
@@ -477,69 +471,8 @@ def sk_params_search_best(
             generations_number=p["generations_number"],
         )
 
-        cv.fit(Xmat, Ytarget)
+        cv.fit(X, y)
         return cv.best_score_, cv.best_params_
-    """
-   from sklearn.metrics import  make_scorer,  r2_score
-from sklearn.grid_search import GridSearchCV
-
-myscore = make_scorer(r2_score, sample_weight=None)
-
-param_grid= {'alpha': np.linspace(0.01, 1.5, 10),
-             'ww': [[0.05, 0.95]],
-             'low_y_cut': [-10.0], 'high_y_cut': [9.0]   }
-
-grid = GridSearchCV(model1(),param_grid, cv=10, scoring=myscore) # 20-fold cross-validation
-grid.fit(Xtrain, Ytrain)
-grid.best_params_
-
-# Weight Search
-wwl= np.linspace(0.01, 1.0, 5)
-param_grid= {'alpha':  [0.01],
-             'ww0': wwl,
-             'low_y_cut': [-0.08609*1000], 'high_y_cut': [0.09347*1000]   }
-
-grid = GridSearchCV(model1(),param_grid, cv=10, scoring=myscore) # 20-fold cross-validation
-grid.fit(X*100.0, Ytarget*1000.0)
-grid.best_params_
-
-# {'alpha': 0.01, 'high_y_cut': 93.47, 'low_y_cut': -86.09, 'ww0': 0.01}
-
-   """
-
-
-def sk_distribution_kernel_bestbandwidth(x, kde):
-    """Find best Bandwidht for a  given kernel
-  :param kde:
-  :return:
- """
-    from sklearn.model_selection import GridSearchCV
-
-    grid = GridSearchCV(
-        kde, {"bandwidth": np.linspace(0.1, 1.0, 30)}, cv=20
-    )  # 20-fold cross-validation
-    grid.fit(x[:, None])
-    return grid.best_params_
-
-
-def sk_distribution_kernel_sample(kde=None, n=1):
-    """
-  kde = sm.nonparametric.KDEUnivariate(np.array(Y[Y_cluster==0],dtype=np.float64))
-  kde = sm.nonparametric.KDEMultivariate()  # ... you already did this
- """
-
-    from scipy.optimize import brentq
-
-    samples = np.zeros(n)
-
-    # 1-d root-finding  F-1(U) --> Sample
-    def func(x):
-        return kde.cdf([x]) - u
-
-    for i in range(0, n):
-        u = np.random.random()  # sample
-        samples[i] = brentq(func, -999, 999)  # read brentq-docs about these constants
-    return samples
 
 
 
@@ -556,13 +489,12 @@ def sk_error_r2(Ypred, y_true, sample_weight=None, multioutput=None):
 
 def sk_error_rmse(Ypred, Ytrue):
     aux = np.sqrt(np.sum((Ypred - Ytrue) ** 2)) / len(Ytrue)
-    return "Error:", aux, "Error/Stdev:", aux / np.std(Ytrue)
+    print( "Error:", aux, "Error/Stdev:", aux / np.std(Ytrue)  )
+    return  aux / np.std(Ytrue)
 
 
 def sk_cluster(
-    Xmat,
-    method="kmode",
-    args=(),
+    Xmat, method="kmode", args=(),
     kwds={"metric": "euclidean", "min_cluster_size": 150, "min_samples": 3},
     isprint=1,
     preprocess={"norm": False},
@@ -634,78 +566,10 @@ kde.sample(5)
         return labels, centroids
 
 
-def sk_cluster_algo_custom(Xmat, algorithm, args, kwds, returnval=1):
-    pass
-    """ Plot the cLuster using specific Algo
-    distance_matrix = pairwise_distances(blobs)
-    clusterer = hdbscan.HDBSCAN(metric='precomputed')
-    clusterer.fit(distance_matrix)
-    clusterer.labels_
-
-    {'braycurtis': hdbscan.dist_metrics.BrayCurtisDistance,
- 'canberra': hdbscan.dist_metrics.CanberraDistance,
- 'chebyshev': hdbscan.dist_metrics.ChebyshevDistance,
- 'cityblock': hdbscan.dist_metrics.ManhattanDistance,
- 'dice': hdbscan.dist_metrics.DiceDistance,
- 'euclidean': hdbscan.dist_metrics.EuclideanDistance,
- 'hamming': hdbscan.dist_metrics.HammingDistance,
- 'haversine': hdbscan.dist_metrics.HaversineDistance,
- 'infinity': hdbscan.dist_metrics.ChebyshevDistance,
- 'jaccard': hdbscan.dist_metrics.JaccardDistance,
- 'kulsinski': hdbscan.dist_metrics.KulsinskiDistance,
- 'l1': hdbscan.dist_metrics.ManhattanDistance,
- 'l2': hdbscan.dist_metrics.EuclideanDistance,
- 'mahalanobis': hdbscan.dist_metrics.MahalanobisDistance,
- 'manhattan': hdbscan.dist_metrics.ManhattanDistance,
- 'matching': hdbscan.dist_metrics.MatchingDistance,
- 'minkowski': hdbscan.dist_metrics.MinkowskiDistance,
- 'p': hdbscan.dist_metrics.MinkowskiDistance,
- 'pyfunc': hdbscan.dist_metrics.PyFuncDistance,
- 'rogerstanimoto': hdbscan.dist_metrics.RogersTanimotoDistance,
- 'russellrao': hdbscan.dist_metrics.RussellRaoDistance,
- 'seuclidean': hdbscan.dist_metrics.SEuclideanDistance,
- 'sokalmichener': hdbscan.dist_metrics.SokalMichenerDistance,
- 'sokalsneath': hdbscan.dist_metrics.SokalSneathDistance,
- 'wminkowski': hdbscan.dist_metrics.WMinkowskiDistance}
-
-    """
-
-
-"""
-def sk_cluster_kmeans(Xmat, nbcluster=5, isprint=False, isnorm=False) :
-  from sklearn.cluster import k_means
-  stdev=  np.std(Xmat, axis=0)
-  if isnorm  : Xmat=   (Xmat - np.mean(Xmat, axis=0)) / stdev
-
-  sh= Xmat.shape
-  Xdim= 1 if len(sh) < 2 else sh[1]   #1Dim vector or 2dim-3dim vector
-  print(len(Xmat.shape), Xdim)
-  if Xdim==1 :  Xmat= Xmat.reshape((sh[0],1))
-
-  kmeans = sk.cluster.KMeans(n_clusters= nbcluster)
-  kmeans.fit(Xmat)
-  centroids, labels= kmeans.cluster_centers_,  kmeans.labels_
-
-  if isprint :
-   import matplotlib.pyplot as plt
-   colors = ["g.","r.","y.","b.", "k."]
-   if Xdim==1 :
-     for i in range(0, sh[0], 5):  plt.plot(Xmat[i], colors[labels[i]], markersize = 5)
-     plt.show()
-   elif Xdim==2 :
-     for i in range(0, sh[0], 5):  plt.plot(Xmat[i,0], Xmat[i,1], colors[labels[i]], markersize = 2)
-     plt.show()
-   else :
-      print('Cannot Show higher than 2dim')
-
-  return labels, centroids, stdev
-"""
-
-
 
 
 ######## Valuation model template  ##########################################################
-class sk_model_template1(sk.base.BaseEstimator):
+class model_template1(sk.base.BaseEstimator):
     def __init__(self, alpha=0.5, low_y_cut=-0.09, high_y_cut=0.09, ww0=0.95):
         from sklearn.linear_model import Ridge
 
@@ -758,18 +622,10 @@ class sk_model_template1(sk.base.BaseEstimator):
         return r2_score(Ytrue, Y)
 
 
-############################################################################
-def sk_feature_impt_rf(clfrf, feature_name):
-    importances = clfrf.feature_importances_
-    indices = np.argsort(importances)[::-1]
-    for f in range(0, len(feature_name)):
-        if importances[indices[f]] > 0.0001:
-            print(
-                str(f + 1), str(indices[f]), feature_name[indices[f]], str(importances[indices[f]])
-            )
 
 
-# -------- SK Learn TREE UTIL------------------------------------------------
+
+
 def sk_model_ensemble_weight(vv, acclevel, maxlevel=0.88):
     imax = min(acclevel, len(vv))
     estlist = np.empty(imax, dtype=np.object)
@@ -806,48 +662,6 @@ def sk_votingpredict(estimators, voting, ww, X_test):
 
 
 
-def sk_tree_get_ifthen(tree, feature_names, target_names, spacer_base=" "):
-    """Produce psuedo-code for decision tree.
-    tree -- scikit-leant DescisionTree.
-    feature_names -- list of feature names.
-    target_names -- list of target (output) names.
-    spacer_base -- used for spacing code (default: "    ").
-    """
-    left = tree.tree_.children_left
-    right = tree.tree_.children_right
-    threshold = tree.tree_.threshold
-    features = [feature_names[i] for i in tree.tree_.feature]
-    value = tree.tree_.value
-
-    def recurse(left, right, threshold, features, node, depth):
-        spacer = spacer_base * depth
-        if threshold[node] != -2:
-            print((spacer + "if " + features[node] + " <= " + str(threshold[node]) + " :"))
-            #            print(spacer + "if ( " + features[node] + " <= " + str(threshold[node]) + " ) :")
-            if left[node] != -1:
-                recurse(left, right, threshold, features, left[node], depth + 1)
-            print(("" + spacer + "else :"))
-            if right[node] != -1:
-                recurse(left, right, threshold, features, right[node], depth + 1)
-        #     print(spacer + "")
-        else:
-            target = value[node]
-            for i, v in zip(np.nonzero(target)[1], target[np.nonzero(target)]):
-                target_name = target_names[i]
-                target_count = int(v)
-                print(
-                    (
-                        spacer
-                        + "return "
-                        + str(target_name)
-                        + " ( "
-                        + str(target_count)
-                        + ' examples )"'
-                    )
-                )
-
-    recurse(left, right, threshold, features, 0, 0)
-
 #### ML metrics
 
 def sk_showconfusion(Y, Ypred, isprint=True):
@@ -861,7 +675,7 @@ def sk_showconfusion(Y, Ypred, isprint=True):
 
 
 
-def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
+def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"], return_stat=0):
     #### Confusion matrix
     mtest = sk_showconfusion(y_test, ytest_pred, isprint=False)
     # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
@@ -893,9 +707,11 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
     except Exception as e :
       print(e)
 
+    if return_stat :
+      return {"auc": auc, "f1macro": f1macro, "acc": acc, "confusion" : mtest  }
 
 
-def clf_prediction_score(clf, df1, cols, coltarget, outype="score"):
+def model_logistic_score(clf, df1, cols, coltarget, outype="score"):
     """
 
     :param clf:
@@ -974,6 +790,106 @@ def sk_model_eval_classification(clf, istrain=1,
 
 
 
+###################################################################################################
+def sk_feature_impt(clf, colname):
+    """
+       Feature importance with colname
+    :param clf:  model or colnum with weights
+    :param colname:
+    :return:
+    """
+    if isinstance(clf, list)  or  isinstance(clf, np.array())  :
+        importances = clf
+    else :
+        importances = clf.feature_importances_
+    rank = np.argsort(importances)[::-1]
+
+    d = { "col" : [], "rank" : [], "weight" : []  }
+    for i in range(0, len(colname)):
+        d["rank"].append( rank[i] )
+        d["col"].append(colname[rank[i]])
+        d["weight"].append( importances[rank[i]] )
+
+    return pd.DataFrame(d)
+
+
+def sk_feature_selection(clf,  method="f_classif", colname=None, kbest=50,
+                                 Xtrain=None, ytrain=None):
+
+   from sklearn.feature_selection import SelectKBest, chi2, f_classif, f_regression
+
+
+   if method == "f_classif" :
+     clf_best  = SelectKBest(f_classif, k= kbest).fit(Xtrain, ytrain)
+
+   if method == "f_regression" :
+     clf_best  = SelectKBest(f_regression, k= kbest).fit(Xtrain, ytrain)
+
+
+   mask = clf_best.get_support()  # list of booleans
+   new_features = []  # The list of your K best features
+   for bool, feature in zip(mask, colname):
+       if bool:
+           new_features.append(feature)
+
+   return new_features
+
+
+def sk_feature_evaluation(clf,   df, kbest=30, colname_best=None, dfy=None):
+    clf2 = copy.deepcopy(clf)
+    Xtrain, Xtest, ytrain, ytest = train_test_split(df[colname_best].values, dfy.values,
+                                                    random_state=42,
+                                                    test_size=0.5, shuffle=True)
+    print(Xtrain.shape, ytrain.shape)
+
+    df = {x: [] for x in ["col", "auc", "acc", "f1macro", "confusion"]}
+    for i in range(1, len(colname_best)):
+        print("##########", colname_best[:i])
+        if i > kbest :
+            break
+        clf.fit(Xtrain[:, :i], ytrain)
+        ytest_proba = clf.predict_proba(Xtest[:, :i])[:, 1]
+        ytest_pred = clf.predict(Xtest[:, :i])
+        s = sk_showmetrics(ytest, ytest_pred, ytest_proba, return_stat=1)
+
+        # {"auc": auc, "f1macro": f1macro, "acc": acc, "confusion": mtest}
+
+        df["col"].append(str(colname_best[:i]))
+        df["auc"].append(s["auc"])
+        df["acc"].append(s["acc"])
+        df["f1macro"].append(s["f1macro"])
+        df["confusion"].append(s["confusion"])
+
+    df = pd.DataFrame(df)
+    return df
+
+
+def sk_feature_drift_covariance(dftrain, dftest, colname, nsample=10000):
+    n1 = nsample if len(dftrain) > nsample else len(dftrain)
+    n2 = nsample if len(dftest) > nsample else len(dftest)
+    train = dftrain[colname].sample( n1, random_state=12)
+    test = dftest[colname].sample( n2, random_state=11)
+
+    ## creating a new feature origin
+    train['origin'] = 0
+    test['origin'] = 1
+
+    ## combining random samples
+    combi = train.append(test)
+    y = combi['origin']
+    combi.drop('origin', axis=1, inplace=True)
+
+
+    ## modelling
+    model = RandomForestClassifier(n_estimators=50, max_depth=7, min_samples_leaf=5)
+    drop_list = []
+    for i in combi.columns:
+        score = cross_val_score(model, pd.DataFrame(combi[i]), y, cv=2, scoring='roc_auc')
+
+        if (np.mean(score) > 0.8):
+          drop_list.append(i)
+        print(i, np.mean(score))
+    return drop_list
 
 
 
@@ -990,7 +906,7 @@ def sk_model_eval_classification_cv(clf,  X, y, test_size=0.5, ncv=1,method="ran
     if method == "kfold" :
        kf = StratifiedKFold(n_splits=ncv, shuffle=True)
        clf_list = {}
-       for itrain, itest in kf.split(X, y):
+       for i,itrain, itest in enumerate(kf.split(X, y)):
           print("###")
           Xtrain, Xtest = X[itrain], X[itest]
           ytrain, ytest = y[itrain], y[itest]
@@ -1009,6 +925,128 @@ def sk_model_eval_classification_cv(clf,  X, y, test_size=0.5, ncv=1,method="ran
 
     return clf_list
 
+
+
+
+
+
+
+
+
+def sk_tree_get_ifthen(tree, feature_names, target_names, spacer_base=" "):
+    """Produce psuedo-code for decision tree.
+    tree -- scikit-leant DescisionTree.
+    feature_names -- list of feature names.
+    target_names -- list of target (output) names.
+    spacer_base -- used for spacing code (default: "    ").
+    """
+    left = tree.tree_.children_left
+    right = tree.tree_.children_right
+    threshold = tree.tree_.threshold
+    features = [feature_names[i] for i in tree.tree_.feature]
+    value = tree.tree_.value
+
+    def recurse(left, right, threshold, features, node, depth):
+        spacer = spacer_base * depth
+        if threshold[node] != -2:
+            print((spacer + "if " + features[node] + " <= " + str(threshold[node]) + " :"))
+            #            print(spacer + "if ( " + features[node] + " <= " + str(threshold[node]) + " ) :")
+            if left[node] != -1:
+                recurse(left, right, threshold, features, left[node], depth + 1)
+            print(("" + spacer + "else :"))
+            if right[node] != -1:
+                recurse(left, right, threshold, features, right[node], depth + 1)
+        #     print(spacer + "")
+        else:
+            target = value[node]
+            for i, v in zip(np.nonzero(target)[1], target[np.nonzero(target)]):
+                target_name = target_names[i]
+                target_count = int(v)
+                print(
+                    (
+                        spacer
+                        + "return "
+                        + str(target_name)
+                        + " ( "
+                        + str(target_count)
+                        + ' examples )"'
+                    )
+                )
+
+    recurse(left, right, threshold, features, 0, 0)
+
+
+
+
+
+
+""" 
+def sk_cluster_algo_custom(Xmat, algorithm, args, kwds, returnval=1):
+    pass
+Plot the cLuster using specific Algo
+    distance_matrix = pairwise_distances(blobs)
+    clusterer = hdbscan.HDBSCAN(metric='precomputed')
+    clusterer.fit(distance_matrix)
+    clusterer.labels_
+
+    {'braycurtis': hdbscan.dist_metrics.BrayCurtisDistance,
+ 'canberra': hdbscan.dist_metrics.CanberraDistance,
+ 'chebyshev': hdbscan.dist_metrics.ChebyshevDistance,
+ 'cityblock': hdbscan.dist_metrics.ManhattanDistance,
+ 'dice': hdbscan.dist_metrics.DiceDistance,
+ 'euclidean': hdbscan.dist_metrics.EuclideanDistance,
+ 'hamming': hdbscan.dist_metrics.HammingDistance,
+ 'haversine': hdbscan.dist_metrics.HaversineDistance,
+ 'infinity': hdbscan.dist_metrics.ChebyshevDistance,
+ 'jaccard': hdbscan.dist_metrics.JaccardDistance,
+ 'kulsinski': hdbscan.dist_metrics.KulsinskiDistance,
+ 'l1': hdbscan.dist_metrics.ManhattanDistance,
+ 'l2': hdbscan.dist_metrics.EuclideanDistance,
+ 'mahalanobis': hdbscan.dist_metrics.MahalanobisDistance,
+ 'manhattan': hdbscan.dist_metrics.ManhattanDistance,
+ 'matching': hdbscan.dist_metrics.MatchingDistance,
+ 'minkowski': hdbscan.dist_metrics.MinkowskiDistance,
+ 'p': hdbscan.dist_metrics.MinkowskiDistance,
+ 'pyfunc': hdbscan.dist_metrics.PyFuncDistance,
+ 'rogerstanimoto': hdbscan.dist_metrics.RogersTanimotoDistance,
+ 'russellrao': hdbscan.dist_metrics.RussellRaoDistance,
+ 'seuclidean': hdbscan.dist_metrics.SEuclideanDistance,
+ 'sokalmichener': hdbscan.dist_metrics.SokalMichenerDistance,
+ 'sokalsneath': hdbscan.dist_metrics.SokalSneathDistance,
+ 'wminkowski': hdbscan.dist_metrics.WMinkowskiDistance}
+
+    """
+
+
+"""
+def sk_cluster_kmeans(Xmat, nbcluster=5, isprint=False, isnorm=False) :
+  from sklearn.cluster import k_means
+  stdev=  np.std(Xmat, axis=0)
+  if isnorm  : Xmat=   (Xmat - np.mean(Xmat, axis=0)) / stdev
+
+  sh= Xmat.shape
+  Xdim= 1 if len(sh) < 2 else sh[1]   #1Dim vector or 2dim-3dim vector
+  print(len(Xmat.shape), Xdim)
+  if Xdim==1 :  Xmat= Xmat.reshape((sh[0],1))
+
+  kmeans = sk.cluster.KMeans(n_clusters= nbcluster)
+  kmeans.fit(Xmat)
+  centroids, labels= kmeans.cluster_centers_,  kmeans.labels_
+
+  if isprint :
+   import matplotlib.pyplot as plt
+   colors = ["g.","r.","y.","b.", "k."]
+   if Xdim==1 :
+     for i in range(0, sh[0], 5):  plt.plot(Xmat[i], colors[labels[i]], markersize = 5)
+     plt.show()
+   elif Xdim==2 :
+     for i in range(0, sh[0], 5):  plt.plot(Xmat[i,0], Xmat[i,1], colors[labels[i]], markersize = 2)
+     plt.show()
+   else :
+      print('Cannot Show higher than 2dim')
+
+  return labels, centroids, stdev
+"""
 
 
 
