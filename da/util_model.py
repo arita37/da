@@ -108,7 +108,6 @@ def sk_feature_impt_logis(clf, cols2):
     return dfeatures
 
 
-
 def split_train_test(X,y, split_ratio=0.8):
     
     train_X, val_X, train_y, val_y = train_test_split(X,
@@ -844,7 +843,7 @@ def sk_feature_evaluation(clf,   df, kbest=30, colname_best=None, dfy=None):
 
     df = {x: [] for x in ["col", "auc", "acc", "f1macro", "confusion"]}
     for i in range(1, len(colname_best)):
-        print("##########", colname_best[:i])
+        print("########## ", colname_best[:i])
         if i > kbest :
             break
         clf.fit(Xtrain[:, :i], ytrain)
