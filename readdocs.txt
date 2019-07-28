@@ -1,0 +1,24 @@
+
+
+
+As u cannot create readthedocs for private repos, here are the steps to view the docs after merging the pull request
+cd <clonedir>
+git clone git@github.com:arita37/da.git
+cd da
+virtualenv -p python3 daenv
+daenv/bin/activate
+pip install -r requirements.txt
+cd docs/
+make html
+open file in the browser as file:///<clonedir>/da/docs/build/html/index.html
+
+
+
+This is for your question about the branch.
+https://docs.readthedocs.io/en/stable/versions.html
+
+Actually dev is the default branch for the repo, so it will build fro this, but as it is a private repo, so will not work.
+
+
+
+

@@ -1,0 +1,88 @@
+
+
+
+conda install -c anaconda pandas-profiling
+
+
+##Density Plot
+sns.kdeplot(grad.rate, shade = True)
+
+
+
+
+
+
+
+#################################################################
+https://docs.floydhub.com/guides/environments/
+
+
+TensorFlow 1.12.0 + Keras 2.2.4 on Python 3.6.
+
+
+
+
+
+x = tf.layers.dense(x[-1], self._config.num_hiddens[-1],
+
+
+
+
+
+{
+  "shell_port": 34866,
+  "iopub_port": 37474,
+  "stdin_port": 46805,
+  "control_port": 43378,
+  "hb_port": 47824,
+  "ip": "127.0.0.1",
+  "key": "74759c17-a644505243c2e8f660e19627",
+  "transport": "tcp",
+  "signature_scheme": "hmac-sha256",
+  "kernel_name": ""
+}
+
+
+
+
+D:\_devs\Python01\gitdev\jupyter_kernel.json
+
+ubuntu@52.26.181.200:22
+
+D:\_devs\awskeypair\oregon2\aws_ec2_4.pem
+
+
+
+#### Code
+pandas.DataFrame.interpolate
+
+
+
+
+#### Install
+
+conda install -n py36intel -c anaconda  spyder-kernels=0.* --no-update-deps
+
+
+
+
+
+
+##Kaggle dataset
+
+https://www.kaggle.com/c/house-prices-advanced-regression-techniques/kernels
+
+
+
+https://www.kaggle.com/c/dont-overfit-ii/data
+
+
+https://www.kaggle.com/c/web-traffic-time-series-forecasting/data
+
+
+
+
+https://www.kaggle.com/malekzadeh/motionsense-dataset#data_subjects_info.csv
+
+
+
