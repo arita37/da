@@ -15,21 +15,15 @@ import numpy as np
 import pandas as pd
 import scipy as sci
 
-import sklearn as sk
-from sklearn import preprocessing
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-try:
-    import pandas_profiling
-
-except Exception as e:
-    print(e)
+from sklearn.preprocessing import KBinsDiscretizer
 
 
 print("os.getcwd", os.getcwd())
 
+
+
 ####################################################################################################
-def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
+def pd_col_to_onehot(dfref, colname=None, colonehot=None, return_val="dataframe,column"):
     """
     :param df:
     :param colname:
@@ -37,8 +31,11 @@ def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
     :param returncol:
     :return:
     """
-
+    df = copy.deepcopy(dfref)
+    coladded = []
     colname = list(df.columns) if colname is None else colname
+
+    ### Encode each column into OneHot
     for x in colname:
         try:
             nunique = len(df[x].unique())
@@ -47,9 +44,8 @@ def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
             if nunique > 2:
                 df = pd.concat([df, pd.get_dummies(df[x], prefix=x)], axis=1).drop([x], axis=1)
             else:
-                # lb = preprocessing.LabelBinarizer()
-                # vv = lb.fit_transform(df[x])
-                df[x] = df[x].factorize()[0]
+                df[x] = df[x].factorize()[0]  # put into 0,1 format
+            coladded.append(x)
         except Exception as e:
             print(x, e)
 
@@ -59,12 +55,14 @@ def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
             if not x in df.columns:
                 df[x] = 0
                 print(x, "added")
+                coladded.append(x)
 
-    if returncol:
-        col_new = [c for c in df.columns if c not in colname]
-        return df, col_new
+    colnew = colonehot if colonehot is not None else [c for c in df.columns if c not in colname]
+    if return_val == "dataframe,param":
+        return df[colnew], colnew
+
     else:
-        return df
+        return df[colnew]
 
 
 def pd_colcat_mapping(df, colname):
@@ -90,15 +88,15 @@ def pd_colcat_mapping(df, colname):
 
 
 def pd_colnum_tocat(
-    df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin", method="uniform"
+    df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin", method="uniform",
+    return_val="dataframe,param",
 ):
     """
-    colbinmap = [  , ,  , ]
-
+    colbinmap = for each column, definition of bins
     https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
-    :param df:
-    :param method:
-    :return:
+       :param df:
+       :param method:
+       :return:
     """
     colexclude = [] if colexclude is None else colexclude
     colname = colname if colname is not None else list(df.columns)
@@ -122,6 +120,13 @@ def pd_colnum_tocat(
         lbins = list(qt_list.values)
         lbins[0] -= 0.01
         return lbins
+
+    def bin_create_kmeans(dfc) :
+      enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy="kmeams")
+      X_binned = enc.fit_transform(dfc.values)
+      dfc["bin"] = X_binned
+      lbins = dfc.groupby("bin").agg({ dfc.columns[0] : "min"  }).values
+      return lbins
 
     for c in colname:
         if c in colexclude:
@@ -150,45 +155,16 @@ def pd_colnum_tocat(
         colnew.append(cbin)
 
         print(col_stat)
-    return df, colmap
+
+    if return_val == "dataframe":
+        return df
+
+    elif return_val == "param":
+        return colmap
+    else:
+        return df[colnew], colmap
 
 
-def pd_colnum_tocat_kmeans(
-    df, colname=None, colexclude=None, suffix="_bin", method="uniform", bins=None
-):
-    """
-    preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
-
-    https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
-    :param df:
-    :param method: uniform,
-    :return:
-
-    strategy : {‘uniform’, ‘quantile’, ‘kmeans’}, (default=’quantile’)
-    Strategy used to define the widths of the bins.
-
-    kmeans
-    Values in each bin have the same nearest center of a 1D k-means cluster.
-
-    https://scikit-learn.org/stable/auto_examples/preprocessing/plot_discretization_classification.html#sphx-glr-auto-examples-preprocessing-plot-discretization-classification-py
-
-    """
-    colname = colname if colname is not None else list(df.columns)
-
-    # transform the dataset with KBinsDiscretizer
-    from sklearn.preprocessing import KBinsDiscretizer
-
-    enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy=method)
-
-    for c in df.columns:
-        if c in colexclude:
-            continue
-        df[c] = df[c].astype(np.float32)
-
-        X_binned = enc.fit_transform(df[c].values)
-        df[c + suffix] = X_binned
-
-    return df
 
 
 def pd_col_merge_onehot(df, colname):
@@ -229,6 +205,44 @@ def pd_col_merge2(df, l, x0, colid="easy_id"):
         if t != x0:
             del dfz[t]
     return dfz
+
+
+def pd_col_to_num(df, colname=None, default=np.nan):
+    def to_float(x):
+        try:
+            return float(x)
+        except:
+            return default
+
+    colname = list(df.columns) if colname is None else colname
+    for c in colname:
+        df[c] = df[c].apply(lambda x: to_float(x))
+    return df
+
+
+def pd_pipeline_apply(df, pipeline):
+    """
+      pipe_preprocess_colnum = [
+      (pd_col_to_num, {"val": "?", })
+    , (pd_colnum_tocat, {"colname": None, "colbinmap": colnum_binmap, 'bins': 5,
+                         "method": "uniform", "suffix": "_bin",
+                         "return_val": "dataframe"})
+
+    , (pd_col_to_onehot, {"colname": None, "colonehot": colnum_onehot,
+                          "return_val": "dataframe"})
+      ]
+    :param df:
+    :param pipeline:
+    :return:
+    """
+    dfi = copy.deepcopy(df)
+    for i, function in enumerate(pipeline):
+        print(
+            "############## Pipeline ", i, "Start", dfi.shape, str(function[0].__name__), flush=True
+        )
+        dfi = function[0](dfi, **function[1])
+        print("############## Pipeline  ", i, "Finished", dfi.shape, flush=True)
+    return dfi
 
 
 def pd_df_sampling(df, coltarget="y", n1max=10000, n2max=-1, isconcat=1):
@@ -321,22 +335,9 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
     ll = {
         x: []
         for x in [
-            "col",
-            "n",
-            "n_na",
-            "n_notna",
-            "n_na_pct",
-            "nunique",
-            "nunique_pct",
-            "xmin",
-            "xmin_freq",
-            "xmin_pct",
-            "xmax",
-            "xmax_freq",
-            "xmax_pct",
-            "xmed",
-            "xmed_freq",
-            "xmed_pct",
+            "col", "n", "n_na", "n_notna", "n_na_pct", "nunique", "nunique_pct", "xmin",
+            "xmin_freq", "xmin_pct", "xmax", "xmax_freq", "xmax_pct",
+            "xmed", "xmed_freq", "xmed_pct",
         ]
     }
 
@@ -965,20 +966,8 @@ def pd_stat_distribution_colnum(df):
 
    """
     coldes = [
-        "col",
-        "coltype",
-        "dtype",
-        "count",
-        "min",
-        "max",
-        "nb_na",
-        "pct_na",
-        "median",
-        "mean",
-        "std",
-        "25%",
-        "75%",
-        "outlier",
+        "col", "coltype", "dtype", "count", "min", "max", "nb_na",
+        "pct_na", "median", "mean", "std", "25%", "75%", "outlier",
     ]
 
     def getstat(col, type1="num"):
@@ -1031,9 +1020,9 @@ def pd_df_stack(df_list, ignore_index=True):
     return df0
 
 
-########################## Added functions   #######################################################
-####################################################################################################
-def pd_col_fillna(df, colname, value=None, colgroupby=None):
+def pd_col_fillna(
+    dfref, colname=None, method="median", value=None, colgroupby=None, return_val="dataframe,param"
+):
     """
     Function to fill NaNs with a specific value in certain columns
     Arguments:
@@ -1044,17 +1033,30 @@ def pd_col_fillna(df, colname, value=None, colgroupby=None):
     Returns:
         df:            new dataframe with filled values
     """
+    colname = list(dfref.columns) if colname is None else colname
+    df = dfref[colname]
+    params = {"method": method, "na_value": {}}
     for col in colname:
         nb_nans = df[col].isna().sum()
-        if colgroupby is not None:
-            means = df.groupby(colgroupby)[col].transform("median")  # Conditional median
-        else:
+
+        if method == "median":
+            means = df[col].mode()
+
+        if method == "median":
             means = df[col].median()
+
+        if method == "median_conditional":
+            means = df.groupby(colgroupby)[col].transform("median")  # Conditional median
 
         value = means if value is None else value
         print(col, nb_nans, "replaceBY", value)
+        params["na_value"][col] = value
         df[col] = df[col].fillna(value)
-    return df
+
+    if return_val == "dataframe,param":
+        return df, params
+    else:
+        return df
 
 
 def pd_row_drop_above_thresh(df, colnumlist, thresh):

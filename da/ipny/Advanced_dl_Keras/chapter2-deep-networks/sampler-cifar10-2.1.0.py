@@ -11,7 +11,6 @@ import numpy as np
 
 # for plotting
 import matplotlib.pyplot as plt
-
 # keras mnist module
 from keras.datasets import cifar10
 

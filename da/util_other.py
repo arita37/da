@@ -287,14 +287,6 @@ def sk_cluster_distance_pair(Xmat, metric="jaccard"):
         )
 
 
-
-
-
-
-
-
-
-
 ######################  Category Classifier Trees  #########################################################################
 """
 Category Classifier
@@ -358,9 +350,6 @@ clf.fit(train_df, labels, cat_features=cat_features_ids)
 
 
 """
-
-
-
 
 
 # ---------------------             ----------------

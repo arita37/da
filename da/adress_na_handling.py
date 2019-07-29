@@ -11,13 +11,13 @@
 get_ipython().system("pip install -r requirements.txt")
 
 
-# In[106]:
+# In[98]:
 
 
 get_ipython().run_line_magic("load_ext", "autoreload")
 get_ipython().run_line_magic("autoreload", "")
 get_ipython().run_line_magic("matplotlib", "inline")
-
+get_ipython().run_line_magic("config", "IPCompleter.greedy=True")
 
 import gc
 import logging
@@ -28,17 +28,21 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+#### CatbOost
+import catboost as cb
 import lightgbm as lgb
 import matplotlib.pyplot as plt
+### Pandas Profiling for features
+# !pip install https://github.com/pandas-profiling/pandas-profiling/archive/master.zip
+import pandas_profiling as pp
 import seaborn as sns
 import shap
-from mlens.ensemble import BlendEnsemble, SuperLearner
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.linear_model import LogisticRegression
-
-####Ensemble Learning
-from sklearn.metrics import accuracy_score, mean_squared_error, roc_auc_score, roc_curve
+from sklearn.metrics import mean_squared_error, roc_auc_score, roc_curve
 from sklearn.model_selection import KFold, StratifiedKFold
+### MLP Classifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from tqdm import tqdm_notebook
 from util_feature import *
@@ -47,41 +51,59 @@ from util_model import *
 warnings.filterwarnings("ignore")
 
 
-# In[81]:
+# In[64]:
 
 
 print("ok")
 
 
-# In[69]:
+# # Data Loading, basic profiling
+
+# In[3]:
 
 
 folder = os.getcwd() + "/"
 
 
-# In[70]:
+# In[4]:
 
 
 df = pd.read_csv(folder + "/data/address_matching_data.csv")
 df.head(5)
 
 
-# In[20]:
+# In[5]:
 
 
 df.describe()
 
 
-# In[21]:
+# In[6]:
 
 
 df.columns, df.dtypes
 
 
+# In[7]:
+
+
+profile = df.profile_report(title="Pandas Profiling Report")
+profile.to_file(output_file="output.html")
+
+
+colexclude = profile.get_rejected_variables(threshold=0.98)
+colexclude
+
+
+# In[8]:
+
+
 # In[ ]:
 
 
-# In[22]:
+# # Column selection by type
+
+# In[11]:
 
 
 colid = "id"
@@ -117,17 +139,42 @@ colnum = [
 colcat = ["phone_equality", "fax_equality", "street_number_equality"]
 coltext = []
 
+coldate = []
+
 coly = "is_match"
 
 
-# In[75]:
+colall = colnum + colcat + coltext
+
+"""
+
+dfnum, dfcat, dfnum_bin, 
+dfnum_binhot,  dfcat_hot
+
+colnum, colcat, coltext, 
+colnum_bin, colnum_binhot,  
+
+"""
+
+print(colall)
 
 
-# Normalize to NA
+# In[ ]:
+
+
+# In[ ]:
+
+
+# # Data type normalization, Encoding process (numerics, category)
+
+# In[28]:
+
+
+# Normalize to NA, NA Handling
 df = df.replace("?", np.nan)
 
 
-# In[76]:
+# In[29]:
 
 
 ### colnum procesing
@@ -137,10 +184,10 @@ for x in colnum:
 print(df.dtypes)
 
 
-# In[71]:
+# In[30]:
 
 
-##### Colcat processing  :^be caregul thant test contain same category
+##### Colcat processing
 colcat_map = pd_colcat_mapping(df, colcat)
 
 for col in colcat:
@@ -152,7 +199,9 @@ print(df[colcat].dtypes, colcat_map)
 # In[74]:
 
 
-# In[72]:
+# # Data Distribution after encoding/ data type normalization
+
+# In[31]:
 
 
 #### ColTarget Distribution
@@ -166,7 +215,7 @@ coly_stat
 # In[ ]:
 
 
-# In[77]:
+# In[32]:
 
 
 #### Col numerics distribution
@@ -177,7 +226,7 @@ colnum_stat
 # In[ ]:
 
 
-# In[78]:
+# In[33]:
 
 
 #### Col stats distribution
@@ -185,47 +234,69 @@ colcat_stat = pd_stat_distribution(df[colcat], subsample_ratio=0.3)
 colcat_stat
 
 
-# In[30]:
+# In[ ]:
+
+
+# In[ ]:
+
+
+# # Feature processing (strategy 1)
+
+# In[16]:
 
 
 ### BAcKUP data before Pre-processing
-
 dfref = copy.deepcopy(df)
 print(dfref.shape)
 
 
-# In[145]:
+# In[27]:
 
 
-df, colnum_map = pd_colnum_tocat(
-    df, colname=colnum, colexclude=None, bins=5, suffix="_bin", method=""
+df = copy.deepcopy(dfref)
+
+
+# In[22]:
+
+
+## Map numerics to Category bin
+dfnum, colnum_map = pd_colnum_tocat(
+    df, colname=colnum, colexclude=None, colbinmap=None, bins=5, suffix="_bin", method=""
 )
 
 
 print(colnum_map)
 
 
-# In[85]:
+# In[37]:
 
 
-colnum_bin = list(colnum_map.keys())
+colnum_bin = [x + "_bin" for x in list(colnum_map.keys())]
 print(colnum_bin)
 
 
-# In[86]:
+# In[38]:
 
 
-dfnum_hot = pd_col_to_onehot(df[colnum_bin], colname=colnum_bin, returncol=0)
+dfnum[colnum_bin].head(7)
 
 
-# In[153]:
+# In[39]:
 
 
+### numerics bin to One Hot
+dfnum_hot = pd_col_to_onehot(dfnum[colnum_bin], colname=colnum_bin, returncol=0)
 colnum_hot = list(dfnum_hot.columns)
 dfnum_hot.head(10)
 
 
-# In[126]:
+# In[202]:
+
+
+0
+
+
+# In[40]:
 
 
 dfcat_hot = pd_col_to_onehot(df[colcat], colname=colcat, returncol=0)
@@ -236,41 +307,53 @@ dfcat_hot.head(5)
 # In[ ]:
 
 
-# In[89]:
+# In[ ]:
 
 
-#### Train
-X, yy = pd.concat((dfnum_hot, dfcat_hot), axis=1).values, df[coly].values
+# In[ ]:
+
+
+#
+
+# # Train data preparation
+
+# In[67]:
+
+
+#### Train data preparation
+dfX = pd.concat((dfnum_hot, dfcat_hot), axis=1)
+colX = list(dfX.columns)
+X = dfX.values
+yy = df[coly].values
 
 Xtrain, Xtest, ytrain, ytest = train_test_split(X, yy, random_state=42, test_size=0.5, shuffle=True)
 
 
-print(Xtrain.shape, Xtest.shape)
+print(Xtrain.shape, Xtest.shape, colX)
 
 
 # In[ ]:
 
 
-# In[114]:
+# In[203]:
 
 
-Xtrain
+0
 
 
-# In[127]:
-
+# # Model evaluation
 
 # In[ ]:
 
 
-# In[90]:
+# In[42]:
 
 
-### L1 penalty to reduce overfitting
+### Baseline : L2 penalty to reduce overfitting
 clf_log = sk.linear_model.LogisticRegression(penalty="l2", class_weight="balanced")
 
 
-# In[91]:
+# In[43]:
 
 
 clf_log, dd = sk_model_eval_classification(clf_log, 1, Xtrain, ytrain, Xtest, ytest)
@@ -282,12 +365,10 @@ clf_log, dd = sk_model_eval_classification(clf_log, 1, Xtrain, ytrain, Xtest, yt
 sk_model_eval_classification_cv(clf_log, X, yy, test_size=0.5, ncv=3)
 
 
-# In[93]:
+# In[44]:
 
 
-colall = list(dfnum_hot.columns) + list(dfcat_hot.columns)
-
-clf_log_feat = sk_feature_impt_logis(clf_log, colall)
+clf_log_feat = sk_feature_impt_logis(clf_log, colX)
 clf_log_feat
 
 
@@ -386,10 +467,56 @@ for i, clfi in enumerate(clf_list):
     clf_lgbi, dd_lgbi = sk_model_eval_classification(clfi, 0, Xtrain, ytrain, Xtest, ytest)
 
 
+# In[4]:
+
+
+def np_find_indice(v, x):
+    for i, j in enumerate(v):
+        if j == x:
+            return i
+    return -1
+
+
+def col_getnumpy_indice(colall, colcat):
+    return [np_find_indice(colall, x) for x in colcat]
+
+
+# In[7]:
+
+
+colcat_idx = col_getnumpy_indice(colall, colcat)
+
+clf_cb = cb.CatBoostClassifier(
+    iterations=1000,
+    depth=8,
+    learning_rate=0.02,
+    loss_function="Logloss",
+    eval_metric="AUC",
+    random_seed=42,
+    rsm=0.2,  # features subsample
+    od_type="Iter",  # early stopping odwait = 100, # early stopping
+    verbose=100,
+    l2_leaf_reg=20,  # regularisation
+)
+
+
+# In[8]:
+
+
+# clf_cb, dd_cb = sk_model_eval_classification(clf_cb, 1,
+#                                               Xtrain, ytrain, Xtest, ytest)
+
+
+clf_cb.fit(
+    Xtrain,
+    ytrain,
+    eval_set=(Xtest, ytest),
+    cat_features=np.arange(0, Xtrain.shape[1]),
+    use_best_model=True,
+)
+
+
 # In[ ]:
-
-
-# In[49]:
 
 
 # In[ ]:
@@ -410,6 +537,88 @@ clf_svc, dd_svc = sk_model_eval_classification(clf_svc, 1, Xtrain, ytrain, Xtest
 # In[231]:
 
 
+# In[ ]:
+
+
+# In[ ]:
+
+
+# In[ ]:
+
+
+# In[54]:
+
+
+clf_nn = MLPClassifier(
+    hidden_layer_sizes=(50,),
+    max_iter=80,
+    alpha=1e-4,
+    activation="relu",
+    solver="adam",
+    verbose=10,
+    tol=1e-4,
+    random_state=1,
+    learning_rate_init=0.1,
+    early_stopping=True,
+    validation_fraction=0.2,
+)
+
+
+# In[55]:
+
+
+clf_nn, dd_nn = sk_model_eval_classification(clf_nn, 1, Xtrain, ytrain, Xtest, ytest)
+
+
+# # Feature selection
+#
+
+# In[ ]:
+
+
+### Feature Selection (reduce over-fitting)
+# Pre model feature selection (sometimes some features are useful even with low variance....)
+# Post model feature selection
+
+
+# In[59]:
+
+
+### Model independant Selection
+colX_kbest = sk_model_eval_feature(
+    clf_nn, method="f_classif", colname=colX, kbest=50, Xtrain=Xtrain, ytrain=ytrain
+)
+
+
+print(colX_kbest)
+
+
+# In[99]:
+
+
+clf_log_feat
+
+
+# In[80]:
+
+
+clf_log.fit(dfX[colX].values, df[coly].values)
+
+
+# In[100]:
+
+
+feat_eval = sk_feature_evaluation(
+    clf_log, dfX, 30, colname_best=clf_log_feat.feature.values, dfy=df[coly]
+)
+
+
+# In[95]:
+
+
+feat_eval
+
+
 # # Ensembling
 
 # In[ ]:
@@ -418,10 +627,13 @@ clf_svc, dd_svc = sk_model_eval_classification(clf_svc, 1, Xtrain, ytrain, Xtest
 # In[54]:
 
 
-estimators = [("clf_log", clf_log), ("clf_lgb", clf_lgb), ("clf_svc", clf_svc)]
+clf_list = []
+clf_list.append(("clf_log", clf_log))
+clf_list.append(("clf_lgb", clf_lgb))
+clf_list.append(("clf_svc", clf_svc))
 
-clf_ens1 = VotingClassifier(estimators, voting="soft")  # Soft is required
 
+clf_ens1 = VotingClassifier(clf_list, voting="soft")  # Soft is required
 print(clf_ens1)
 
 
@@ -493,8 +705,7 @@ dft_colcat_hot.head(4)
 # In[151]:
 
 
-#### Pre-processing num : are discard, Missing one are included
-
+#### Pre-processing num :  REUSE Colnum_map and Pad the missing values
 dft_numbin, _ = pd_colnum_tocat(
     dft[colnum],
     colname=colnum,
@@ -590,35 +801,10 @@ dft[["id", "is_match"]].to_csv("adress_pred.csv", index=False, mode="w")
 # In[ ]:
 
 
-# ensemble = SuperLearner(scorer=roc_auc_score, random_state=32, verbose=2)
-
-
-def model_ensemble_build(clf_list, proba, **kwargs):
-    """Return an ensemble."""
-    ensemble = BlendEnsemble(**kwargs)
-    ensemble.add(clf_list, proba=proba)  # Specify 'proba' here
-    ensemble.add_meta(LogisticRegression())
-    return ensemble
-
-
-clf_list = [clf_log, clf_lgb]
-
-clf_ens = model_ensemble_build(clf_list, proba=True, scorer=roc_auc_score)
-
-
-print(clf_ens)
-
-
 # In[ ]:
 
 
 # In[ ]:
-
-
-train_df.loc[train_df["is_match"] == -1, "is_match"] = 0
-
-test_df = pd.read_csv("./data/address_matching_test.csv")
-test_df["is_match"] = np.nan
 
 
 # In[33]:

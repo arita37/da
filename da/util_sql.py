@@ -2,7 +2,6 @@
 from __future__ import division
 
 import datetime
-
 # -*- coding: utf-8 -*-
 # ---------Various Utilities function for Python--------------------------------------
 import os

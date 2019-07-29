@@ -19,7 +19,8 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras.datasets import cifar10
-from keras.layers import Conv2D, Conv2DTranspose, Dense, Flatten, Input, Reshape
+from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,
+                          Reshape)
 from keras.models import Model
 from keras.utils import plot_model
 

@@ -4,7 +4,6 @@
 from __future__ import absolute_import, division, print_function
 
 from keras.layers import Conv2D, Dense, Flatten
-
 # keras modules
 from keras.models import Sequential
 from keras.optimizers import RMSprop

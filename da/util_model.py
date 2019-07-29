@@ -19,30 +19,17 @@ from matplotlib import pyplot as plt
 from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.ensemble import (
-    AdaBoostClassifier,
-    ExtraTreesClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
+from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
+                                           QuadraticDiscriminantAnalysis)
+from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
+                              GradientBoostingClassifier,
+                              RandomForestClassifier)
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    make_scorer,
-    mean_absolute_error,
-    roc_auc_score,
-    roc_curve,
-)
-from sklearn.model_selection import (
-    GridSearchCV,
-    KFold,
-    StratifiedKFold,
-    cross_val_score,
-    train_test_split,
-)
+from sklearn.metrics import (accuracy_score, classification_report,
+                             confusion_matrix, make_scorer,
+                             mean_absolute_error, roc_auc_score, roc_curve)
+from sklearn.model_selection import (GridSearchCV, KFold, StratifiedKFold,
+                                     cross_val_score, train_test_split)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
@@ -176,8 +163,13 @@ def split_train2(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None, 
 
 
 def model_lightgbm_kfold(
-        # LightGBM GBDT with KFold or Stratified KFold
-        df, colname=None, num_folds=2, stratified=False, colexclude=None, debug=False
+    # LightGBM GBDT with KFold or Stratified KFold
+    df,
+    colname=None,
+    num_folds=2,
+    stratified=False,
+    colexclude=None,
+    debug=False,
 ):
     # Cross validation model
     if stratified:
@@ -226,16 +218,16 @@ def model_lightgbm_kfold(
 
 
 def model_catboost_classifier(
-        Xtrain,
-        Ytrain,
-        Xcolname=None,
-        pars={
-            "learning_rate": 0.1,
-            "iterations": 1000,
-            "random_seed": 0,
-            "loss_function": "MultiClass",
-        },
-        isprint=0,
+    Xtrain,
+    Ytrain,
+    Xcolname=None,
+    pars={
+        "learning_rate": 0.1,
+        "iterations": 1000,
+        "random_seed": 0,
+        "loss_function": "MultiClass",
+    },
+    isprint=0,
 ):
     """
   from catboost import Pool, CatBoostClassifier
@@ -291,14 +283,14 @@ preds_proba = model.predict_proba(test_pool)
 
 ######################  ALGO  #########################################################################
 def sk_model_auto_tpot(
-        Xmat,
-        y,
-        outfolder="aaserialize/",
-        model_type="regressor/classifier",
-        train_size=0.5,
-        generation=1,
-        population_size=5,
-        verbosity=2,
+    Xmat,
+    y,
+    outfolder="aaserialize/",
+    model_type="regressor/classifier",
+    train_size=0.5,
+    generation=1,
+    population_size=5,
+    verbosity=2,
 ):
     """ Automatic training of Xmat--->Y, Generate SKlearn code in outfile
       Very Slow Process, use lower number of Sample
@@ -326,12 +318,12 @@ def sk_model_auto_tpot(
     clf.fit(X_train, y_train)
     print((tpot.score(X_test, y_test)))
     file1 = (
-            DIRCWD
-            + "/"
-            + outfolder
-            + "/tpot_regression_pipeline_"
-            + str(np.random.randint(1000, 9999))
-            + ".py"
+        DIRCWD
+        + "/"
+        + outfolder
+        + "/tpot_regression_pipeline_"
+        + str(np.random.randint(1000, 9999))
+        + ".py"
     )
     tpot.export(file1)
     return file1
@@ -348,12 +340,12 @@ def sk_score_get(name="r2"):
 
 
 def sk_params_search_best(
-        clf,
-        X,
-        y,
-        param_grid={"alpha": np.linspace(0, 1, 5)},
-        method="gridsearch",
-        param_search={"scorename": "r2", "cv": 5, "population_size": 5, "generations_number": 3},
+    clf,
+    X,
+    y,
+    param_grid={"alpha": np.linspace(0, 1, 5)},
+    method="gridsearch",
+    param_search={"scorename": "r2", "cv": 5, "population_size": 5, "generations_number": 3},
 ):
     """
    Genetic: population_size=5, ngene_mutation_prob=0.10,,gene_crossover_prob=0.5, tournament_size=3,  generations_number=3
@@ -416,12 +408,12 @@ def sk_error_rmse(Ypred, Ytrue):
 
 
 def sk_cluster(
-        Xmat,
-        method="kmode",
-        args=(),
-        kwds={"metric": "euclidean", "min_cluster_size": 150, "min_samples": 3},
-        isprint=1,
-        preprocess={"norm": False},
+    Xmat,
+    method="kmode",
+    args=(),
+    kwds={"metric": "euclidean", "min_cluster_size": 150, "min_samples": 3},
+    isprint=1,
+    preprocess={"norm": False},
 ):
     """
    'hdbscan',(), kwds={'metric':'euclidean', 'min_cluster_size':150, 'min_samples':3 }
@@ -655,7 +647,7 @@ def model_logistic_score(clf, df1, cols, coltarget, outype="score"):
 
     yall_score = score_calc(yall_proba)
     yall_score = (
-            1000 * (yall_score - np.min(yall_score)) / (np.max(yall_score) - np.min(yall_score))
+        1000 * (yall_score - np.min(yall_score)) / (np.max(yall_score) - np.min(yall_score))
     )
 
     if outype == "score":
@@ -858,12 +850,12 @@ def sk_tree_get_ifthen(tree, feature_names, target_names, spacer_base=" "):
                 target_count = int(v)
                 print(
                     (
-                            spacer
-                            + "return "
-                            + str(target_name)
-                            + " ( "
-                            + str(target_count)
-                            + ' examples )"'
+                        spacer
+                        + "return "
+                        + str(target_name)
+                        + " ( "
+                        + str(target_count)
+                        + ' examples )"'
                     )
                 )
 
