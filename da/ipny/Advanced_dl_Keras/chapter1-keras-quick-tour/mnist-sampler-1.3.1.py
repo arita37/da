@@ -1,16 +1,15 @@
-'''
+"""
 Demonstrates how to sample and plot MNIST digits
 using Keras API
 https://github.com/PacktPublishing/Advanced-Deep-Learning-with-Keras
-'''
+"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from keras.datasets import mnist
+
 import matplotlib.pyplot as plt
+from keras.datasets import mnist
 
 # load dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -29,13 +28,13 @@ images = x_train[indexes]
 labels = y_train[indexes]
 
 # plot the 25 mnist digits
-plt.figure(figsize=(5,5))
+plt.figure(figsize=(5, 5))
 for i in range(len(indexes)):
     plt.subplot(5, 5, i + 1)
     image = images[i]
-    plt.imshow(image, cmap='gray')
-    plt.axis('off')
+    plt.imshow(image, cmap="gray")
+    plt.axis("off")
 
 plt.savefig("mnist-samples.png")
 plt.show()
-plt.close('all')
+plt.close("all")

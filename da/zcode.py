@@ -3,28 +3,54 @@
 %autoreload 2
 
 import os
+import re
+
+import numpy as np
+import pandas as pd
+
+########################################
+import da
+import matplotlib
+import matplotlib.pyplot as plt
+import nltk
+import seaborn as sns
+import tensorflow as tf
+import util_date
+# Cleaning text of stopwords
+from nltk.corpus import stopwords
+# Stemming and Lemmatizing
+# Stemming and Lemmatizing
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
+from sklearn.feature_extraction.text import (
+    CountVectorizer, TfidfTransformer, TfidfVectorizer)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
+from util_date import *
+from util_feature import *
+from util_model import *
+from util_plot import *
+
 dir0 = os.getcwd()
 os.chdir( dir0 + "/da/")
 print( os.getcwd() )
 
-import tensorflow as tf
 print(tf, tf.__version__)
 
 
 
-from util_date import *
-from util_feature import *
-from util_plot import *
-from util_model import *
 
 
-########################################
-import da
 
 da.util_feature.pd_stat_histogram(df)
 
 
-import pandas as pd
 
 class tt(object) :
   def ff(self,) :
@@ -63,31 +89,11 @@ a.ff()
 #####################################################################################################
 #####################################################################################################
 %matplotlib inline
-import re
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 
-import seaborn as sns
 
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score
-from sklearn.multiclass import OneVsRestClassifier
 
-import nltk
-from nltk.corpus import stopwords
 
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.naive_bayes import MultinomialNB
 
 
 
@@ -112,10 +118,6 @@ for category in categories:
 
 
 
-# Stemming and Lemmatizing
-from nltk.stem.porter import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
-from nltk.stem.wordnet import WordNetLemmatizer
 
 porter = PorterStemmer()
 snowball = SnowballStemmer('english')
@@ -139,8 +141,6 @@ print(preprocessed_docs)
 
 
 
-# Cleaning text of stopwords
-from nltk.corpus import stopwords
 
 tokenized_docs_no_stopwords = []
 
@@ -160,10 +160,6 @@ print(tokenized_docs_no_stopwords)
 
 
 
-# Stemming and Lemmatizing
-from nltk.stem.porter import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
-from nltk.stem.wordnet import WordNetLemmatizer
 
 porter = PorterStemmer()
 snowball = SnowballStemmer('english')
@@ -268,7 +264,6 @@ datestring_to
 
 
 
-import util_date
 
 
 
@@ -352,12 +347,3 @@ c = "Fare"
 
 
 """
-
-
-
-
-
-
-
-
-

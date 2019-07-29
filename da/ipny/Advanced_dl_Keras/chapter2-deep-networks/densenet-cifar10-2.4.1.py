@@ -11,24 +11,30 @@ http://openaccess.thecvf.com/content_cvpr_2017/papers/
 Network below is similar to 100-Layer DenseNet-BC (k=12)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation
-from keras.layers import MaxPooling2D, AveragePooling2D
-from keras.layers import Input, Flatten, Dropout
-from keras.layers.merge import concatenate
-from keras.optimizers import RMSprop
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
-from keras.callbacks import LearningRateScheduler
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Model
-from keras.datasets import cifar10
-from keras.utils import plot_model
-from keras.utils import to_categorical
 import os
+
 import numpy as np
+
+from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau
+from keras.datasets import cifar10
+from keras.layers import (
+    Activation,
+    AveragePooling2D,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    MaxPooling2D,
+)
+from keras.layers.merge import concatenate
+from keras.models import Model
+from keras.optimizers import RMSprop
+from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import plot_model, to_categorical
 
 # training parameters
 batch_size = 32
@@ -59,16 +65,17 @@ compression_factor = 0.5
 input_shape = x_train.shape[1:]
 
 # mormalize data
-x_train = x_train.astype('float32') / 255
-x_test = x_test.astype('float32') / 255
-print('x_train shape:', x_train.shape)
-print(x_train.shape[0], 'train samples')
-print(x_test.shape[0], 'test samples')
-print('y_train shape:', y_train.shape)
+x_train = x_train.astype("float32") / 255
+x_test = x_test.astype("float32") / 255
+print("x_train shape:", x_train.shape)
+print(x_train.shape[0], "train samples")
+print(x_test.shape[0], "test samples")
+print("y_train shape:", y_train.shape)
 
 # convert class vectors to binary class matrices.
 y_train = to_categorical(y_train, num_classes)
 y_test = to_categorical(y_test, num_classes)
+
 
 def lr_schedule(epoch):
     """Learning Rate Schedule
@@ -91,7 +98,7 @@ def lr_schedule(epoch):
         lr *= 1e-2
     elif epoch > 80:
         lr *= 1e-1
-    print('Learning rate: ', lr)
+    print("Learning rate: ", lr)
     return lr
 
 
@@ -99,11 +106,10 @@ def lr_schedule(epoch):
 # densenet CNNs (composite function) are made of BN-ReLU-Conv2D
 inputs = Input(shape=input_shape)
 x = BatchNormalization()(inputs)
-x = Activation('relu')(x)
-x = Conv2D(num_filters_bef_dense_block,
-           kernel_size=3,
-           padding='same',
-           kernel_initializer='he_normal')(x)
+x = Activation("relu")(x)
+x = Conv2D(
+    num_filters_bef_dense_block, kernel_size=3, padding="same", kernel_initializer="he_normal"
+)(x)
 x = concatenate([inputs, x])
 
 # stack of dense blocks bridged by transition layers
@@ -111,19 +117,15 @@ for i in range(num_dense_blocks):
     # a dense block is a stack of bottleneck layers
     for j in range(num_bottleneck_layers):
         y = BatchNormalization()(x)
-        y = Activation('relu')(y)
-        y = Conv2D(4 * growth_rate,
-                   kernel_size=1,
-                   padding='same',
-                   kernel_initializer='he_normal')(y)
+        y = Activation("relu")(y)
+        y = Conv2D(4 * growth_rate, kernel_size=1, padding="same", kernel_initializer="he_normal")(
+            y
+        )
         if not data_augmentation:
             y = Dropout(0.2)(y)
         y = BatchNormalization()(y)
-        y = Activation('relu')(y)
-        y = Conv2D(growth_rate,
-                   kernel_size=3,
-                   padding='same',
-                   kernel_initializer='he_normal')(y)
+        y = Activation("relu")(y)
+        y = Conv2D(growth_rate, kernel_size=3, padding="same", kernel_initializer="he_normal")(y)
         if not data_augmentation:
             y = Dropout(0.2)(y)
         x = concatenate([x, y])
@@ -136,10 +138,9 @@ for i in range(num_dense_blocks):
     num_filters_bef_dense_block += num_bottleneck_layers * growth_rate
     num_filters_bef_dense_block = int(num_filters_bef_dense_block * compression_factor)
     y = BatchNormalization()(x)
-    y = Conv2D(num_filters_bef_dense_block,
-               kernel_size=1,
-               padding='same',
-               kernel_initializer='he_normal')(y)
+    y = Conv2D(
+        num_filters_bef_dense_block, kernel_size=1, padding="same", kernel_initializer="he_normal"
+    )(y)
     if not data_augmentation:
         y = Dropout(0.2)(y)
     x = AveragePooling2D()(y)
@@ -149,52 +150,45 @@ for i in range(num_dense_blocks):
 # after average pooling, size of feature map is 1 x 1
 x = AveragePooling2D(pool_size=8)(x)
 y = Flatten()(x)
-outputs = Dense(num_classes,
-                kernel_initializer='he_normal',
-                activation='softmax')(y)
+outputs = Dense(num_classes, kernel_initializer="he_normal", activation="softmax")(y)
 
 # instantiate and compile model
 # orig paper uses SGD but RMSprop works better for DenseNet
 model = Model(inputs=inputs, outputs=outputs)
-model.compile(loss='categorical_crossentropy',
-              optimizer=RMSprop(1e-3),
-              metrics=['accuracy'])
+model.compile(loss="categorical_crossentropy", optimizer=RMSprop(1e-3), metrics=["accuracy"])
 model.summary()
 plot_model(model, to_file="cifar10-densenet.png", show_shapes=True)
 
 # prepare model model saving directory
-save_dir = os.path.join(os.getcwd(), 'saved_models')
-model_name = 'cifar10_densenet_model.{epoch:02d}.h5'
+save_dir = os.path.join(os.getcwd(), "saved_models")
+model_name = "cifar10_densenet_model.{epoch:02d}.h5"
 if not os.path.isdir(save_dir):
     os.makedirs(save_dir)
 filepath = os.path.join(save_dir, model_name)
 
 # prepare callbacks for model saving and for learning rate reducer
-checkpoint = ModelCheckpoint(filepath=filepath,
-                             monitor='val_acc',
-                             verbose=1,
-                             save_best_only=True)
+checkpoint = ModelCheckpoint(filepath=filepath, monitor="val_acc", verbose=1, save_best_only=True)
 
 lr_scheduler = LearningRateScheduler(lr_schedule)
 
-lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-                               cooldown=0,
-                               patience=5,
-                               min_lr=0.5e-6)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1), cooldown=0, patience=5, min_lr=0.5e-6)
 
 callbacks = [checkpoint, lr_reducer, lr_scheduler]
 
 # run training, with or without data augmentation
 if not data_augmentation:
-    print('Not using data augmentation.')
-    model.fit(x_train, y_train,
-              batch_size=batch_size,
-              epochs=epochs,
-              validation_data=(x_test, y_test),
-              shuffle=True,
-              callbacks=callbacks)
+    print("Not using data augmentation.")
+    model.fit(
+        x_train,
+        y_train,
+        batch_size=batch_size,
+        epochs=epochs,
+        validation_data=(x_test, y_test),
+        shuffle=True,
+        callbacks=callbacks,
+    )
 else:
-    print('Using real-time data augmentation.')
+    print("Using real-time data augmentation.")
     # preprocessing  and realtime data augmentation
     datagen = ImageDataGenerator(
         featurewise_center=False,  # set input mean to 0 over the dataset
@@ -206,20 +200,25 @@ else:
         width_shift_range=0.1,  # randomly shift images horizontally
         height_shift_range=0.1,  # randomly shift images vertically
         horizontal_flip=True,  # randomly flip images
-        vertical_flip=False)  # randomly flip images
+        vertical_flip=False,
+    )  # randomly flip images
 
     # compute quantities required for featurewise normalization
     # (std, mean, and principal components if ZCA whitening is applied)
     datagen.fit(x_train)
 
     # fit the model on the batches generated by datagen.flow()
-    model.fit_generator(datagen.flow(x_train, y_train, batch_size=batch_size),
-                        steps_per_epoch=x_train.shape[0] // batch_size,
-                        validation_data=(x_test, y_test),
-                        epochs=epochs, verbose=1, workers=4,
-                        callbacks=callbacks)
+    model.fit_generator(
+        datagen.flow(x_train, y_train, batch_size=batch_size),
+        steps_per_epoch=x_train.shape[0] // batch_size,
+        validation_data=(x_test, y_test),
+        epochs=epochs,
+        verbose=1,
+        workers=4,
+        callbacks=callbacks,
+    )
 
 # score trained model
 scores = model.evaluate(x_test, y_test, verbose=1)
-print('Test loss:', scores[0])
-print('Test accuracy:', scores[1])
+print("Test loss:", scores[0])
+print("Test accuracy:", scores[1])

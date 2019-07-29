@@ -3,11 +3,10 @@ Some special methods
 
 """
 
-try :
-  from geopy.distance import great_circle
-except Exception as e :
-  print(e)
-
+try:
+    from geopy.distance import great_circle
+except Exception as e:
+    print(e)
 
 
 # ---------------------Execute rules on State Matrix --------------------------------
@@ -205,22 +204,23 @@ def pd_checkpoint():
 ########### Added functions
 ##################################
 
+
 def pd_col_add_distance_to_point(df, center_point):
-    '''
+    """
     Function adding a column with distance to a point
     Arguments:
         df:            dataframe (requires latitude / longitude)
         center_point:  tuple with lat / long of point
     Returns:
         df:            dataframe with new column ['distance'] (in km)
-    '''
-    if 'latitude' and 'longitude' not in df.columns:
-        print('There are no lat / long data in the dataframe')
-    else:    
-        df['distance']=df.apply(lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1)
+    """
+    if "latitude" and "longitude" not in df.columns:
+        print("There are no lat / long data in the dataframe")
+    else:
+        df["distance"] = df.apply(
+            lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1
+        )
     return df
-
-
 
 
 def np_correl_rank(correl=[[1, 0], [0, 1]]):
@@ -237,8 +237,6 @@ def np_correl_rank(correl=[[1, 0], [0, 1]]):
             correl_rank[k, 3] = abs(correl[i, j])
     correl_rank = util.sortcol(correl_rank, 3, asc=False)
     return correl_rank
-
-
 
 
 def sk_cluster_distance_pair(Xmat, metric="jaccard"):
@@ -279,6 +277,7 @@ def sk_cluster_distance_pair(Xmat, metric="jaccard"):
 
    """
     import fast
+
     if metric == "jaccard":
         return fast.distance_jaccard_X(Xmat)
 
@@ -290,14 +289,86 @@ def sk_cluster_distance_pair(Xmat, metric="jaccard"):
 
 
 
+
+
+
+
+
+
+######################  Category Classifier Trees  #########################################################################
+"""
+Category Classifier
+https://github.com/catboost/catboost/blob/master/catboost/tutorials/kaggle_paribas.ipynb
+
+Very Efficient
+D:\_devs\Python01\project27\linux_project27\mlearning\category_learning
+
+
+https://tech.yandex.com/catboost/doc/dg/concepts/python-usages-examples-docpage/
+
+
+clf = CatBoostClassifier(learning_rate=0.1, iterations=1000, random_seed=0)
+clf.fit(train_df, labels, cat_features=cat_features_ids)
+
+
+##### Base Approach
+import pandas as pd
+import numpy as np
+
+from itertools import combinations
+from catboost import CatBoostClassifier
+
+
+labels = train_df.target
+test_id = test_df.ID
+
+train_df.drop(['ID', 'target'], axis=1, inplace=True)
+test_df.drop(['ID'], axis=1, inplace=True)
+
+train_df.fillna(-9999, inplace=True)
+test_df.fillna(-9999, inplace=True)
+
+# Keep list of all categorical features in dataset to specify this for CatBoost
+cat_features_ids = np.where(train_df.apply(pd.Series.nunique) < 30000)[0].tolist()
+
+
+
+########  Regularizer
+selected_features = [
+    'v10', 'v12', 'v14', 'v21', 'v22', 'v24', 'v30', 'v31', 'v34', 'v38', 'v40', 'v47', 'v50',
+    'v52', 'v56', 'v62', 'v66', 'v72', 'v75', 'v79', 'v91', 'v112', 'v113', 'v114', 'v129'
+]
+
+# drop some of the features that were not selected
+train_df = train_df[selected_features]
+test_df = test_df[selected_features]
+
+# update the list of categorical features
+cat_features_ids = np.where(train_df.apply(pd.Series.nunique) < 30000)[0].tolist()
+
+
+char_features = list(train_df.columns[train_df.dtypes == np.object])
+char_features_without_v22 = list(train_df.columns[(train_df.dtypes == np.object) & (train_df.columns != 'v22')])
+
+cmbs = list(combinations(char_features, 2)) + map(lambda x: ("v22",) + x, combinations(char_features_without_v22, 2))
+
+
+clf = CatBoostClassifier(learning_rate=0.1, iterations=1000, random_seed=0)
+clf.fit(train_df, labels, cat_features=cat_features_ids)
+
+
+"""
+
+
+
+
+
 # ---------------------             ----------------
 """
  Reshape your data either using X.reshape(-1, 1) if your data has a single feature or
   X.reshape(1, -1) if it contains a single sample.
 
 """
-
-
 
 
 """
@@ -352,11 +423,6 @@ SALES.groupby('name')['quantity'].sum().plot(kind="bar")
 """
 
 
-
-
-
-
-
 """
 class META_DB_CLASS(object):
    # Create Meta database to store infos on the tables : csv, zip, HFS, Postgres
@@ -390,7 +456,6 @@ ALL_DB['japancoupon']['table_columns']= df_schema
 meta_db= META_DB_CLASS( in1+'ALL_DB_META.pkl')
 
 """
-
 
 
 ############################################################################
@@ -495,7 +560,3 @@ from examples.source_data.loaders import get_mushroom_data, get_cars_data, get_s
 
 
 """
-
-
-
-

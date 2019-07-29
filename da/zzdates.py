@@ -4,21 +4,22 @@ Created on Thu Jan 26 17:29:50 2017
 """
 
 
-import arrow
-from datetime import datetime
-import numpy as np
-import scipy as sci
-import pandas as pd
 import copy
+from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import scipy as sci
 
-FMT = 'YYYY-MM-DD'
-FMTTIME = '%Y%m%d%H%M%S'
-FMTTIME1 = 'YYYY-MM-DD HH:mm:SS'
+import arrow
+
+FMT = "YYYY-MM-DD"
+FMTTIME = "%Y%m%d%H%M%S"
+FMTTIME1 = "YYYY-MM-DD HH:mm:SS"
 CACHEWEEKDAY = {}
 
 
-def datestring_todatetime(x, fmt=FMTTIME) :
+def datestring_todatetime(x, fmt=FMTTIME):
     pass
 
 
@@ -39,27 +40,29 @@ def datetime_tointhour(datelist1):
 
 
 ############################################################################################
-def date_diffsecond(str_t1, str_t0, fmt=FMTTIME1) :
+def date_diffsecond(str_t1, str_t0, fmt=FMTTIME1):
     dd = arrow.get(str_t1, fmt) - arrow.get(str_t0, fmt)
     return dd.total_seconds()
 
 
-def date_diffstart(t) : return date_diffsecond(str_t1=t, str_t0=t0)
+def date_diffstart(t):
+    return date_diffsecond(str_t1=t, str_t0=t0)
 
 
-def date_diffend(t) :   return date_diffsecond(str_t1=t1, str_t0=t)
+def date_diffend(t):
+    return date_diffsecond(str_t1=t1, str_t0=t)
 
 
-def np_dict_tolist(dd) :
-    return [ val  for _, val in list(dd.items()) ]
+def np_dict_tolist(dd):
+    return [val for _, val in list(dd.items())]
 
 
-def np_dict_tostr_val(dd) :
-    return ','.join([ str(val)  for _, val in list(dd.items()) ])
+def np_dict_tostr_val(dd):
+    return ",".join([str(val) for _, val in list(dd.items())])
 
 
-def np_dict_tostr_key(dd) :
-    return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
+def np_dict_tostr_key(dd):
+    return ",".join([str(key) for key, _ in list(dd.items())])
 
 
 ###################Faster one   ############################################################
@@ -75,59 +78,58 @@ def hour(s):   return int(s[11:13])
 
 def weekday(s, fmt=FMT, i0=0, i1=10):
     ###Super Fast because of caching
-    s2= s[i0:i1]
-    try :
+    s2 = s[i0:i1]
+    try:
         return CACHEWEEKDAY[s2]
     except KeyError:
-        wd= arrow.get(s2, fmt).weekday()
-        CACHEWEEKDAY[s2 ] = wd
+        wd = arrow.get(s2, fmt).weekday()
+        CACHEWEEKDAY[s2] = wd
     return wd
 
 
-
-def season(d): 
-    m =  int( d[5:7])
-    if m > 3 and m  < 10:
+def season(d):
+    m = int(d[5:7])
+    if m > 3 and m < 10:
         return 1
     else:
         return 0
 
 
 def daytime(d):
-    h= int(d[11:13])
-    if   h < 11 :
+    h = int(d[11:13])
+    if h < 11:
         return 0
-    elif h < 14 :
+    elif h < 14:
         return 1  # lunch
-    elif h < 18 :
+    elif h < 18:
         return 2  # Afternoon
-    elif h < 21 :
+    elif h < 21:
         return 3  # Dinner
-    else :
+    else:
         return 4  # Night
 
 
-def pd_date_splitall(df, coldate='purchased_at') :
-    df= copy.deepcopy(df)
-    df['year']= df[coldate].apply(year)
-    df['month']= df[coldate].apply(month)
-    df['day']= df[coldate].apply(day)
-    df['weekday']= df[coldate].apply(weekday)
-    df['daytime']= df[coldate].apply(daytime)
-    df['season']= df[coldate].apply(season)
+def pd_date_splitall(df, coldate="purchased_at"):
+    df = copy.deepcopy(df)
+    df["year"] = df[coldate].apply(year)
+    df["month"] = df[coldate].apply(month)
+    df["day"] = df[coldate].apply(day)
+    df["weekday"] = df[coldate].apply(weekday)
+    df["daytime"] = df[coldate].apply(daytime)
+    df["season"] = df[coldate].apply(season)
     return df
 
 
-def date_tosecond(dd,  format1="YYYYMMDDHHmm", unit="second") :
- try :
-   t= arrow.get(str(dd), "YYYYMMDDHHmmss")
-   return t.timestamp
- except :
-    try :
-       t= arrow.get(str(dd), "YYYYMMDDHHmm")
-       return t.timestamp
-    except :
-       return -1
+def date_tosecond(dd, format1="YYYYMMDDHHmm", unit="second"):
+    try:
+        t = arrow.get(str(dd), "YYYYMMDDHHmmss")
+        return t.timestamp
+    except:
+        try:
+            t = arrow.get(str(dd), "YYYYMMDDHHmm")
+            return t.timestamp
+        except:
+            return -1
 
 
 # df['datesec']= df['datetime'].apply(  date_tosecond  )
@@ -196,11 +198,14 @@ def date_find_intradateid(datetimelist, stringdate=None):
         tt = datestring_todatetime(t)
         k = util.np_find(tt, datetimelist)
         print(str(k) + ",", tt)
+
+
 # kday= date_find_kday_fromintradaydate(k, spdateref2, spdailyq.date)
 
 
 def datetime_convertzone1_tozone2(tt, fromzone="Japan", tozone="US/Eastern"):
     import pytz, dateutil
+
     tz = pytz.timezone(fromzone)
     tmz = pytz.timezone(tozone)
     if type(tt) == datetime:
@@ -462,7 +467,7 @@ def date_getspecificdate(
     outputype1="intdate",
     includelastdate=True,
     includefirstdate=False,
-    ):
+):
     vec2 = []
 
     if isint(datelist[0]):
@@ -605,4 +610,3 @@ def date_align(quotes, dateref=None, datestart=19550101, type1="close"):
             datei = np.array(df.date.values)
         close[k, :] = _date_align(dateref, datei, tmax, closei)
     return np.array(close, dtype=np.float32), dateref
-

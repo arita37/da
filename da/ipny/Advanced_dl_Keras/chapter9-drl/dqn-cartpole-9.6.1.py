@@ -3,18 +3,20 @@
 
 """
 
+import argparse
+import random
+from collections import deque
+
+import numpy as np
+
+import gym
+from gym import logger, wrappers
 from keras.layers import Dense, Input
 from keras.models import Model
 from keras.optimizers import Adam
-from collections import deque
-import numpy as np
-import random
-import argparse
-import gym
-from gym import wrappers, logger
 
 
-class DQNAgent():
+class DQNAgent:
     def __init__(self, state_space, action_space, args, episodes=500):
 
         self.action_space = action_space
@@ -30,15 +32,15 @@ class DQNAgent():
         # iteratively applying decay til 10% exploration/90% exploitation
         self.epsilon_min = 0.1
         self.epsilon_decay = self.epsilon_min / self.epsilon
-        self.epsilon_decay = self.epsilon_decay ** (1. / float(episodes))
+        self.epsilon_decay = self.epsilon_decay ** (1.0 / float(episodes))
 
         # Q Network weights filename
-        self.weights_file = 'dqn_cartpole.h5'
+        self.weights_file = "dqn_cartpole.h5"
         # Q Network for training
         n_inputs = state_space.shape[0]
         n_outputs = action_space.n
         self.q_model = self.build_model(n_inputs, n_outputs)
-        self.q_model.compile(loss='mse', optimizer=Adam())
+        self.q_model.compile(loss="mse", optimizer=Adam())
         # target Q Network
         self.target_q_model = self.build_model(n_inputs, n_outputs)
         # copy Q Network params to target Q Network
@@ -51,28 +53,24 @@ class DQNAgent():
         else:
             print("-------------DQN------------")
 
-    
     # Q Network is 256-256-256 MLP
     def build_model(self, n_inputs, n_outputs):
-        inputs = Input(shape=(n_inputs, ), name='state')
-        x = Dense(256, activation='relu')(inputs)
-        x = Dense(256, activation='relu')(x)
-        x = Dense(256, activation='relu')(x)
-        x = Dense(n_outputs, activation='linear', name='action')(x)
+        inputs = Input(shape=(n_inputs,), name="state")
+        x = Dense(256, activation="relu")(inputs)
+        x = Dense(256, activation="relu")(x)
+        x = Dense(256, activation="relu")(x)
+        x = Dense(n_outputs, activation="linear", name="action")(x)
         q_model = Model(inputs, x)
         q_model.summary()
         return q_model
-
 
     # save Q Network params to a file
     def save_weights(self):
         self.q_model.save_weights(self.weights_file)
 
-
     # copy trained Q Network params to target Q Network
     def update_weights(self):
         self.target_q_model.set_weights(self.q_model.get_weights())
-
 
     # eps-greedy policy
     def act(self, state):
@@ -85,12 +83,10 @@ class DQNAgent():
         # select the action with max Q-value
         return np.argmax(q_values[0])
 
-
     # store experiences in the replay buffer
     def remember(self, state, action, reward, next_state, done):
         item = (state, action, reward, next_state, done)
         self.memory.append(item)
-
 
     # compute Q_max
     # use of target Q Network solves the non-stationarity problem
@@ -115,7 +111,6 @@ class DQNAgent():
         q_value += reward
         return q_value
 
-
     # experience replay addresses the correlation issue between samples
     def replay(self, batch_size):
         # sars = state, action, reward, state' (next_state)
@@ -139,11 +134,13 @@ class DQNAgent():
             q_values_batch.append(q_values[0])
 
         # train the Q-network
-        self.q_model.fit(np.array(state_batch),
-                         np.array(q_values_batch),
-                         batch_size=batch_size,
-                         epochs=1,
-                         verbose=0)
+        self.q_model.fit(
+            np.array(state_batch),
+            np.array(q_values_batch),
+            batch_size=batch_size,
+            epochs=1,
+            verbose=0,
+        )
 
         # update exploration-exploitation probability
         self.update_epsilon()
@@ -154,34 +151,29 @@ class DQNAgent():
 
         self.replay_counter += 1
 
-    
     # decrease the exploration, increase exploitation
     def update_epsilon(self):
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-        
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('env_id',
-                        nargs='?',
-                        default='CartPole-v0',
-                        help='Select the environment to run')
-    parser.add_argument("-d",
-                        "--ddqn",
-                        action='store_true',
-                        help="Use Double DQN")
+    parser.add_argument(
+        "env_id", nargs="?", default="CartPole-v0", help="Select the environment to run"
+    )
+    parser.add_argument("-d", "--ddqn", action="store_true", help="Use Double DQN")
     args = parser.parse_args()
 
     # the number of trials without falling over
     win_trials = 100
 
     # the CartPole-v0 is considered solved if for 100 consecutive trials,
-    # the cart pole has not fallen over and it has achieved an average 
+    # the cart pole has not fallen over and it has achieved an average
     # reward of 195.0
     # a reward of +1 is provided for every timestep the pole remains
     # upright
-    win_reward = { 'CartPole-v0' : 195.0 }
+    win_reward = {"CartPole-v0": 195.0}
 
     # stores the reward per episode
     scores = deque(maxlen=win_trials)
@@ -226,22 +218,25 @@ if __name__ == '__main__':
             state = next_state
             total_reward += reward
 
-
         # call experience relay
         if len(agent.memory) >= batch_size:
             agent.replay(batch_size)
-    
+
         scores.append(total_reward)
         mean_score = np.mean(scores)
         if mean_score >= win_reward[args.env_id] and episode >= win_trials:
-            print("Solved in episode %d: Mean survival = %0.2lf in %d episodes"
-                  % (episode, mean_score, win_trials))
+            print(
+                "Solved in episode %d: Mean survival = %0.2lf in %d episodes"
+                % (episode, mean_score, win_trials)
+            )
             print("Epsilon: ", agent.epsilon)
             agent.save_weights()
             break
         if episode % win_trials == 0:
-            print("Episode %d: Mean survival = %0.2lf in %d episodes" %
-                  (episode, mean_score, win_trials))
+            print(
+                "Episode %d: Mean survival = %0.2lf in %d episodes"
+                % (episode, mean_score, win_trials)
+            )
 
     # close the env and write monitor result info to disk
-    env.close() 
+    env.close()

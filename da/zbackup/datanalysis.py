@@ -18,16 +18,22 @@ from calendar import isleap
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
-import arrow
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pylab as pl
 import requests
 import scipy as sci
+from dateutil.parser import parse
+
+import arrow
+import datanalysis as da
+import kmodes
+import matplotlib.pyplot as plt
+import pylab as pl
 import sklearn as sk
 import statsmodels as sm
-from dateutil.parser import parse
+import util
+from attrdict import AttrDict as dict2
+from kmodes.kmodes import KModes
 from sklearn import covariance, linear_model, model_selection
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
@@ -45,12 +51,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-
-import datanalysis as da
-import kmodes
-import util
-from attrdict import AttrDict as dict2
-from kmodes.kmodes import KModes
 from tabulate import tabulate
 
 #########################################################################################################

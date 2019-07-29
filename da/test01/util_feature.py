@@ -7,34 +7,31 @@ util_feature: input/output is pandas
 
 """
 import copy
-import os
-from collections import Counter
-from collections import OrderedDict
 import math
-
+import os
+from collections import Counter, OrderedDict
 
 import numpy as np
 import pandas as pd
 import scipy as sci
+
 import sklearn as sk
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-try :
+try:
     import pandas_profiling
 
-except Exception as e :
+except Exception as e:
     print(e)
 
 
 print("os.getcwd", os.getcwd())
 
 
-
-
 ####################################################################################################
 ####################################################################################################
-def pd_col_to_onehot(df, colname, returncol=0,  nan_as_cat=True):
+def pd_col_to_onehot(df, colname, returncol=0, nan_as_cat=True):
     """
     :param df:
     :param colname:
@@ -46,8 +43,9 @@ def pd_col_to_onehot(df, colname, returncol=0,  nan_as_cat=True):
             print(x, nunique, df.shape, flush=True)
 
             if nunique > 2:
-                df = pd.concat([df, pd.get_dummies(df[x], prefix=x, dummy_na= nan_as_cat )], 
-                                axis=1).drop([x], axis=1)
+                df = pd.concat(
+                    [df, pd.get_dummies(df[x], prefix=x, dummy_na=nan_as_cat)], axis=1
+                ).drop([x], axis=1)
             else:
                 lb = preprocessing.LabelBinarizer()
                 vv = lb.fit_transform(df[x])
@@ -55,13 +53,11 @@ def pd_col_to_onehot(df, colname, returncol=0,  nan_as_cat=True):
         except Exception as e:
             print(x, e)
 
-    if returncol :
-      col_new =  [c for c in df.columns if c not in colname]
-      return df, col_new
-    else :
-      return df
-
-
+    if returncol:
+        col_new = [c for c in df.columns if c not in colname]
+        return df, col_new
+    else:
+        return df
 
 
 def pd_colnum_tocat(df, colname=None, colexclude=None, bins=5, suffix="_bin", method=""):
@@ -74,7 +70,7 @@ def pd_colnum_tocat(df, colname=None, colexclude=None, bins=5, suffix="_bin", me
     :return:
     """
     colname = colname if colname is not None else list(df.columns)
-    colnew  = []
+    colnew = []
     for c in colname:
         print(c)
         if c in colexclude:
@@ -83,18 +79,19 @@ def pd_colnum_tocat(df, colname=None, colexclude=None, bins=5, suffix="_bin", me
         df[c] = df[c].astype(np.float32)
         mi, ma = df[c].min(), df[c].max()
         space = (ma - mi) / bins
-        bins = [mi + i * space for i in range(bins+1)]
+        bins = [mi + i * space for i in range(bins + 1)]
         bins[0] -= 0.0001
 
         labels = np.arange(0, len(bins))
-        colnew.append( c + suffix )
-        df[c + suffix ] = pd.cut(df[c], bins=bins, labels=labels)
-        print(c + suffix )
+        colnew.append(c + suffix)
+        df[c + suffix] = pd.cut(df[c], bins=bins, labels=labels)
+        print(c + suffix)
     return df
 
 
-def pd_colnum_tocat_quantile(df, colname=None, colexclude=[],  bins=5,
-                             suffix="_bin", method="", include_na=True):
+def pd_colnum_tocat_quantile(
+    df, colname=None, colexclude=[], bins=5, suffix="_bin", method="", include_na=True
+):
     """
     NA Handling process
     Preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
@@ -105,7 +102,7 @@ def pd_colnum_tocat_quantile(df, colname=None, colexclude=[],  bins=5,
     :return:
     """
     colname = colname if colname is not None else list(df.columns)
-    colnew  = []
+    colnew = []
     for c in colname:
         print(c)
         if c in colexclude:
@@ -114,23 +111,24 @@ def pd_colnum_tocat_quantile(df, colname=None, colexclude=[],  bins=5,
         df[c] = df[c].astype(np.float32)
         # mi, ma = df[c].min(), df[c].max()
 
-        qt_list_ref = np.arange(0, 1.00001  , 1.0 / bins)
-        #print(qt_list_ref )
+        qt_list_ref = np.arange(0, 1.00001, 1.0 / bins)
+        # print(qt_list_ref )
 
-        qt_list = df[c].quantile(  qt_list_ref    )
-        #print(qt_list )
-        lbins = list( qt_list.values)
+        qt_list = df[c].quantile(qt_list_ref)
+        # print(qt_list )
+        lbins = list(qt_list.values)
         lbins[0] -= 0.0000001
-        #print("lbins", lbins)
-        labels = np.arange(0, len(lbins)-1)
-        colnew.append( c + suffix )
-        df[c + suffix ] = pd.cut(df[c], bins=lbins, labels=labels)
-        df[c + suffix ] = df[c + suffix ].astype("int")
+        # print("lbins", lbins)
+        labels = np.arange(0, len(lbins) - 1)
+        colnew.append(c + suffix)
+        df[c + suffix] = pd.cut(df[c], bins=lbins, labels=labels)
+        df[c + suffix] = df[c + suffix].astype("int")
     return df
 
 
-def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
-                     method="uniform", bins=None):
+def pd_colnum_tocat_kmeans(
+    df, colname=None, colexclude=None, suffix="_bin", method="uniform", bins=None
+):
     """
     preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
 
@@ -158,7 +156,8 @@ def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
 
     # transform the dataset with KBinsDiscretizer
     from sklearn.preprocessing import KBinsDiscretizer
-    enc = KBinsDiscretizer(n_bins=bins, encode='ordinal', strategy=method)
+
+    enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy=method)
 
     for c in df.columns:
         if c in colexclude:
@@ -166,7 +165,7 @@ def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
         df[c] = df[c].astype(np.float32)
 
         X_binned = enc.fit_transform(df[c].values)
-        df[c + suffix ] = X_binned
+        df[c + suffix] = X_binned
 
     return df
 
@@ -251,7 +250,6 @@ def pd_stat_histogram(df, bins=50, coltarget="diff"):
     return hh2
 
 
-
 def pd_stat_histogram_groupby(df, bins=50, coltarget="diff", colgroupby="y"):
     """
     :param df:
@@ -315,20 +313,33 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
     :return:
     """
     print("Univariate distribution")
-    ll = {  x: [] for x in [
-            "col", "n", "n_na", "n_notna", "n_na_pct", "nunique", "nunique_pct",
-            "xmin", "xmin_freq", "xmin_pct",
-            "xmax", "xmax_freq", "xmax_pct"]
+    ll = {
+        x: []
+        for x in [
+            "col",
+            "n",
+            "n_na",
+            "n_notna",
+            "n_na_pct",
+            "nunique",
+            "nunique_pct",
+            "xmin",
+            "xmin_freq",
+            "xmin_pct",
+            "xmax",
+            "xmax_freq",
+            "xmax_pct",
+        ]
     }
 
-    if subsample_ratio < 1.0 :
-      df = df.sample(subsample_ratio)
+    if subsample_ratio < 1.0:
+        df = df.sample(subsample_ratio)
 
     nn = len(df) + 0.0
     for x in df.columns:
         try:
             xmin = df[x].min()
-            nx = len(df[df[x] < xmin + 0.01])  #Can failed if string
+            nx = len(df[df[x] < xmin + 0.01])  # Can failed if string
             ll["xmin_freq"].append(nx)
             ll["xmin"].append(xmin)
             ll["xmin_pct"].append(nx / nn)
@@ -347,18 +358,16 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
 
             nx = df[x].nunique()
             ll["nunique"].append(nx)  # Should be in last
-            ll["nunique_pct"].append(nx / nn )  # Should be in last
+            ll["nunique_pct"].append(nx / nn)  # Should be in last
             ll["col"].append(x)  # Should be in last
         except Exception as e:
             print(x, e)
 
-    #for k, x in ll.items():
+    # for k, x in ll.items():
     #    print(k, len(x))
 
     ll = pd.DataFrame(ll)
     return ll
-
-
 
 
 def np_conditional_entropy(x, y):
@@ -728,7 +737,6 @@ def col_extractname_colbin(cols2):
     return coln
 
 
-
 def pd_col_intersection(df1, df2, colid):
     """
     :param df1:
@@ -872,7 +880,6 @@ def col_study_getcategorydict_freq(catedict):
     return catlist
 
 
-
 def pd_num_correl_pair(df, coltarget=None, colname=None):
     """
       Genearte correletion between the column and target column
@@ -888,17 +895,11 @@ def pd_num_correl_pair(df, coltarget=None, colname=None):
     colname = colname if colname is not None else list(df.columns)
     target_corr = []
     for col in colname:
-        target_corr.append( pearsonr(df[col].values, df[coltarget].values)[0])
+        target_corr.append(pearsonr(df[col].values, df[coltarget].values)[0])
 
-    df_correl = pd.DataFrame({ "colx": [""]*len(colname),
-                               "coly": colname,
-                               "correl": target_corr  })
+    df_correl = pd.DataFrame({"colx": [""] * len(colname), "coly": colname, "correl": target_corr})
     df_correl[coltarget] = colname
     return df_correl
-
-
-
-
 
 
 def pd_col_study_summary(df, colname, isprint=0):
@@ -965,7 +966,6 @@ def pd_col_filter2(df_client_product, filter_val=[], iscol=1):
     return df2
 
 
-
 def pd_stat_jupyter_profile(df):
     """ Describe the tables
         #Pandas-Profiling 2.0.0
@@ -974,16 +974,26 @@ def pd_stat_jupyter_profile(df):
     df.profile_report()
 
 
-
-
 def pd_stat_distribution_colnum(df):
     """ Describe the tables
 
 
    """
     coldes = [
-        "col", "coltype", "dtype", "count", "min", "max", "nb_na", "pct_na", "median",
-        "mean", "std", "25%", "75%", "outlier",
+        "col",
+        "coltype",
+        "dtype",
+        "count",
+        "min",
+        "max",
+        "nb_na",
+        "pct_na",
+        "median",
+        "mean",
+        "std",
+        "25%",
+        "75%",
+        "outlier",
     ]
 
     def getstat(col, type1="num"):
@@ -1067,7 +1077,7 @@ def pd_colcat_label_toint(df):
 ########################## Added functions   #######################################################
 ####################################################################################################
 def pd_col_fillna(df, colname, value=None, colgroupby=None):
-    '''
+    """
     Function to fill NaNs with a specific value in certain columns
     Arguments:
         df:            dataframe
@@ -1076,22 +1086,22 @@ def pd_col_fillna(df, colname, value=None, colgroupby=None):
 
     Returns:
         df:            new dataframe with filled values
-    '''
+    """
     for col in colname:
         nb_nans = df[col].isna().sum()
-        if colgroupby is not None :
-           means = df.groupby( colgroupby )[col].transform("median")   # Conditional median
-        else :
-           means = df[col].median()
+        if colgroupby is not None:
+            means = df.groupby(colgroupby)[col].transform("median")  # Conditional median
+        else:
+            means = df[col].median()
 
         value = means if value is None else value
-        print(col, nb_nans, "replaceBY",  value)
+        print(col, nb_nans, "replaceBY", value)
         df[col] = df[col].fillna(value)
     return df
 
 
 def pd_row_drop_above_thresh(df, colnumlist, thresh):
-    '''
+    """
     Function to remove outliers above a certain threshold
     Arguments:
         df:     dataframe
@@ -1099,25 +1109,21 @@ def pd_row_drop_above_thresh(df, colnumlist, thresh):
         thresh: value above which to remove row
     Returns:
         df:     dataframe with outliers removed
-    '''
-    for col in colnumlist :
-      df = df.drop(df[ (df[col] > thresh )], axis=0)
+    """
+    for col in colnumlist:
+        df = df.drop(df[(df[col] > thresh)], axis=0)
     return df
 
 
 def ztest():
-  """
+    """
    Test
-  """  
-  print(np.__version, np)  
-  print(pd.__version__, pd) 
+  """
+    print(np.__version, np)
+    print(pd.__version__, pd)
 
 
-
-
-
-
-'''
+"""
 def pd_stat_na_missing_show():
     #https://blog.modeanalytics.com/python-data-visualization-libraries/
     #Missing Data
@@ -1143,22 +1149,4 @@ def pd_stat_na_missing_show():
     #geographic distribution.
     msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE')
     msno.geoplot(collisions, x='LONGITUDE', y='LATITUDE', by='ZIP CODE')
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+"""

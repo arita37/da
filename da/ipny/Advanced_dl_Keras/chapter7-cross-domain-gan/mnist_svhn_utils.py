@@ -11,25 +11,24 @@ and Unsupervised Feature Learning 2011. (PDF)
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from keras.datasets import mnist
-from keras.utils.data_utils import get_file
+import os
 
 import numpy as np
 from scipy import io
+
 import other_utils
-import os
+from keras.datasets import mnist
+from keras.utils.data_utils import get_file
 
 
 def get_datadir():
-    cache_dir = os.path.join(os.path.expanduser('~'), '.keras')
-    cache_subdir = 'datasets'
+    cache_dir = os.path.join(os.path.expanduser("~"), ".keras")
+    cache_subdir = "datasets"
     datadir_base = os.path.expanduser(cache_dir)
     if not os.access(datadir_base, os.W_OK):
-        datadir_base = os.path.join('/tmp', '.keras')
+        datadir_base = os.path.join("/tmp", ".keras")
 
     datadir = os.path.join(datadir_base, cache_subdir)
     if not os.path.exists(datadir):
@@ -44,14 +43,10 @@ def load_data():
 
     # pad with zeros 28x28 MNIST image to become 32x32
     # svhn is 32x32
-    source_data = np.pad(source_data,
-                         ((0,0), (2,2), (2,2)),
-                         'constant',
-                         constant_values=0)
-    test_source_data = np.pad(test_source_data,
-                              ((0,0), (2,2), (2,2)),
-                              'constant',
-                              constant_values=0)
+    source_data = np.pad(source_data, ((0, 0), (2, 2), (2, 2)), "constant", constant_values=0)
+    test_source_data = np.pad(
+        test_source_data, ((0, 0), (2, 2), (2, 2)), "constant", constant_values=0
+    )
     # input image dimensions
     # we assume data format "channels_last"
     rows = source_data.shape[1]
@@ -61,32 +56,24 @@ def load_data():
     # reshape images to row x col x channels
     # for CNN output/validation
     size = source_data.shape[0]
-    source_data = source_data.reshape(size,
-                                      rows,
-                                      cols,
-                                      channels)
+    source_data = source_data.reshape(size, rows, cols, channels)
     size = test_source_data.shape[0]
-    test_source_data = test_source_data.reshape(size,
-                                                rows,
-                                                cols,
-                                                channels)
+    test_source_data = test_source_data.reshape(size, rows, cols, channels)
 
     # load SVHN data
     datadir = get_datadir()
-    get_file('train_32x32.mat',
-             origin='http://ufldl.stanford.edu/housenumbers/train_32x32.mat')
-    get_file('test_32x32.mat',
-             'http://ufldl.stanford.edu/housenumbers/test_32x32.mat')
-    path = os.path.join(datadir, 'train_32x32.mat')
+    get_file("train_32x32.mat", origin="http://ufldl.stanford.edu/housenumbers/train_32x32.mat")
+    get_file("test_32x32.mat", "http://ufldl.stanford.edu/housenumbers/test_32x32.mat")
+    path = os.path.join(datadir, "train_32x32.mat")
     target_data = loadmat(path)
-    path = os.path.join(datadir, 'test_32x32.mat')
+    path = os.path.join(datadir, "test_32x32.mat")
     test_target_data = loadmat(path)
 
     # source data, target data, test_source data
     data = (source_data, target_data, test_source_data, test_target_data)
-    filenames = ('mnist_test_source.png', 'svhn_test_target.png')
-    titles = ('MNIST test source images', 'SVHN test target images')
-    
+    filenames = ("mnist_test_source.png", "svhn_test_target.png")
+    titles = ("MNIST test source images", "SVHN test target images")
+
     return other_utils.load_data(data, titles, filenames)
 
 
@@ -94,8 +81,8 @@ def loadmat(filename):
     # load SVHN dataset
     mat = io.loadmat(filename)
     # the key to image data is 'X', the image label key is 'y'
-    data = mat['X']
-    rows =data.shape[0]
+    data = mat["X"]
+    rows = data.shape[0]
     cols = data.shape[1]
     channels = data.shape[2]
     # in matlab data, the image index is the last index

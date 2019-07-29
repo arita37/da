@@ -36,64 +36,55 @@ computer-assisted intervention. Springer, Cham, 2015.
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from keras.layers import Activation, Dense, Input
-from keras.layers import Conv2D, Flatten
-from keras.layers import Conv2DTranspose
-from keras.layers import LeakyReLU
-from keras.optimizers import RMSprop
-from keras.models import Model
-from keras.models import load_model
+import argparse
+import datetime
+
+import numpy as np
+
+import cifar10_utils
+import mnist_svhn_utils
+import other_utils
+from keras.layers import Activation, Conv2D, Conv2DTranspose, Dense, Flatten, Input, LeakyReLU
 from keras.layers.merge import concatenate
+from keras.models import Model, load_model
+from keras.optimizers import RMSprop
 
 # from keras_contrib.layers.normalization import InstanceNormalization
 from keras_contrib.layers.normalization.instancenormalization import InstanceNormalization
 
-import numpy as np
-import argparse
-import cifar10_utils
-import mnist_svhn_utils
-import other_utils
-import datetime
 
-
-def encoder_layer(inputs,
-                  filters=16,
-                  kernel_size=3,
-                  strides=2,
-                  activation='relu',
-                  instance_norm=True):
+def encoder_layer(
+    inputs, filters=16, kernel_size=3, strides=2, activation="relu", instance_norm=True
+):
     """Builds a generic encoder layer made of Conv2D-IN-LeakyReLU
     IN is optional, LeakyReLU may be replaced by ReLU
 
     """
 
-    conv = Conv2D(filters=filters,
-                  kernel_size=kernel_size,
-                  strides=strides,
-                  padding='same')
+    conv = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding="same")
 
     x = inputs
     if instance_norm:
         x = InstanceNormalization()(x)
-    if activation == 'relu':
-        x = Activation('relu')(x)
+    if activation == "relu":
+        x = Activation("relu")(x)
     else:
         x = LeakyReLU(alpha=0.2)(x)
     x = conv(x)
     return x
 
 
-def decoder_layer(inputs,
-                  paired_inputs,
-                  filters=16,
-                  kernel_size=3,
-                  strides=2,
-                  activation='relu',
-                  instance_norm=True):
+def decoder_layer(
+    inputs,
+    paired_inputs,
+    filters=16,
+    kernel_size=3,
+    strides=2,
+    activation="relu",
+    instance_norm=True,
+):
     """Builds a generic decoder layer made of Conv2D-IN-LeakyReLU
     IN is optional, LeakyReLU may be replaced by ReLU
     Arguments: (partial)
@@ -104,16 +95,15 @@ def decoder_layer(inputs,
 
     """
 
-    conv = Conv2DTranspose(filters=filters,
-                           kernel_size=kernel_size,
-                           strides=strides,
-                           padding='same')
+    conv = Conv2DTranspose(
+        filters=filters, kernel_size=kernel_size, strides=strides, padding="same"
+    )
 
     x = inputs
     if instance_norm:
         x = InstanceNormalization()(x)
-    if activation == 'relu':
-        x = Activation('relu')(x)
+    if activation == "relu":
+        x = Activation("relu")(x)
     else:
         x = LeakyReLU(alpha=0.2)(x)
     x = conv(x)
@@ -121,10 +111,7 @@ def decoder_layer(inputs,
     return x
 
 
-def build_generator(input_shape,
-                    output_shape=None,
-                    kernel_size=3,
-                    name=None):
+def build_generator(input_shape, output_shape=None, kernel_size=3, name=None):
     """The generator is a U-Network made of a 4-layer encoder
     and a 4-layer decoder. Layer n-i is connected to layer i.
 
@@ -141,51 +128,24 @@ def build_generator(input_shape,
 
     inputs = Input(shape=input_shape)
     channels = int(output_shape[-1])
-    e1 = encoder_layer(inputs,
-                       32,
-                       kernel_size=kernel_size,
-                       activation='leaky_relu',
-                       strides=1)
-    e2 = encoder_layer(e1,
-                       64,
-                       activation='leaky_relu',
-                       kernel_size=kernel_size)
-    e3 = encoder_layer(e2,
-                       128,
-                       activation='leaky_relu',
-                       kernel_size=kernel_size)
-    e4 = encoder_layer(e3,
-                       256,
-                       activation='leaky_relu',
-                       kernel_size=kernel_size)
+    e1 = encoder_layer(inputs, 32, kernel_size=kernel_size, activation="leaky_relu", strides=1)
+    e2 = encoder_layer(e1, 64, activation="leaky_relu", kernel_size=kernel_size)
+    e3 = encoder_layer(e2, 128, activation="leaky_relu", kernel_size=kernel_size)
+    e4 = encoder_layer(e3, 256, activation="leaky_relu", kernel_size=kernel_size)
 
-    d1 = decoder_layer(e4,
-                       e3,
-                       128,
-                       kernel_size=kernel_size)
-    d2 = decoder_layer(d1,
-                       e2,
-                       64,
-                       kernel_size=kernel_size)
-    d3 = decoder_layer(d2,
-                       e1,
-                       32,
-                       kernel_size=kernel_size)
-    outputs = Conv2DTranspose(channels,
-                              kernel_size=kernel_size,
-                              strides=1,
-                              activation='sigmoid',
-                              padding='same')(d3)
+    d1 = decoder_layer(e4, e3, 128, kernel_size=kernel_size)
+    d2 = decoder_layer(d1, e2, 64, kernel_size=kernel_size)
+    d3 = decoder_layer(d2, e1, 32, kernel_size=kernel_size)
+    outputs = Conv2DTranspose(
+        channels, kernel_size=kernel_size, strides=1, activation="sigmoid", padding="same"
+    )(d3)
 
     generator = Model(inputs, outputs, name=name)
 
     return generator
 
 
-def build_discriminator(input_shape,
-                        kernel_size=3,
-                        patchgan=True,
-                        name=None):
+def build_discriminator(input_shape, kernel_size=3, patchgan=True, name=None):
     """The discriminator is a 4-layer encoder that outputs either
     a 1-dim or a n x n-dim patch of probability that input is real 
 
@@ -201,41 +161,24 @@ def build_discriminator(input_shape,
     """
 
     inputs = Input(shape=input_shape)
-    x = encoder_layer(inputs,
-                      32,
-                      kernel_size=kernel_size,
-                      activation='leaky_relu',
-                      instance_norm=False)
-    x = encoder_layer(x,
-                      64,
-                      kernel_size=kernel_size,
-                      activation='leaky_relu',
-                      instance_norm=False)
-    x = encoder_layer(x,
-                      128,
-                      kernel_size=kernel_size,
-                      activation='leaky_relu',
-                      instance_norm=False)
-    x = encoder_layer(x,
-                      256,
-                      kernel_size=kernel_size,
-                      strides=1,
-                      activation='leaky_relu',
-                      instance_norm=False)
+    x = encoder_layer(
+        inputs, 32, kernel_size=kernel_size, activation="leaky_relu", instance_norm=False
+    )
+    x = encoder_layer(x, 64, kernel_size=kernel_size, activation="leaky_relu", instance_norm=False)
+    x = encoder_layer(x, 128, kernel_size=kernel_size, activation="leaky_relu", instance_norm=False)
+    x = encoder_layer(
+        x, 256, kernel_size=kernel_size, strides=1, activation="leaky_relu", instance_norm=False
+    )
 
     # if patchgan=True use nxn-dim output of probability
     # else use 1-dim output of probability
     if patchgan:
         x = LeakyReLU(alpha=0.2)(x)
-        outputs = Conv2D(1,
-                         kernel_size=kernel_size,
-                         strides=2,
-                         padding='same')(x)
+        outputs = Conv2D(1, kernel_size=kernel_size, strides=2, padding="same")(x)
     else:
         x = Flatten()(x)
         x = Dense(1)(x)
-        outputs = Activation('linear')(x)
-
+        outputs = Activation("linear")(x)
 
     discriminator = Model(inputs, outputs, name=name)
 
@@ -295,7 +238,7 @@ def train_cyclegan(models, data, params, test_params, test_generator):
         real_source = source_data[rand_indexes]
         # generate a batch of fake target data fr real source data
         fake_target = g_target.predict(real_source)
-        
+
         # combine real and fake into one batch
         x = np.concatenate((real_target, fake_target))
         # train the target discriminator using fake/real data
@@ -325,25 +268,28 @@ def train_cyclegan(models, data, params, test_params, test_generator):
             else:
                 show = False
 
-            test_generator((g_source, g_target),
-                           (test_source_data, test_target_data),
-                           step=step+1,
-                           titles=titles,
-                           dirs=dirs,
-                           show=show)
+            test_generator(
+                (g_source, g_target),
+                (test_source_data, test_target_data),
+                step=step + 1,
+                titles=titles,
+                dirs=dirs,
+                show=show,
+            )
 
     # save the models after training the generators
     g_source.save(model_name + "-g_source.h5")
     g_target.save(model_name + "-g_target.h5")
 
 
-def build_cyclegan(shapes,
-                   source_name='source',
-                   target_name='target',
-                   kernel_size=3,
-                   patchgan=False,
-                   identity=False
-                   ):
+def build_cyclegan(
+    shapes,
+    source_name="source",
+    target_name="target",
+    kernel_size=3,
+    patchgan=False,
+    identity=False,
+):
     """Build the CycleGAN
 
     1) Build target and source discriminators
@@ -373,40 +319,28 @@ def build_cyclegan(shapes,
     ds_name = "dis_" + source_name
 
     # build target and source generators
-    g_target = build_generator(source_shape,
-                               target_shape,
-                               kernel_size=kernel_size,
-                               name=gt_name)
-    g_source = build_generator(target_shape,
-                               source_shape,
-                               kernel_size=kernel_size,
-                               name=gs_name)
-    print('---- TARGET GENERATOR ----')
+    g_target = build_generator(source_shape, target_shape, kernel_size=kernel_size, name=gt_name)
+    g_source = build_generator(target_shape, source_shape, kernel_size=kernel_size, name=gs_name)
+    print("---- TARGET GENERATOR ----")
     g_target.summary()
-    print('---- SOURCE GENERATOR ----')
+    print("---- SOURCE GENERATOR ----")
     g_source.summary()
 
     # build target and source discriminators
-    d_target = build_discriminator(target_shape,
-                                   patchgan=patchgan,
-                                   kernel_size=kernel_size,
-                                   name=dt_name)
-    d_source = build_discriminator(source_shape,
-                                   patchgan=patchgan,
-                                   kernel_size=kernel_size,
-                                   name=ds_name)
-    print('---- TARGET DISCRIMINATOR ----')
+    d_target = build_discriminator(
+        target_shape, patchgan=patchgan, kernel_size=kernel_size, name=dt_name
+    )
+    d_source = build_discriminator(
+        source_shape, patchgan=patchgan, kernel_size=kernel_size, name=ds_name
+    )
+    print("---- TARGET DISCRIMINATOR ----")
     d_target.summary()
-    print('---- SOURCE DISCRIMINATOR ----')
+    print("---- SOURCE DISCRIMINATOR ----")
     d_source.summary()
 
     optimizer = RMSprop(lr=lr, decay=decay)
-    d_target.compile(loss='mse',
-                     optimizer=optimizer,
-                     metrics=['accuracy'])
-    d_source.compile(loss='mse',
-                     optimizer=optimizer,
-                     metrics=['accuracy'])
+    d_target.compile(loss="mse", optimizer=optimizer, metrics=["accuracy"])
+    d_source.compile(loss="mse", optimizer=optimizer, metrics=["accuracy"])
 
     d_target.trainable = False
     d_source.trainable = False
@@ -429,32 +363,21 @@ def build_cyclegan(shapes,
     if identity:
         iden_source = g_source(source_input)
         iden_target = g_target(target_input)
-        loss = ['mse', 'mse', 'mae', 'mae', 'mae', 'mae']
-        loss_weights = [1., 1., 10., 10., 0.5, 0.5]
+        loss = ["mse", "mse", "mae", "mae", "mae", "mae"]
+        loss_weights = [1.0, 1.0, 10.0, 10.0, 0.5, 0.5]
         inputs = [source_input, target_input]
-        outputs = [preal_source,
-                   preal_target,
-                   reco_source,
-                   reco_target,
-                   iden_source,
-                   iden_target]
+        outputs = [preal_source, preal_target, reco_source, reco_target, iden_source, iden_target]
     else:
-        loss = ['mse', 'mse', 'mae', 'mae']
-        loss_weights = [1., 1., 10., 10.]
+        loss = ["mse", "mse", "mae", "mae"]
+        loss_weights = [1.0, 1.0, 10.0, 10.0]
         inputs = [source_input, target_input]
-        outputs = [preal_source,
-                   preal_target,
-                   reco_source,
-                   reco_target]
+        outputs = [preal_source, preal_target, reco_source, reco_target]
 
     # build adversarial model
-    adv = Model(inputs, outputs, name='adversarial')
-    optimizer = RMSprop(lr=lr*0.5, decay=decay*0.5)
-    adv.compile(loss=loss,
-                loss_weights=loss_weights,
-                optimizer=optimizer,
-                metrics=['accuracy'])
-    print('---- ADVERSARIAL NETWORK ----')
+    adv = Model(inputs, outputs, name="adversarial")
+    optimizer = RMSprop(lr=lr * 0.5, decay=decay * 0.5)
+    adv.compile(loss=loss, loss_weights=loss_weights, optimizer=optimizer, metrics=["accuracy"])
+    print("---- ADVERSARIAL NETWORK ----")
     adv.summary()
 
     return g_source, g_target, d_source, d_target, adv
@@ -465,101 +388,105 @@ def graycifar10_cross_colorcifar10(g_models=None):
        cifar10 images
     """
 
-    model_name = 'cyclegan_cifar10'
+    model_name = "cyclegan_cifar10"
     batch_size = 32
     train_steps = 100000
     patchgan = True
     kernel_size = 3
-    postfix = ('%dp' % kernel_size) if patchgan else ('%d' % kernel_size)
+    postfix = ("%dp" % kernel_size) if patchgan else ("%d" % kernel_size)
 
     data, shapes = cifar10_utils.load_data()
     source_data, _, test_source_data, test_target_data = data
-    titles = ('CIFAR10 predicted source images.',
-              'CIFAR10 predicted target images.',
-              'CIFAR10 reconstructed source images.',
-              'CIFAR10 reconstructed target images.')
-    dirs = ('cifar10_source-%s' % postfix, 'cifar10_target-%s' % postfix)
+    titles = (
+        "CIFAR10 predicted source images.",
+        "CIFAR10 predicted target images.",
+        "CIFAR10 reconstructed source images.",
+        "CIFAR10 reconstructed target images.",
+    )
+    dirs = ("cifar10_source-%s" % postfix, "cifar10_target-%s" % postfix)
 
     # generate predicted target(color) and source(gray) images
     if g_models is not None:
         g_source, g_target = g_models
-        other_utils.test_generator((g_source, g_target),
-                                   (test_source_data, test_target_data),
-                                   step=0,
-                                   titles=titles,
-                                   dirs=dirs,
-                                   show=True)
+        other_utils.test_generator(
+            (g_source, g_target),
+            (test_source_data, test_target_data),
+            step=0,
+            titles=titles,
+            dirs=dirs,
+            show=True,
+        )
         return
 
     # build the cyclegan for cifar10 colorization
-    models = build_cyclegan(shapes,
-                            "gray-%s" % postfix,
-                            "color-%s" % postfix,
-                            kernel_size=kernel_size,
-                            patchgan=patchgan)
+    models = build_cyclegan(
+        shapes,
+        "gray-%s" % postfix,
+        "color-%s" % postfix,
+        kernel_size=kernel_size,
+        patchgan=patchgan,
+    )
     # patch size is divided by 2^n since we downscaled the input
     # in the discriminator by 2^n (ie. we use strides=2 n times)
-    patch = int(source_data.shape[1] / 2**4) if patchgan else 1
+    patch = int(source_data.shape[1] / 2 ** 4) if patchgan else 1
     params = (batch_size, train_steps, patch, model_name)
     test_params = (titles, dirs)
     # train the cyclegan
-    train_cyclegan(models,
-                   data,
-                   params,
-                   test_params,
-                   other_utils.test_generator)
+    train_cyclegan(models, data, params, test_params, other_utils.test_generator)
 
 
 def mnist_cross_svhn(g_models=None):
     """Build and train a CycleGAN that can do mnist <--> svhn
     """
 
-    model_name = 'cyclegan_mnist_svhn'
+    model_name = "cyclegan_mnist_svhn"
     batch_size = 32
     train_steps = 100000
     patchgan = True
     kernel_size = 5
-    postfix = ('%dp' % kernel_size) if patchgan else ('%d' % kernel_size)
+    postfix = ("%dp" % kernel_size) if patchgan else ("%d" % kernel_size)
 
     data, shapes = mnist_svhn_utils.load_data()
     source_data, _, test_source_data, test_target_data = data
-    titles = ('MNIST predicted source images.',
-              'SVHN predicted target images.',
-              'MNIST reconstructed source images.',
-              'SVHN reconstructed target images.')
-    dirs = ('mnist_source-%s' % postfix, 'svhn_target-%s' % postfix)
+    titles = (
+        "MNIST predicted source images.",
+        "SVHN predicted target images.",
+        "MNIST reconstructed source images.",
+        "SVHN reconstructed target images.",
+    )
+    dirs = ("mnist_source-%s" % postfix, "svhn_target-%s" % postfix)
 
     # generate predicted target(svhn) and source(mnist) images
     if g_models is not None:
         g_source, g_target = g_models
-        other_utils.test_generator((g_source, g_target),
-                                   (test_source_data, test_target_data),
-                                   step=0,
-                                   titles=titles,
-                                   dirs=dirs,
-                                   show=True)
+        other_utils.test_generator(
+            (g_source, g_target),
+            (test_source_data, test_target_data),
+            step=0,
+            titles=titles,
+            dirs=dirs,
+            show=True,
+        )
         return
 
     # build the cyclegan for mnist cross svhn
-    models = build_cyclegan(shapes,
-                            "mnist-%s" % postfix,
-                            "svhn-%s" % postfix,
-                            kernel_size=kernel_size,
-                            patchgan=patchgan)
+    models = build_cyclegan(
+        shapes,
+        "mnist-%s" % postfix,
+        "svhn-%s" % postfix,
+        kernel_size=kernel_size,
+        patchgan=patchgan,
+    )
     # patch size is divided by 2^n since we downscaled the input
     # in the discriminator by 2^n (ie. we use strides=2 n times)
-    patch = int(source_data.shape[1] / 2**4) if patchgan else 1
+    patch = int(source_data.shape[1] / 2 ** 4) if patchgan else 1
     params = (batch_size, train_steps, patch, model_name)
     test_params = (titles, dirs)
     # train the cyclegan
-    train_cyclegan(models,
-                   data,
-                   params,
-                   test_params,
-                   other_utils.test_generator)
+    train_cyclegan(models, data, params, test_params, other_utils.test_generator)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     help_ = "Load cifar10 source generator h5 model"
     parser.add_argument("--cifar10_g_source", help=help_)
@@ -572,15 +499,9 @@ if __name__ == '__main__':
     parser.add_argument("--mnist_svhn_g_target", help=help_)
 
     help_ = "Train cifar10 colorization"
-    parser.add_argument("-c",
-                        "--cifar10",
-                        action='store_true',
-                        help=help_)
+    parser.add_argument("-c", "--cifar10", action="store_true", help=help_)
     help_ = "Train mnist-svhn cross domain cyclegan"
-    parser.add_argument("-m",
-                        "--mnist-svhn",
-                        action='store_true',
-                        help=help_)
+    parser.add_argument("-m", "--mnist-svhn", action="store_true", help=help_)
     args = parser.parse_args()
 
     # load pre-trained cifar10 source & target generators

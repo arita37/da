@@ -1,4 +1,4 @@
-'''Example of VAE on MNIST dataset using MLP
+"""Example of VAE on MNIST dataset using MLP
 
 The VAE has a modular design. The encoder, decoder and VAE
 are 3 models that share weights. After training the VAE model,
@@ -11,23 +11,22 @@ latent vector from a Gaussian distribution with mean=0 and std=1.
 [1] Kingma, Diederik P., and Max Welling.
 "Auto-encoding variational bayes."
 https://arxiv.org/abs/1312.6114
-'''
+"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from keras.layers import Lambda, Input, Dense
-from keras.models import Model
-from keras.datasets import mnist
-from keras.losses import mse, binary_crossentropy
-from keras.utils import plot_model
-from keras import backend as K
-
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 import os
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+from keras import backend as K
+from keras.datasets import mnist
+from keras.layers import Dense, Input, Lambda
+from keras.losses import binary_crossentropy, mse
+from keras.models import Model
+from keras.utils import plot_model
 
 
 # reparameterization trick
@@ -52,10 +51,7 @@ def sampling(args):
     return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
 
-def plot_results(models,
-                 data,
-                 batch_size=128,
-                 model_name="vae_mnist"):
+def plot_results(models, data, batch_size=128, model_name="vae_mnist"):
     """Plots labels and MNIST digits as function of 2-dim latent vector
 
     # Arguments:
@@ -71,8 +67,7 @@ def plot_results(models,
 
     filename = os.path.join(model_name, "vae_mean.png")
     # display a 2D plot of the digit classes in the latent space
-    z_mean, _, _ = encoder.predict(x_test,
-                                   batch_size=batch_size)
+    z_mean, _, _ = encoder.predict(x_test, batch_size=batch_size)
     plt.figure(figsize=(12, 10))
     plt.scatter(z_mean[:, 0], z_mean[:, 1], c=y_test)
     plt.colorbar()
@@ -96,8 +91,9 @@ def plot_results(models,
             z_sample = np.array([[xi, yi]])
             x_decoded = decoder.predict(z_sample)
             digit = x_decoded[0].reshape(digit_size, digit_size)
-            figure[i * digit_size: (i + 1) * digit_size,
-                   j * digit_size: (j + 1) * digit_size] = digit
+            figure[
+                i * digit_size : (i + 1) * digit_size, j * digit_size : (j + 1) * digit_size
+            ] = digit
 
     plt.figure(figsize=(10, 10))
     start_range = digit_size // 2
@@ -109,7 +105,7 @@ def plot_results(models,
     plt.yticks(pixel_range, sample_range_y)
     plt.xlabel("z[0]")
     plt.ylabel("z[1]")
-    plt.imshow(figure, cmap='Greys_r')
+    plt.imshow(figure, cmap="Greys_r")
     plt.savefig(filename)
     plt.show()
 
@@ -121,11 +117,11 @@ image_size = x_train.shape[1]
 original_dim = image_size * image_size
 x_train = np.reshape(x_train, [-1, original_dim])
 x_test = np.reshape(x_test, [-1, original_dim])
-x_train = x_train.astype('float32') / 255
-x_test = x_test.astype('float32') / 255
+x_train = x_train.astype("float32") / 255
+x_test = x_test.astype("float32") / 255
 
 # network parameters
-input_shape = (original_dim, )
+input_shape = (original_dim,)
 intermediate_dim = 512
 batch_size = 128
 latent_dim = 2
@@ -133,42 +129,40 @@ epochs = 50
 
 # VAE model = encoder + decoder
 # build encoder model
-inputs = Input(shape=input_shape, name='encoder_input')
-x = Dense(intermediate_dim, activation='relu')(inputs)
-z_mean = Dense(latent_dim, name='z_mean')(x)
-z_log_var = Dense(latent_dim, name='z_log_var')(x)
+inputs = Input(shape=input_shape, name="encoder_input")
+x = Dense(intermediate_dim, activation="relu")(inputs)
+z_mean = Dense(latent_dim, name="z_mean")(x)
+z_log_var = Dense(latent_dim, name="z_log_var")(x)
 
 # use reparameterization trick to push the sampling out as input
 # note that "output_shape" isn't necessary with the TensorFlow backend
-z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
+z = Lambda(sampling, output_shape=(latent_dim,), name="z")([z_mean, z_log_var])
 
 # instantiate encoder model
-encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
+encoder = Model(inputs, [z_mean, z_log_var, z], name="encoder")
 encoder.summary()
-plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
+plot_model(encoder, to_file="vae_mlp_encoder.png", show_shapes=True)
 
 # build decoder model
-latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
-x = Dense(intermediate_dim, activation='relu')(latent_inputs)
-outputs = Dense(original_dim, activation='sigmoid')(x)
+latent_inputs = Input(shape=(latent_dim,), name="z_sampling")
+x = Dense(intermediate_dim, activation="relu")(latent_inputs)
+outputs = Dense(original_dim, activation="sigmoid")(x)
 
 # instantiate decoder model
-decoder = Model(latent_inputs, outputs, name='decoder')
+decoder = Model(latent_inputs, outputs, name="decoder")
 decoder.summary()
-plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
+plot_model(decoder, to_file="vae_mlp_decoder.png", show_shapes=True)
 
 # instantiate VAE model
 outputs = decoder(encoder(inputs)[2])
-vae = Model(inputs, outputs, name='vae_mlp')
+vae = Model(inputs, outputs, name="vae_mlp")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     help_ = "Load h5 model trained weights"
     parser.add_argument("-w", "--weights", help=help_)
     help_ = "Use mse loss instead of binary cross entropy (default)"
-    parser.add_argument("-m",
-                        "--mse",
-                        help=help_, action='store_true')
+    parser.add_argument("-m", "--mse", help=help_, action="store_true")
     args = parser.parse_args()
     models = (encoder, decoder)
     data = (x_test, y_test)
@@ -177,8 +171,7 @@ if __name__ == '__main__':
     if args.mse:
         reconstruction_loss = mse(inputs, outputs)
     else:
-        reconstruction_loss = binary_crossentropy(inputs,
-                                                  outputs)
+        reconstruction_loss = binary_crossentropy(inputs, outputs)
 
     reconstruction_loss *= original_dim
     kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
@@ -186,23 +179,15 @@ if __name__ == '__main__':
     kl_loss *= -0.5
     vae_loss = K.mean(reconstruction_loss + kl_loss)
     vae.add_loss(vae_loss)
-    vae.compile(optimizer='adam')
+    vae.compile(optimizer="adam")
     vae.summary()
-    plot_model(vae,
-               to_file='vae_mlp.png',
-               show_shapes=True)
+    plot_model(vae, to_file="vae_mlp.png", show_shapes=True)
 
     if args.weights:
         vae = vae.load_weights(args.weights)
     else:
         # train the autoencoder
-        vae.fit(x_train,
-                epochs=epochs,
-                batch_size=batch_size,
-                validation_data=(x_test, None))
-        vae.save_weights('vae_mlp_mnist.h5')
+        vae.fit(x_train, epochs=epochs, batch_size=batch_size, validation_data=(x_test, None))
+        vae.save_weights("vae_mlp_mnist.h5")
 
-    plot_results(models,
-                 data,
-                 batch_size=batch_size,
-                 model_name="vae_mlp")
+    plot_results(models, data, batch_size=batch_size, model_name="vae_mlp")

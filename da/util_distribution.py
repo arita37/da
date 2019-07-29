@@ -4,48 +4,36 @@ Methods for ML models, model ensembels, metrics etc.
 util_model : input/output is numpy
 
 """
-import os
 import copy
+import os
 from collections import OrderedDict
-from dateutil.parser import parse
 
 import numpy as np
 import pandas as pd
-
 import scipy as sci
+from dateutil.parser import parse
+
 import sklearn as sk
-
-
-from sklearn import covariance, linear_model, model_selection
+from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-
-
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    make_scorer,
+    mean_absolute_error,
+    roc_auc_score,
+    roc_curve,
+)
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
-
-
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score
-from sklearn import preprocessing
-from sklearn.metrics import mean_absolute_error, make_scorer
-
-
-
-
 
 ####################################################################################################
 DIRCWD = os.getcwd()
@@ -59,12 +47,10 @@ class dict2(object):
         self.__dict__ = d
 
 
-
 def np_transform_pca(Xmat, dimpca=2, whiten=True):
     """Project ndim data into dimpca sub-space  """
     pca = PCA(n_components=dimpca, whiten=whiten).fit(Xmat)
     return pca.transform(Xmat)
-
 
 
 def sk_distribution_kernel_bestbandwidth(X, kde):
@@ -99,7 +85,3 @@ def sk_distribution_kernel_sample(kde=None, n=1):
         u = np.random.random()  # sample
         samples[i] = brentq(func, -999, 999)  # read brentq-docs about these constants
     return samples
-
-
-
-

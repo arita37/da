@@ -9,4 +9,4 @@ def load_data(path):
     with open(input_file, "r") as f:
         data = f.read()
 
-    return data.split('\n')
+    return data.split("\n")

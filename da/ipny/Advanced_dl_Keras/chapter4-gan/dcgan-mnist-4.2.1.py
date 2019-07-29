@@ -1,4 +1,4 @@
-'''Trains DCGAN on MNIST using Keras
+"""Trains DCGAN on MNIST using Keras
 
 DCGAN is a Generative Adversarial Network (GAN) using CNN.
 The generator tries to fool the discriminator by generating fake images.
@@ -12,27 +12,31 @@ to improve its ability to generate fake images.
 [1] Radford, Alec, Luke Metz, and Soumith Chintala.
 "Unsupervised representation learning with deep convolutional
 generative adversarial networks." arXiv preprint arXiv:1511.06434 (2015).
-'''
+"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from keras.layers import Activation, Dense, Input
-from keras.layers import Conv2D, Flatten
-from keras.layers import Reshape, Conv2DTranspose
-from keras.layers import LeakyReLU
-from keras.layers import BatchNormalization
-from keras.optimizers import RMSprop
-from keras.models import Model
-from keras.datasets import mnist
-from keras.models import load_model
+import argparse
+import math
+import os
 
 import numpy as np
-import math
+
 import matplotlib.pyplot as plt
-import os
-import argparse
+from keras.datasets import mnist
+from keras.layers import (
+    Activation,
+    BatchNormalization,
+    Conv2D,
+    Conv2DTranspose,
+    Dense,
+    Flatten,
+    Input,
+    LeakyReLU,
+    Reshape,
+)
+from keras.models import Model, load_model
+from keras.optimizers import RMSprop
 
 
 def build_generator(inputs, image_size):
@@ -51,7 +55,7 @@ def build_generator(inputs, image_size):
     """
 
     image_resize = image_size // 4
-    # network parameters 
+    # network parameters
     kernel_size = 5
     layer_filters = [128, 64, 32, 1]
 
@@ -66,14 +70,13 @@ def build_generator(inputs, image_size):
         else:
             strides = 1
         x = BatchNormalization()(x)
-        x = Activation('relu')(x)
-        x = Conv2DTranspose(filters=filters,
-                            kernel_size=kernel_size,
-                            strides=strides,
-                            padding='same')(x)
+        x = Activation("relu")(x)
+        x = Conv2DTranspose(
+            filters=filters, kernel_size=kernel_size, strides=strides, padding="same"
+        )(x)
 
-    x = Activation('sigmoid')(x)
-    generator = Model(inputs, x, name='generator')
+    x = Activation("sigmoid")(x)
+    generator = Model(inputs, x, name="generator")
     return generator
 
 
@@ -102,15 +105,12 @@ def build_discriminator(inputs):
         else:
             strides = 2
         x = LeakyReLU(alpha=0.2)(x)
-        x = Conv2D(filters=filters,
-                   kernel_size=kernel_size,
-                   strides=strides,
-                   padding='same')(x)
+        x = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides, padding="same")(x)
 
     x = Flatten()(x)
     x = Dense(1)(x)
-    x = Activation('sigmoid')(x)
-    discriminator = Model(inputs, x, name='discriminator')
+    x = Activation("sigmoid")(x)
+    discriminator = Model(inputs, x, name="discriminator")
     return discriminator
 
 
@@ -144,7 +144,7 @@ def train(models, x_train, params):
         # randomly pick real images from dataset
         rand_indexes = np.random.randint(0, train_size, size=batch_size)
         real_images = x_train[rand_indexes]
-        # generate fake images from noise using generator 
+        # generate fake images from noise using generator
         # generate noise using uniform distribution
         noise = np.random.uniform(-1.0, 1.0, size=[batch_size, latent_size])
         # generate fake images
@@ -168,8 +168,8 @@ def train(models, x_train, params):
         noise = np.random.uniform(-1.0, 1.0, size=[batch_size, latent_size])
         # label fake images as real or 1.0
         y = np.ones([batch_size, 1])
-        # train the adversarial network 
-        # note that unlike in discriminator training, 
+        # train the adversarial network
+        # note that unlike in discriminator training,
         # we do not save the fake images in a variable
         # the fake images go to the discriminator input of the adversarial
         # for classification
@@ -184,22 +184,16 @@ def train(models, x_train, params):
                 show = False
 
             # plot generator images on a periodic basis
-            plot_images(generator,
-                        noise_input=noise_input,
-                        show=show,
-                        step=(i + 1),
-                        model_name=model_name)
-   
+            plot_images(
+                generator, noise_input=noise_input, show=show, step=(i + 1), model_name=model_name
+            )
+
     # save the model after training the generator
     # the trained generator can be reloaded for future MNIST digit generation
     generator.save(model_name + ".h5")
 
 
-def plot_images(generator,
-                noise_input,
-                show=False,
-                step=0,
-                model_name="gan"):
+def plot_images(generator, noise_input, show=False, step=0, model_name="gan"):
     """Generate fake images and plot them
 
     For visualization purposes, generate fake images
@@ -223,13 +217,13 @@ def plot_images(generator,
     for i in range(num_images):
         plt.subplot(rows, rows, i + 1)
         image = np.reshape(images[i], [image_size, image_size])
-        plt.imshow(image, cmap='gray')
-        plt.axis('off')
+        plt.imshow(image, cmap="gray")
+        plt.axis("off")
     plt.savefig(filename)
     if show:
         plt.show()
     else:
-        plt.close('all')
+        plt.close("all")
 
 
 def build_and_train_models():
@@ -239,7 +233,7 @@ def build_and_train_models():
     # reshape data for CNN as (28, 28, 1) and normalize
     image_size = x_train.shape[1]
     x_train = np.reshape(x_train, [-1, image_size, image_size, 1])
-    x_train = x_train.astype('float32') / 255
+    x_train = x_train.astype("float32") / 255
 
     model_name = "dcgan_mnist"
     # network parameters
@@ -252,19 +246,17 @@ def build_and_train_models():
     input_shape = (image_size, image_size, 1)
 
     # build discriminator model
-    inputs = Input(shape=input_shape, name='discriminator_input')
+    inputs = Input(shape=input_shape, name="discriminator_input")
     discriminator = build_discriminator(inputs)
-    # [1] or original paper uses Adam, 
+    # [1] or original paper uses Adam,
     # but discriminator converges easily with RMSprop
     optimizer = RMSprop(lr=lr, decay=decay)
-    discriminator.compile(loss='binary_crossentropy',
-                          optimizer=optimizer,
-                          metrics=['accuracy'])
+    discriminator.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
     discriminator.summary()
 
     # build generator model
-    input_shape = (latent_size, )
-    inputs = Input(shape=input_shape, name='z_input')
+    input_shape = (latent_size,)
+    inputs = Input(shape=input_shape, name="z_input")
     generator = build_generator(inputs, image_size)
     generator.summary()
 
@@ -273,12 +265,8 @@ def build_and_train_models():
     # freeze the weights of discriminator during adversarial training
     discriminator.trainable = False
     # adversarial = generator + discriminator
-    adversarial = Model(inputs, 
-                        discriminator(generator(inputs)),
-                        name=model_name)
-    adversarial.compile(loss='binary_crossentropy',
-                        optimizer=optimizer,
-                        metrics=['accuracy'])
+    adversarial = Model(inputs, discriminator(generator(inputs)), name=model_name)
+    adversarial.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=["accuracy"])
     adversarial.summary()
 
     # train discriminator and adversarial networks
@@ -289,13 +277,10 @@ def build_and_train_models():
 
 def test_generator(generator):
     noise_input = np.random.uniform(-1.0, 1.0, size=[16, 100])
-    plot_images(generator,
-                noise_input=noise_input,
-                show=True,
-                model_name="test_outputs")
+    plot_images(generator, noise_input=noise_input, show=True, model_name="test_outputs")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     help_ = "Load generator h5 model with trained weights"
     parser.add_argument("-g", "--generator", help=help_)

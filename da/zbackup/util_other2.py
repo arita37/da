@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 
 
+import math
+from collections import Counter
+
+import numpy as np
+import pandas as pd
+import scipy.stats as ss
 from scipy import interp
-from sklearn.metrics import roc_curve, auc
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import auc, roc_curve
 
 
 def _display_plot():
@@ -149,7 +158,7 @@ def roc_graph(y_true, y_pred, micro=True, macro=True, **kwargs):
                 ls=":",
                 color="deeppink",
                 class_label="micro",
-                **kwargs
+                **kwargs,
             )
         if macro:
             _plot_macro_roc(all_fpr, all_tpr, n)
@@ -209,17 +218,7 @@ def convert(data, to):
         return converted
 
 
-import math
-import pandas as pd
-import seaborn as sns
-import scipy.stats as ss
-import matplotlib.pyplot as plt
-from collections import Counter
-
 # from dython._private import convert
-
-
-import numpy as np
 
 
 def np_sampling_weighted(numbers, k=1, with_replacement=False, **kwargs):

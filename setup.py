@@ -1,20 +1,18 @@
-
 import io
 import os
 import subprocess
 import sys
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 ######################################################################################
 root = os.path.abspath(os.path.dirname(__file__))
 
 
-
 ##### check if GPU available  #######################################################
-p = subprocess.Popen(['command -v nvidia-smi'], stdout=subprocess.PIPE, shell=True)
-out = p.communicate()[0].decode('utf8')
+p = subprocess.Popen(["command -v nvidia-smi"], stdout=subprocess.PIPE, shell=True)
+out = p.communicate()[0].decode("utf8")
 gpu_available = len(out) > 0
-
 
 
 ##### Version
@@ -36,10 +34,7 @@ packages = ["da"] + ["da." + p for p in find_packages("da")]
 
 
 ### CLI Scripts
-scripts = [ ]
-
-
-
+scripts = []
 
 
 setup(
@@ -49,7 +44,7 @@ setup(
     uthor="KN",
     author_email="brookm gmail",
     url="https://github.com/arita37/da",
-    install_requires=["numpy","pandas"],
+    install_requires=["numpy", "pandas"],
     packages=packages,
     scripts=scripts,
 )

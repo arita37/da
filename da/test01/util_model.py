@@ -4,19 +4,17 @@ Methods for ML models, model ensembels, metrics etc.
 util_model : input/output is numpy
 
 """
-import os
 import copy
+import os
 from collections import OrderedDict
-from dateutil.parser import parse
 
 import numpy as np
 import pandas as pd
-
 import scipy as sci
+from dateutil.parser import parse
+
 import sklearn as sk
-
-
-from sklearn import covariance, linear_model, model_selection
+from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
@@ -26,27 +24,22 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    make_scorer,
+    mean_absolute_error,
+    roc_auc_score,
+    roc_curve,
+)
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
-
-
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
-from sklearn.metrics import classification_report
-from sklearn.metrics import accuracy_score
-from sklearn import preprocessing
-from sklearn.metrics import mean_absolute_error, make_scorer
-
 
 # from attrdict import AttrDict as dict2
 # from kmodes.kmodes import KModes
@@ -72,7 +65,6 @@ class dict2(object):
         self.__dict__ = d
 
 
-
 def np_transform_pca(Xmat, dimpca=2, whiten=True):
     """Project ndim data into dimpca sub-space  """
     pca = PCA(n_components=dimpca, whiten=whiten).fit(Xmat)
@@ -87,20 +79,17 @@ def sk_feature_impt_logis(clf, cols2):
     return dfeatures
 
 
+def split_train_test(X, y, split_ratio=0.8):
 
-def split_train_test(X,y, split_ratio=0.8):
-    
-    train_X, val_X, train_y, val_y = train_test_split(X,
-                                                 y,
-                                                 test_size = split_ratio,
-                                                 random_state=42,
-                                                 shuffle=False)
-    print('train_X shape:',train_X.shape)
-    print('val_X shape:',val_X.shape)
+    train_X, val_X, train_y, val_y = train_test_split(
+        X, y, test_size=split_ratio, random_state=42, shuffle=False
+    )
+    print("train_X shape:", train_X.shape)
+    print("val_X shape:", val_X.shape)
 
-    print('train_y shape:',train_y.shape)
-    print('val_y shape:',val_y.shape)
-    
+    print("train_y shape:", train_y.shape)
+    print("val_y shape:", val_y.shape)
+
     return train_X, val_X, train_y, val_y
 
 
@@ -166,54 +155,51 @@ def split_train2(df1, ntrain=10000, ntest=100000, colused=None, nratio=0.4):
     return X_train, X_test, y_train, y_test
 
 
-
 # LightGBM GBDT with KFold or Stratified KFold
-def model_lightgbm_kfold(train_df, num_folds, stratified = False, debug= False):
+def model_lightgbm_kfold(train_df, num_folds, stratified=False, debug=False):
     # Cross validation model
     if stratified:
-        folds = StratifiedKFold(n_splits= num_folds, shuffle=True, random_state=326)
+        folds = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=326)
     else:
-        folds = KFold(n_splits= num_folds, shuffle=True, random_state=326)
+        folds = KFold(n_splits=num_folds, shuffle=True, random_state=326)
 
     # Create arrays and dataframes to store results
     oof_preds = np.zeros(train_df.shape[0])
     feature_importance_df = pd.DataFrame()
     feats = [f for f in train_df.columns if f not in FEATS_EXCLUDED]
-    
+
     regs = []
     # k-fold
-    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(train_df[feats], train_df['is_match'])):
-        train_x, train_y = train_df[feats].iloc[train_idx], train_df['is_match'].iloc[train_idx]
-        valid_x, valid_y = train_df[feats].iloc[valid_idx], train_df['is_match'].iloc[valid_idx]
+    for n_fold, (train_idx, valid_idx) in enumerate(
+        folds.split(train_df[feats], train_df["is_match"])
+    ):
+        train_x, train_y = train_df[feats].iloc[train_idx], train_df["is_match"].iloc[train_idx]
+        valid_x, valid_y = train_df[feats].iloc[valid_idx], train_df["is_match"].iloc[valid_idx]
 
         # set data structure
-        lgb_train = lgb.Dataset(train_x,
-                                label=train_y,
-                                free_raw_data=False)
-        lgb_test = lgb.Dataset(valid_x,
-                               label=valid_y,
-                               free_raw_data=False)
+        lgb_train = lgb.Dataset(train_x, label=train_y, free_raw_data=False)
+        lgb_test = lgb.Dataset(valid_x, label=valid_y, free_raw_data=False)
 
         # params optimized by optuna
-        params ={
-                   'max_depth':-1,
-                   'n_estimators':300,
-                   'learning_rate':0.05,
-                   'num_leaves':2**12-1,
-                   'colsample_bytree':0.28,
-                   'objective':'binary', 
-                   'n_jobs':-1
-                }
+        params = {
+            "max_depth": -1,
+            "n_estimators": 300,
+            "learning_rate": 0.05,
+            "num_leaves": 2 ** 12 - 1,
+            "colsample_bytree": 0.28,
+            "objective": "binary",
+            "n_jobs": -1,
+        }
 
         reg = lgb.train(
-                        params,
-                        lgb_train,
-                        valid_sets=[lgb_train, lgb_test],
-                        valid_names=['train', 'test'],
-                        num_boost_round=10000,
-                        early_stopping_rounds= 200,
-                        verbose_eval=100
-                        )
+            params,
+            lgb_train,
+            valid_sets=[lgb_train, lgb_test],
+            valid_names=["train", "test"],
+            num_boost_round=10000,
+            early_stopping_rounds=200,
+            verbose_eval=100,
+        )
         regs.append(reg)
 
     return regs
@@ -742,8 +728,6 @@ def sk_cluster_kmeans(Xmat, nbcluster=5, isprint=False, isnorm=False) :
 """
 
 
-
-
 ######## Valuation model template  ##########################################################
 class sk_model_template1(sk.base.BaseEstimator):
     def __init__(self, alpha=0.5, low_y_cut=-0.09, high_y_cut=0.09, ww0=0.95):
@@ -1187,16 +1171,16 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"]):
     print(classification_report(y_test, ytest_pred, target_names=target_names))
 
     # calculate roc curve
-    try :
-      fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
-      plt.plot([0, 1], [0, 1], linestyle="--")
-      plt.plot(fpr, tpr, marker=".")
-      plt.xlabel("False positive rate")
-      plt.ylabel("True positive rate")
-      plt.title("ROC curve")
-      plt.show()
-    except Exception as e :
-      print(e)
+    try:
+        fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
+        plt.plot([0, 1], [0, 1], linestyle="--")
+        plt.plot(fpr, tpr, marker=".")
+        plt.xlabel("False positive rate")
+        plt.ylabel("True positive rate")
+        plt.title("ROC curve")
+        plt.show()
+    except Exception as e:
+        print(e)
 
 
 def clf_prediction_score(clf, df1, cols, outype="score"):
@@ -1208,6 +1192,7 @@ def clf_prediction_score(clf, df1, cols, outype="score"):
     :param outype:
     :return:
     """
+
     def score_calc(yproba, pnorm=1000.0):
         yy = np.log(0.00001 + (1 - yproba) / (yproba + 0.001))
         # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )
@@ -1246,27 +1231,22 @@ def sk_showconfusion(clfrf, X_train, Y_train, isprint=True):
     return cm, cm_norm, cm_norm[0, 0] + cm_norm[1, 1]
 
 
+def sk_model_eval(clf, istrain=1, Xtrain=None, ytrain=None, Xval=None, yval=None):
 
-def sk_model_eval(clf, istrain=1,  Xtrain=None, ytrain=None, Xval=None, yval=None):
+    if istrain:
+        clf.fit(Xtrain, ytrain)
 
-    if istrain :
-      clf.fit(Xtrain, ytrain)
-    
-    CV_score = -cross_val_score(clf, Xtrain, ytrain, scoring='neg_mean_absolute_error', cv=4)
-    
-    print('CV score: ', CV_score)
-    print('CV mean: ', CV_score.mean())
-    print('CV std:', CV_score.std())
-    
+    CV_score = -cross_val_score(clf, Xtrain, ytrain, scoring="neg_mean_absolute_error", cv=4)
+
+    print("CV score: ", CV_score)
+    print("CV mean: ", CV_score.mean())
+    print("CV std:", CV_score.std())
+
     train_y_predicted_logReg = clf.predict(Xtrain)
     val_y_predicted_logReg = clf.predict(Xval)
-    
-    print('\n')
-    print('Score on logReg training set:', mean_absolute_error(ytrain, train_y_predicted_logReg))
-    print('Score on logReg validation set:', mean_absolute_error(yval, val_y_predicted_logReg))
-    
+
+    print("\n")
+    print("Score on logReg training set:", mean_absolute_error(ytrain, train_y_predicted_logReg))
+    print("Score on logReg validation set:", mean_absolute_error(yval, val_y_predicted_logReg))
+
     return clf, train_y_predicted_logReg, val_y_predicted_logReg
-
-
-
-

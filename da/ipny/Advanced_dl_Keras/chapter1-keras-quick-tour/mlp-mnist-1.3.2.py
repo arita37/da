@@ -1,20 +1,19 @@
-'''
+"""
 A MLP network for MNIST digits classification
 
 98.3% test accuracy in 20epochs
 
 https://github.com/PacktPublishing/Advanced-Deep-Learning-with-Keras
-'''
+"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Dropout
-from keras.utils import to_categorical, plot_model
+
 from keras.datasets import mnist
+from keras.layers import Activation, Dense, Dropout
+from keras.models import Sequential
+from keras.utils import plot_model, to_categorical
 
 # load mnist dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -32,9 +31,9 @@ input_size = image_size * image_size
 
 # resize and normalize
 x_train = np.reshape(x_train, [-1, input_size])
-x_train = x_train.astype('float32') / 255
+x_train = x_train.astype("float32") / 255
 x_test = np.reshape(x_test, [-1, input_size])
-x_test = x_test.astype('float32') / 255
+x_test = x_test.astype("float32") / 255
 
 # network parameters
 batch_size = 128
@@ -44,23 +43,21 @@ dropout = 0.45
 # model is a 3-layer MLP with ReLU and dropout after each layer
 model = Sequential()
 model.add(Dense(hidden_units, input_dim=input_size))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dropout(dropout))
 model.add(Dense(hidden_units))
-model.add(Activation('relu'))
+model.add(Activation("relu"))
 model.add(Dropout(dropout))
 model.add(Dense(num_labels))
 # this is the output for one-hot vector
-model.add(Activation('softmax'))
+model.add(Activation("softmax"))
 model.summary()
-plot_model(model, to_file='mlp-mnist.png', show_shapes=True)
+plot_model(model, to_file="mlp-mnist.png", show_shapes=True)
 
 # loss function for one-hot vector
 # use of adam optimizer
 # accuracy is good metric for classification tasks
-model.compile(loss='categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
+model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 # train the network
 model.fit(x_train, y_train, epochs=20, batch_size=batch_size)
 

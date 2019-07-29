@@ -7,37 +7,30 @@ util_feature: input/output is pandas
 
 """
 import copy
-import os
-from collections import Counter
-from collections import OrderedDict
 import math
-
+import os
+from collections import Counter, OrderedDict
 
 import numpy as np
 import pandas as pd
 import scipy as sci
+
 import sklearn as sk
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-try :
+try:
     import pandas_profiling
 
-except Exception as e :
+except Exception as e:
     print(e)
 
 
 print("os.getcwd", os.getcwd())
 
-
-
-
-####################################################################################################
 ####################################################################################################
 def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
     """
-
     :param df:
     :param colname:
     :param colonehot: previous one hot columns
@@ -61,21 +54,20 @@ def pd_col_to_onehot(df, colname=None, colonehot=None, returncol=0):
             print(x, e)
 
     ### Add missing category columns
-    if colonehot is not None :
+    if colonehot is not None:
         for x in colonehot:
             if not x in df.columns:
                 df[x] = 0
                 print(x, "added")
 
-    if returncol :
-      col_new =  [c for c in df.columns if c not in colname]
-      return df, col_new
-    else :
-      return df
+    if returncol:
+        col_new = [c for c in df.columns if c not in colname]
+        return df, col_new
+    else:
+        return df
 
 
-
-def pd_colcat_mapping(df, colname) :
+def pd_colcat_mapping(df, colname):
     """
      for col in colcat :
         df[col] = df[col].apply(lambda x : colcat_map["cat_map"][col].get(x)  )
@@ -84,20 +76,22 @@ def pd_colcat_mapping(df, colname) :
     :param colname:
     :return:
     """
-    mapping_rev= {col: {n: cat for n, cat in enumerate(df[col].astype('category').cat.categories)}
-              for col in df[colname] }
+    mapping_rev = {
+        col: {n: cat for n, cat in enumerate(df[col].astype("category").cat.categories)}
+        for col in df[colname]
+    }
+
+    mapping = {
+        col: {cat: n for n, cat in enumerate(df[col].astype("category").cat.categories)}
+        for col in df[colname]
+    }
+
+    return {"cat_map": mapping, "cat_map_inverse": mapping_rev}
 
 
-    mapping = {col: {cat: n for n, cat in enumerate(df[col].astype('category').cat.categories)}
-           for col in df[colname]}
-
-    return {"cat_map": mapping, "cat_map_inverse" : mapping_rev}
-
-
-
-
-def pd_colnum_tocat(df, colname=None, colexclude=None, colbinmap=None,
-                    bins=5, suffix="_bin", method="uniform"):
+def pd_colnum_tocat(
+    df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin", method="uniform"
+):
     """
     colbinmap = [  , ,  , ]
 
@@ -106,64 +100,62 @@ def pd_colnum_tocat(df, colname=None, colexclude=None, colbinmap=None,
     :param method:
     :return:
     """
-    colexclude = [] if colexclude is None else  colexclude
+    colexclude = [] if colexclude is None else colexclude
     colname = colname if colname is not None else list(df.columns)
-    colnew  = []
+    colnew = []
     col_stat = OrderedDict()
-    colmap   = OrderedDict()
+    colmap = OrderedDict()
 
-    def bin_create(dfc, bins) :
+    def bin_create(dfc, bins):
         mi, ma = dfc.min(), dfc.max()
         space = (ma - mi) / bins
-        lbins = [mi + i * space for i in range(bins+1)]
+        lbins = [mi + i * space for i in range(bins + 1)]
         lbins[0] -= 0.0001
         return lbins
 
-    def bin_create_quantile(dfc, bins) :
-        qt_list_ref = np.arange(0, 1.00001  , 1.0 / bins)
-        #print(qt_list_ref )
+    def bin_create_quantile(dfc, bins):
+        qt_list_ref = np.arange(0, 1.00001, 1.0 / bins)
+        # print(qt_list_ref )
 
-        qt_list = dfc.quantile(  qt_list_ref    )
-        #print(qt_list )
-        lbins = list( qt_list.values)
+        qt_list = dfc.quantile(qt_list_ref)
+        # print(qt_list )
+        lbins = list(qt_list.values)
         lbins[0] -= 0.01
         return lbins
 
     for c in colname:
         if c in colexclude:
             continue
-        print(c,)
+        print(c)
         df[c] = df[c].astype(np.float32)
 
         ### Using Prebin Map data
-        if colbinmap is not None :
-           lbins = colbinmap.get(c)
-        else :
-          if method == "quantile" :
-             lbins = bin_create_quantile(df[c], bins)
-          else :
-             lbins = bin_create(df[c], bins)
+        if colbinmap is not None:
+            lbins = colbinmap.get(c)
+        else:
+            if method == "quantile":
+                lbins = bin_create_quantile(df[c], bins)
+            else:
+                lbins = bin_create(df[c], bins)
 
+        cbin = c + suffix
+        labels = np.arange(0, len(lbins) - 1)
+        df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
 
-        cbin = c + suffix 
-        labels = np.arange(0, len(lbins)-1)
-        df[cbin ] = pd.cut(df[c], bins=lbins, labels=labels)
-        
         #### NA processing
-        df[cbin ] = df[cbin ].astype("int") 
-        df[cbin ] = df[cbin ].apply( lambda x : x if  x >= 0.0 else -1)  ##3 NA Values
-        col_stat = df.groupby( cbin ).agg({  c : {"size", "min", "mean", "max"}  })
+        df[cbin] = df[cbin].astype("int")
+        df[cbin] = df[cbin].apply(lambda x: x if x >= 0.0 else -1)  ##3 NA Values
+        col_stat = df.groupby(cbin).agg({c: {"size", "min", "mean", "max"}})
         colmap[c] = lbins
-        colnew.append( cbin)
+        colnew.append(cbin)
 
-        print(col_stat )
+        print(col_stat)
     return df, colmap
 
 
-
-
-def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
-                     method="uniform", bins=None):
+def pd_colnum_tocat_kmeans(
+    df, colname=None, colexclude=None, suffix="_bin", method="uniform", bins=None
+):
     """
     preprocessing.KBinsDiscretizer([n_bins, …])	Bin continuous data into intervals.
 
@@ -185,7 +177,8 @@ def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
 
     # transform the dataset with KBinsDiscretizer
     from sklearn.preprocessing import KBinsDiscretizer
-    enc = KBinsDiscretizer(n_bins=bins, encode='ordinal', strategy=method)
+
+    enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy=method)
 
     for c in df.columns:
         if c in colexclude:
@@ -193,7 +186,7 @@ def pd_colnum_tocat_kmeans(df, colname=None, colexclude=None, suffix="_bin",
         df[c] = df[c].astype(np.float32)
 
         X_binned = enc.fit_transform(df[c].values)
-        df[c + suffix ] = X_binned
+        df[c + suffix] = X_binned
 
     return df
 
@@ -222,7 +215,7 @@ def pd_col_merge2(df, l, x0, colid="easy_id"):
     :param x0:
     :return:
     """
-    dfz = pd.DataFrame({ colid: df[colid].values})
+    dfz = pd.DataFrame({colid: df[colid].values})
     for t in l:
         ix = t.rfind("_")
         val = int(t[ix + 1 :])
@@ -230,7 +223,7 @@ def pd_col_merge2(df, l, x0, colid="easy_id"):
         dfz[t] = df[t].apply(lambda x: val if x > 0 else 0)
 
     # print(dfz)
-    dfz = dfz.set_index(  colid )
+    dfz = dfz.set_index(colid)
     dfz[x0] = dfz.iloc[:, :].sum(1)
     for t in dfz.columns:
         if t != x0:
@@ -279,7 +272,6 @@ def pd_stat_histogram(df, bins=50, coltarget="diff"):
     return hh2
 
 
-
 def pd_stat_histogram_groupby(df, bins=50, coltarget="diff", colgroupby="y"):
     """
     :param df:
@@ -326,28 +318,42 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
     :return:
     """
     print("Univariate distribution")
-    ll = {  x: [] for x in [
-            "col", "n", "n_na", "n_notna", "n_na_pct", "nunique", "nunique_pct",
-            "xmin", "xmin_freq", "xmin_pct",
-            "xmax", "xmax_freq", "xmax_pct",
-            "xmed", "xmed_freq", "xmed_pct"]
+    ll = {
+        x: []
+        for x in [
+            "col",
+            "n",
+            "n_na",
+            "n_notna",
+            "n_na_pct",
+            "nunique",
+            "nunique_pct",
+            "xmin",
+            "xmin_freq",
+            "xmin_pct",
+            "xmax",
+            "xmax_freq",
+            "xmax_pct",
+            "xmed",
+            "xmed_freq",
+            "xmed_pct",
+        ]
     }
 
-    if subsample_ratio < 1.0 :
-      df = df.sample(frac=subsample_ratio)
+    if subsample_ratio < 1.0:
+        df = df.sample(frac=subsample_ratio)
 
     nn = len(df) + 0.0
     for x in df.columns:
         try:
             xmin = df[x].min()
-            nx = len(df[df[x] < xmin + 0.01])  #Can failed if string
+            nx = len(df[df[x] < xmin + 0.01])  # Can failed if string
             ll["xmin_freq"].append(nx)
             ll["xmin"].append(xmin)
             ll["xmin_pct"].append(nx / nn)
 
-
             xmed = df[x].median()
-            nx = len( df[ (df[x] > xmed - 0.1)  & (df[x] < xmed + 0.1) ]  )
+            nx = len(df[(df[x] > xmed - 0.1) & (df[x] < xmed + 0.1)])
             ll["xmed_freq"].append(nx)
             ll["xmed"].append(xmed)
             ll["xmed_pct"].append(nx / nn)
@@ -366,25 +372,24 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
 
             nx = df[x].nunique()
             ll["nunique"].append(nx)  # Should be in last
-            ll["nunique_pct"].append(nx / nn )  # Should be in last
+            ll["nunique_pct"].append(nx / nn)  # Should be in last
             ll["col"].append(x)  # Should be in last
         except Exception as e:
             print(x, e)
 
-    #for k, x in ll.items():
+    # for k, x in ll.items():
     #    print(k, len(x))
 
     ll = pd.DataFrame(ll)
     return ll
 
 
-
 def pd_colcat_toint(df, colname, suffix=None):
-  suffix = "" if suffix is None else suffix
-  for col in colname:
-    df[col + suffix ], lunique = df[col].factorize()
-    print(col + suffix )
-  return df
+    suffix = "" if suffix is None else suffix
+    for col in colname:
+        df[col + suffix], lunique = df[col].factorize()
+        print(col + suffix)
+    return df
 
 
 def np_conditional_entropy(x, y):
@@ -541,8 +546,12 @@ def pd_num_correl_associations(
                 if col[i] in colcat:
                     if col[j] in colcat:
                         if theil_u:
-                            corr[col[j]][col[i]] = np_correl_cat_cat_theils_u(df[col[i]], df[col[j]])
-                            corr[col[i]][col[j]] = np_correl_cat_cat_theils_u(df[col[j]], df[col[i]])
+                            corr[col[j]][col[i]] = np_correl_cat_cat_theils_u(
+                                df[col[i]], df[col[j]]
+                            )
+                            corr[col[i]][col[j]] = np_correl_cat_cat_theils_u(
+                                df[col[j]], df[col[i]]
+                            )
                         else:
                             cell = np_correl_cat_cat_cramers_v(df[col[i]], df[col[j]])
                             corr[col[i]][col[j]] = cell
@@ -608,24 +617,26 @@ def pd_colcat_tonum(df, colcat="all", drop_single_label=False, drop_fact_dict=Tr
         return df
     elif colcat == "all":
         colcat = df.columns
-    converted_dataset = pd.DataFrame()
+    df_out = pd.DataFrame()
     binary_columns_dict = dict()
+
     for col in df.columns:
         if col not in colcat:
-            converted_dataset.loc[:, col] = df[col]
+            df_out.loc[:, col] = df[col]
+
         else:
             unique_values = pd.unique(df[col])
             if len(unique_values) == 1 and not drop_single_label:
-                converted_dataset.loc[:, col] = 0
+                df_out.loc[:, col] = 0
             elif len(unique_values) == 2:
-                converted_dataset.loc[:, col], binary_columns_dict[col] = pd.factorize(df[col])
+                df_out.loc[:, col], binary_columns_dict[col] = pd.factorize(df[col])
             else:
                 dummies = pd.get_dummies(df[col], prefix=col)
-                converted_dataset = pd.concat([converted_dataset, dummies], axis=1)
+                df_out = pd.concat([df_out, dummies], axis=1)
     if drop_fact_dict:
-        return converted_dataset
+        return df_out
     else:
-        return converted_dataset, binary_columns_dict
+        return df_out, binary_columns_dict
 
 
 def convert(data, to):
@@ -752,17 +763,14 @@ def col_extractname_colbin(cols2):
     return coln
 
 
-
-
-def col_getnumpy_indice(colall, colcat) :
+def col_getnumpy_indice(colall, colcat):
     def np_find_indice(v, x):
         for i, j in enumerate(v):
             if j == x:
                 return i
         return -1
 
-    return [  np_find_indice(colall, x)  for x in colcat ]
-
+    return [np_find_indice(colall, x) for x in colcat]
 
 
 def pd_col_intersection(df1, df2, colid):
@@ -896,7 +904,6 @@ def col_stat_getcategorydict_freq(catedict):
     return catlist
 
 
-
 def pd_num_correl_pair(df, coltarget=None, colname=None):
     """
       Genearte correletion between the column and target column
@@ -912,15 +919,11 @@ def pd_num_correl_pair(df, coltarget=None, colname=None):
     colname = colname if colname is not None else list(df.columns)
     target_corr = []
     for col in colname:
-        target_corr.append( pearsonr(df[col].values, df[coltarget].values)[0])
+        target_corr.append(pearsonr(df[col].values, df[coltarget].values)[0])
 
-    df_correl = pd.DataFrame({ "colx": [""]*len(colname),
-                               "coly": colname,
-                               "correl": target_corr  })
+    df_correl = pd.DataFrame({"colx": [""] * len(colname), "coly": colname, "correl": target_corr})
     df_correl[coltarget] = colname
     return df_correl
-
-
 
 
 def pd_col_filter(df, filter_val=[], iscol=1):
@@ -942,16 +945,16 @@ def pd_col_filter(df, filter_val=[], iscol=1):
     return df2
 
 
-
 def pd_stat_jupyter_profile(df, savefile="report.html", title="Pandas Profile"):
     """ Describe the tables
         #Pandas-Profiling 2.0.0
         df.profile_report()
     """
     import pandas_profiling as pp
+
     print("start profiling")
     profile = df.profile_report(title=title)
-    profile.to_file(output_file= savefile )
+    profile.to_file(output_file=savefile)
     colexclude = profile.get_rejected_variables(threshold=0.98)
     return colexclude
 
@@ -962,8 +965,20 @@ def pd_stat_distribution_colnum(df):
 
    """
     coldes = [
-        "col", "coltype", "dtype", "count", "min", "max", "nb_na", "pct_na", "median",
-        "mean", "std", "25%", "75%", "outlier",
+        "col",
+        "coltype",
+        "dtype",
+        "count",
+        "min",
+        "max",
+        "nb_na",
+        "pct_na",
+        "median",
+        "mean",
+        "std",
+        "25%",
+        "75%",
+        "outlier",
     ]
 
     def getstat(col, type1="num"):
@@ -1016,12 +1031,10 @@ def pd_df_stack(df_list, ignore_index=True):
     return df0
 
 
-
-
 ########################## Added functions   #######################################################
 ####################################################################################################
 def pd_col_fillna(df, colname, value=None, colgroupby=None):
-    '''
+    """
     Function to fill NaNs with a specific value in certain columns
     Arguments:
         df:            dataframe
@@ -1030,22 +1043,22 @@ def pd_col_fillna(df, colname, value=None, colgroupby=None):
 
     Returns:
         df:            new dataframe with filled values
-    '''
+    """
     for col in colname:
         nb_nans = df[col].isna().sum()
-        if colgroupby is not None :
-           means = df.groupby( colgroupby )[col].transform("median")   # Conditional median
-        else :
-           means = df[col].median()
+        if colgroupby is not None:
+            means = df.groupby(colgroupby)[col].transform("median")  # Conditional median
+        else:
+            means = df[col].median()
 
         value = means if value is None else value
-        print(col, nb_nans, "replaceBY",  value)
+        print(col, nb_nans, "replaceBY", value)
         df[col] = df[col].fillna(value)
     return df
 
 
 def pd_row_drop_above_thresh(df, colnumlist, thresh):
-    '''
+    """
     Function to remove outliers above a certain threshold
     Arguments:
         df:     dataframe
@@ -1053,28 +1066,15 @@ def pd_row_drop_above_thresh(df, colnumlist, thresh):
         thresh: value above which to remove row
     Returns:
         df:     dataframe with outliers removed
-    '''
-    for col in colnumlist :
-      df = df.drop(df[ (df[col] > thresh )], axis=0)
+    """
+    for col in colnumlist:
+        df = df.drop(df[(df[col] > thresh)], axis=0)
     return df
 
 
-
 def ztest():
-  """
+    """
    Test
-  """  
-  print(np.__version, np)  
-  print(pd.__version__, pd) 
-
-
-
-
-
-
-
-
-
-
-
-
+  """
+    print(np.__version, np)
+    print(pd.__version__, pd)

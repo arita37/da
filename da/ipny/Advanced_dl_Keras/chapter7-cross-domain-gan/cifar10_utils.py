@@ -2,14 +2,12 @@
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from keras.datasets import cifar10
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
+
 import other_utils
+from keras.datasets import cifar10
 
 
 def load_data():
@@ -26,18 +24,12 @@ def load_data():
     source_data = other_utils.rgb2gray(target_data)
     test_source_data = other_utils.rgb2gray(test_target_data)
     # reshape images to row x col x channel for CNN input
-    source_data = source_data.reshape(source_data.shape[0],
-                                      rows,
-                                      cols,
-                                      1)
-    test_source_data = test_source_data.reshape(test_source_data.shape[0],
-                                                rows,
-                                                cols,
-                                                1)
+    source_data = source_data.reshape(source_data.shape[0], rows, cols, 1)
+    test_source_data = test_source_data.reshape(test_source_data.shape[0], rows, cols, 1)
 
     # source data, target data, test_source data
     data = (source_data, target_data, test_source_data, test_target_data)
-    filenames = ('cifar10_test_source.png', 'cifar10_test_target.png')
-    titles = ('CIFAR10 test source images', 'CIFAR10 test target images')
-    
+    filenames = ("cifar10_test_source.png", "cifar10_test_target.png")
+    titles = ("CIFAR10 test source images", "CIFAR10 test target images")
+
     return other_utils.load_data(data, titles, filenames)

@@ -7,11 +7,27 @@ Created on Tue Jul 23 23:14:42 2019
 
 
 
-import pandas as pd
-from nltk.corpus import stopwords
 import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
 import seaborn as sns
+from nltk.corpus import stopwords
 from nltk.stem.porter import *
+# make the ROC curve plots from both models
+from sklearn import metrics
+# split the data into training and test sets
+# we pass the predictive features with no "red"
+# as the predictor data
+from sklearn.cross_validation import train_test_split
+# Prepare and run Random Forest
+# Import the random forest package
+from sklearn.ensemble import RandomForestClassifier
+# define the count vectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
 stemmer = PorterStemmer()
 
 
@@ -63,8 +79,6 @@ processed_texts = [text_to_words(text) for text in wine_data.Winemakers_Notes]
 # The ngram_range specifies that we want to extract single words
 # other possibilities include bigrams, trigrams, etc.
 
-# define the count vectorizer
-from sklearn.feature_extraction.text import CountVectorizer
 vectorizer_count = CountVectorizer(ngram_range=(1, 1), 
                                    min_df = 50, binary = True)
 
@@ -119,7 +133,6 @@ topwords_plot.set(ylabel='Number of Documents')
 # the same observations are placed into train and test set as in the
 # previous posts
 
-from sklearn.cross_validation import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(pred_feat_unigrams, 
                             wine_data["Varietal_WineType_Name"], 
                             test_size=0.30, random_state=42)
@@ -129,9 +142,6 @@ X_train, X_test, y_train, y_test = train_test_split(pred_feat_unigrams,
 
 
 
-# Prepare and run Random Forest
-# Import the random forest package
-from sklearn.ensemble import RandomForestClassifier
 # Create the random forest object
 rforest = RandomForestClassifier(n_estimators = 500, n_jobs=-1)
 # Fit the training data 
@@ -180,10 +190,6 @@ pred_feat_nored = pred_feat_nored.drop('red', axis = 1)
 
 
 
-# split the data into training and test sets
-# we pass the predictive features with no "red"
-# as the predictor data
-from sklearn.cross_validation import train_test_split
 X_train_nr, X_test_nr, y_train_nr, y_test_nr = train_test_split(pred_feat_nored, 
                             wine_data["Varietal_WineType_Name"], 
                             test_size=0.30, random_state=42)
@@ -211,10 +217,6 @@ preds_rf = rforest_model.predict_proba(X_test)
 # model with "red" removed from predictor matrix
 preds_rf_nr = rforest_model_nr.predict_proba(X_test_nr)
 
-# make the ROC curve plots from both models
-from sklearn import metrics
-import pandas as pd
-import matplotlib.pyplot as plt
 
 plt.figure(figsize=(10,10))
 fpr, tpr, _ = metrics.roc_curve(pd.get_dummies(y_test)['Red Wines'], 
@@ -272,7 +274,6 @@ tannin_plot.set(xlabel='Wine Type',
 
 # Creating Unigram & Bigram Vectors
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 vectorizer =TfidfVectorizer(ngram_range=(1,2))
 
@@ -290,7 +291,6 @@ The term frequency (tf) measures the occurrenc
 
 # Creating Unigram & Bigram Vectors
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 vectorizer =TfidfVectorizer(ngram_range=(1,2))
 
@@ -300,7 +300,6 @@ X_ngrams=vectorizer.fit_transform(processed)
             
  #Train/Test Split
 
-from sklearn.model_selection import train_test_split
 
 X_train,X_test,y_train,y_test=train_test_split(X_ngrams,y,test_size=0.2,stratify=y)
 
@@ -308,25 +307,7 @@ X_train,X_test,y_train,y_test=train_test_split(X_ngrams,y,test_size=0.2,stratify
 
 # Running the Classsifier
 
-from sklearn.linear_model import LogisticRegression
 
 clf=LogisticRegression()
 
 clf.fit(X_train,y_train)           
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-
-
-
-
-
-

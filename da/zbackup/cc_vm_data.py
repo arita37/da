@@ -1,14 +1,30 @@
 # -- coding: utf-8 -*-
 %load_ext autoreload
 %autoreload
-import os, sys
+import gc
+import os
+import sys
+# import the modules
+import unicodedata as ucd
+from collections import defaultdict
+
+import numpy as np
+import pandas as pd
+from dateutil import parser
+
+import arrow
+import bcolz
+import dask
+import dask.dataframe as dd
+import datanalysis as da
+import odo
+import sqlalchemy as sql
+import util
+from attrdict import AttrDict as dict2
+
 DIRCWD=  'G:/_devs/project27/' if sys.platform.find('win')> -1   else  '/home/ubuntu/notebook/' if os.environ['HOME'].find('ubuntu')>-1 else '/media/sf_project27/'
 os.chdir(DIRCWD); sys.path.append(DIRCWD + '/aapackage'); # sys.path.append(DIRCWD + '/linux/aapackage')
 execfile( DIRCWD + '/aapackage/allmodule.py')
-import util,  numpy as np, gc
-import  pandas as pd, sqlalchemy as sql, dask.dataframe as dd, dask, datanalysis as da, arrow
-from attrdict import AttrDict as dict2
-from collections import defaultdict
 ############################################################################################
 
 
@@ -2234,9 +2250,6 @@ format='table', min_itemsize={'A': 30}
 
 
 '''
-# import the modules
-import unicodedata as ucd
-import pandas as pd
 
 # open the data file
 df = pd.read_csv('path/to/file.csv', encoding='utf-8')
@@ -3162,7 +3175,6 @@ df
 
 
 
-import odo
 
 odo('sqlite:///db.db::q5min_etf', )
 
@@ -3171,7 +3183,6 @@ odo('sqlite:///db.db::q5min_etf', )
 
 
 
-import bcolz
 
 
 file1= 'E:/_data/stock/intraday/20161207_etf/NKE_20160928_300_6000.csv'
@@ -3259,7 +3270,6 @@ df2['open']= 5
 
 df=df2
 
-from dateutil import parser
 
 
 df.date= [util.datenumpy_todatetime(x)for x in  df.date.values ]
@@ -3384,14 +3394,11 @@ c.flush()
 d= bcolz.carray()
 
 
-import util
 
 df= util.pd_array_todataframe()
 
 
 file1= 'E:/_data/stock/intraday/20161207_etf/NKE_20160928_300_6000.csv'
-import bcolz
-import pandas as pd
 
 df = pd.read_csv(file1, delimiter=',')
 
@@ -3804,46 +3811,3 @@ if line.split(",")[3] in offers
 to:
 
 if line.split(",")[4] in offers
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

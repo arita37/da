@@ -3,12 +3,10 @@ Some special methods
 
 """
 
-try :
-  from geopy.distance import great_circle
-except Exception as e :
-  print(e)
-
-
+try:
+    from geopy.distance import great_circle
+except Exception as e:
+    print(e)
 
 
 def optim_de(obj_fun, bounds, maxiter=1, name1="", solver1=None, isreset=1, popsize=15):
@@ -99,19 +97,22 @@ def pd_checkpoint():
 ########### Added functions
 ##################################
 
+
 def pd_col_add_distance_to_point(df, center_point):
-    '''
+    """
     Function adding a column with distance to a point
     Arguments:
         df:            dataframe (requires latitude / longitude)
         center_point:  tuple with lat / long of point
     Returns:
         df:            dataframe with new column ['distance'] (in km)
-    '''
-    if 'latitude' and 'longitude' not in df.columns:
-        print('There are no lat / long data in the dataframe')
-    else:    
-        df['distance']=df.apply(lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1)
+    """
+    if "latitude" and "longitude" not in df.columns:
+        print("There are no lat / long data in the dataframe")
+    else:
+        df["distance"] = df.apply(
+            lambda x: round(great_circle(center_point, (x.latitude, x.longitude)).km, 3), axis=1
+        )
     return df
 
 

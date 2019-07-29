@@ -3,22 +3,20 @@
 
 """
 
-from collections import deque
-import numpy as np
 import argparse
 import os
 import time
-import gym
-from gym import wrappers, logger
+from collections import deque
 
-class QAgent():
-    def __init__(self,
-                 observation_space,
-                 action_space,
-                 demo=False,
-                 slippery=False,
-                 episodes=40000):
-        
+import numpy as np
+
+import gym
+from gym import logger, wrappers
+
+
+class QAgent:
+    def __init__(self, observation_space, action_space, demo=False, slippery=False, episodes=40000):
+
         self.action_space = action_space
         # number of columns is equal to number of actions
         col = action_space.n
@@ -35,18 +33,18 @@ class QAgent():
         # iteratively applying decay til 10% exploration/90% exploitation
         self.epsilon_min = 0.1
         self.epsilon_decay = self.epsilon_min / self.epsilon
-        self.epsilon_decay = self.epsilon_decay ** (1. / float(episodes))
+        self.epsilon_decay = self.epsilon_decay ** (1.0 / float(episodes))
 
         # learning rate of Q-Learning
         self.learning_rate = 0.1
-        
+
         # file where Q Table is saved on/restored fr
         if slippery:
-            self.filename = 'q-frozenlake-slippery.npy'
+            self.filename = "q-frozenlake-slippery.npy"
         else:
-            self.filename = 'q-frozenlake.npy'
+            self.filename = "q-frozenlake.npy"
 
-        # demo or train mode 
+        # demo or train mode
         self.demo = demo
         # if demo mode, no exploration
         if demo:
@@ -64,7 +62,6 @@ class QAgent():
         # exploit - choose action with max Q-value
         return np.argmax(self.q_table[state])
 
-
     # TD(0) learning (generalized Q-Learning) with learning rate
     def update_q_table(self, state, action, reward, next_state):
         # Q(s, a) += alpha * (reward + gamma * max_a' Q(s', a') - Q(s, a))
@@ -75,22 +72,18 @@ class QAgent():
         q_value += self.q_table[state, action]
         self.q_table[state, action] = q_value
 
-
     # dump Q Table
     def print_q_table(self):
         print(self.q_table)
         print("Epsilon : ", self.epsilon)
 
-
     # save trained Q Table
     def save_q_table(self):
         np.save(self.filename, self.q_table)
 
-
     # load trained Q Table
     def load_q_table(self):
         self.q_table = np.load(self.filename)
-
 
     # adjust epsilon
     def update_epsilon(self):
@@ -98,32 +91,19 @@ class QAgent():
             self.epsilon *= self.epsilon_decay
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('env_id',
-                        nargs='?',
-                        default='FrozenLake-v0',
-                        help='Select the environment to run')
+    parser.add_argument(
+        "env_id", nargs="?", default="FrozenLake-v0", help="Select the environment to run"
+    )
     help_ = "Demo learned Q Table"
-    parser.add_argument("-d",
-                        "--demo",
-                        help=help_,
-                        action='store_true')
+    parser.add_argument("-d", "--demo", help=help_, action="store_true")
     help_ = "Frozen lake is slippery"
-    parser.add_argument("-s",
-                        "--slippery",
-                        help=help_,
-                        action='store_true')
+    parser.add_argument("-s", "--slippery", help=help_, action="store_true")
     help_ = "Exploration only. For baseline."
-    parser.add_argument("-e",
-                        "--explore",
-                        help=help_,
-                        action='store_true')
+    parser.add_argument("-e", "--explore", help=help_, action="store_true")
     help_ = "Sec of time delay in UI. Useful for viz in demo mode."
-    parser.add_argument("-t",
-                        "--delay",
-                        help=help_,
-                        type=int)
+    parser.add_argument("-t", "--delay", help=help_, type=int)
     args = parser.parse_args()
 
     logger.setLevel(logger.INFO)
@@ -139,8 +119,8 @@ if __name__ == '__main__':
         env.is_slippery = False
 
     if args.delay is not None:
-        delay = args.delay 
-    else: 
+        delay = args.delay
+    else:
         delay = 0
 
     # number of times the Goal state is reached
@@ -149,11 +129,13 @@ if __name__ == '__main__':
     episodes = 40000
 
     # instantiate a Q Learning agent
-    agent = QAgent(env.observation_space,
-                   env.action_space,
-                   demo=args.demo,
-                   slippery=args.slippery,
-                   episodes=episodes)
+    agent = QAgent(
+        env.observation_space,
+        env.action_space,
+        demo=args.demo,
+        slippery=args.slippery,
+        episodes=episodes,
+    )
 
     if args.demo:
         agent.load_q_table()
@@ -168,7 +150,7 @@ if __name__ == '__main__':
             # get observable data
             next_state, reward, done, _ = env.step(action)
             # clear the screen before rendering the environment
-            os.system('clear')
+            os.system("clear")
             # render the environment for human debugging
             env.render()
             # training of Q Table
@@ -185,13 +167,11 @@ if __name__ == '__main__':
 
             state = next_state
             percent_wins = 100.0 * wins / (episode + 1)
-            print("-------%0.2f%% Goals in %d Episodes---------"
-                  % (percent_wins, episode))
+            print("-------%0.2f%% Goals in %d Episodes---------" % (percent_wins, episode))
             if done:
                 time.sleep(5 * delay)
             else:
                 time.sleep(delay)
-
 
     print("Episodes: ", episode)
     print("Goals/Holes: %d/%d" % (wins, episode - wins))
@@ -200,4 +180,4 @@ if __name__ == '__main__':
     if not args.demo and not args.explore:
         agent.save_q_table()
     # close the env and write monitor result info to disk
-    env.close() 
+    env.close()

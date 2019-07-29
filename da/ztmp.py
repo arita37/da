@@ -3,31 +3,41 @@
 %autoreload 2
 
 import os
+from collections import OrderedDict
+
+import pandas as pd
+
+########################################
+import da
+import lightgbm as lgb
+import tensorflow as tf
+import util_date
+from lightgbm.sklearn import LGBMClassifier, LGBMClassifiers
+from mlens.ensemble import BlendEnsemble, SuperLearner
+####Ensemble Learning
+from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
+from util_date import *
+from util_feature import *
+from util_model import *
+from util_plot import *
+from util_text import *
+
 dir0 = os.getcwd()
 os.chdir( dir0 + "/da/")
 print( os.getcwd() )
 
-import tensorflow as tf
 print(tf, tf.__version__)
 
 
 
-from util_date import *
-from util_feature import *
-from util_plot import *
-from util_model import *
-from util_text import *
 
 
 EvolutionaryAlgorithmSearchCV
 
-########################################
-import da
 
 da.util_feature.pd_stat_histogram(df)
 
 
-import pandas as pd
 
 class tt(object) :
   def ff(self,) :
@@ -59,7 +69,6 @@ df.sample(frac=0.3).to_csv(folder + '/data/address_small.csv', index=False  )
 df = df.replace( "?", np.nan )
 
 
-from collections import OrderedDict
 
 colname=[ "city_levenshtein_simple" ]
 colexclude=None
@@ -134,14 +143,11 @@ datestring_to
 
 
 
-import util_date
 
 
 
 
-import lightgbm as lgb
 
-from  lightgbm.sklearn import LGBMClassifier, LGBMClassifiers
 
 
 
@@ -184,7 +190,6 @@ https://github.com/flennerhag/mlens
 
 
 
-from mlens.ensemble import SuperLearner 
 ensemble = SuperLearner()
 ensemble.add(estimators)
 ensemble.add_meta(meta_estimator)
@@ -213,9 +218,6 @@ preds = ensemble.predict(X[75:])
 
 
 
-####Ensemble Learning
-from sklearn.metrics import roc_curve, roc_auc_score, accuracy_score
-from mlens.ensemble import SuperLearner, BlendEnsemble
 
 
 # ensemble = SuperLearner(scorer=roc_auc_score, random_state=32, verbose=2)
@@ -323,12 +325,3 @@ c = "Fare"
 
 
 """
-
-
-
-
-
-
-
-
-

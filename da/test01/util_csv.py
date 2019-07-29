@@ -13,21 +13,18 @@ from calendar import isleap
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
-
 # import arrow
 import numpy as np
 import pandas as pd
 import requests
 import scipy as sci
-import sklearn as sk
-
 from dateutil.parser import parse
 
+import sklearn as sk
 from sklearn.model_selection import train_test_split
 
-#from attrdict import AttrDict as dict2
+# from attrdict import AttrDict as dict2
 # from tabulate import tabulate
-
 
 
 ######## Read file and extract data pattern:  .csv,  .txt, .xls  ##################################
@@ -101,6 +98,7 @@ def xl_get_rowcol(ws, i0, j0, imax, jmax):
         rmatj = [xl_val(ws, j, i) for i in range(i0, i0 + imax)]  # add all the rows
         rmat.append(rmatj)
     return rmat
+
 
 '''
 def xl_getschema(dirxl="", filepattern="*.xlsx", dirlevel=1, outfile=".xlsx"):

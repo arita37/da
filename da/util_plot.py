@@ -1,23 +1,22 @@
 """
 Methods for data plotting
 """
-import matplotlib.pyplot as plt
-import seaborn as sns
+import itertools
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 import scipy as sci
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 import sklearn as sk
-from collections import Counter
-
-import itertools
-
 
 try:
     import plotly
     import cufflinks as cf
 except Exception as e:
     print(e)
-
 
 
 ####################################################################################################
@@ -40,6 +39,7 @@ cf.set_config_file(offline=False, world_readable=True)
     """
     import cufflinks as cf
     import plotly.offline
+
     cf.go_offline()
     cf.set_config_file(offline=False, world_readable=True)
     df.iplot()
@@ -48,15 +48,15 @@ cf.set_config_file(offline=False, world_readable=True)
 def plotbar(df, colname, figsize=(20, 10), title="feature importance", savefile="myfile.png"):
     plt.figure(figsize=(20, 10))
     sns.barplot(x=colname[0], y=colname[1], data=df[colname])
-    plt.title( title )
+    plt.title(title)
     plt.tight_layout()
     plt.show()
-    plt.savefig( savefile )
+    plt.savefig(savefile)
 
 
-
-def plotxy(x, y, color=1, size=1, figsize=(12, 10),
-           title="feature importance", savefile="myfile.png"):
+def plotxy(
+    x, y, color=1, size=1, figsize=(12, 10), title="feature importance", savefile="myfile.png"
+):
     """
     :param x:
     :param y:
@@ -66,12 +66,11 @@ def plotxy(x, y, color=1, size=1, figsize=(12, 10),
     """
 
     color = np.zeros(len(x)) if type(color) == int else color
-    fig, ax = plt.subplots(figsize= figsize )
+    fig, ax = plt.subplots(figsize=figsize)
     plt.scatter(x, y, c=color, cmap="Spectral", s=size)
     plt.title(title, fontsize=11)
     plt.show()
-    plt.savefig( savefile )
-
+    plt.savefig(savefile)
 
 
 def plot_col_distribution(df, col_include=None, col_exclude=None, pars={"binsize": 20}):
@@ -88,7 +87,7 @@ def plot_col_distribution(df, col_include=None, col_exclude=None, pars={"binsize
 
     elif col_exclude is not None:
         features = [feature for feature in df.columns.values if not feature in col_exclude]
-    elif col_exclude is  None and col_include is None:
+    elif col_exclude is None and col_include is None:
         features = [feature for feature in df.columns.values]
 
     for feature in features:
@@ -116,7 +115,6 @@ def plot_col_distribution(df, col_include=None, col_exclude=None, pars={"binsize
         plt.show()
 
 
-
 def plot_pair(df, Xcolname=None, Ycoltarget=None):
     """
     :param df:
@@ -134,7 +132,6 @@ def plot_pair(df, Xcolname=None, Ycoltarget=None):
         #  plt.axis([-3, 3, -3, 3])  #gaussian
         plt.title(title1)
         plt.show()
-
 
 
 def plot_distance_heatmap(Xmat_dist, Xcolname):
@@ -184,8 +181,14 @@ def plot_cluster_2D(X_2dim, target_class, target_names):
 
 
 def plot_cluster_tsne(
-    Xmat, Xcluster_label=None, metric="euclidean", perplexity=50, ncomponent=2, savefile="",
-    isprecompute=False, returnval=True,
+    Xmat,
+    Xcluster_label=None,
+    metric="euclidean",
+    perplexity=50,
+    ncomponent=2,
+    savefile="",
+    isprecompute=False,
+    returnval=True,
 ):
     """
     :return:
@@ -228,8 +231,14 @@ def plot_cluster_tsne(
 
 
 def plot_cluster_pca(
-    Xmat, Xcluster_label=None, metric="euclidean", dimpca=2, whiten=True, isprecompute=False,
-    savefile="", doreturn=1,
+    Xmat,
+    Xcluster_label=None,
+    metric="euclidean",
+    dimpca=2,
+    whiten=True,
+    isprecompute=False,
+    savefile="",
+    doreturn=1,
 ):
     """
     :return:
@@ -261,10 +270,25 @@ def plot_cluster_pca(
 
 
 def plot_cluster_hiearchy(
-    Xmat_dist, p=30, truncate_mode=None, color_threshold=None, get_leaves=True,
-    orientation="top", labels=None, count_sort=False, distance_sort=False, show_leaf_counts=True,
-    do_plot=1, no_labels=False, leaf_font_size=None, leaf_rotation=None, leaf_label_func=None,
-    show_contracted=False, link_color_func=None, ax=None, above_threshold_color="b",
+    Xmat_dist,
+    p=30,
+    truncate_mode=None,
+    color_threshold=None,
+    get_leaves=True,
+    orientation="top",
+    labels=None,
+    count_sort=False,
+    distance_sort=False,
+    show_leaf_counts=True,
+    do_plot=1,
+    no_labels=False,
+    leaf_font_size=None,
+    leaf_rotation=None,
+    leaf_label_func=None,
+    show_contracted=False,
+    link_color_func=None,
+    ax=None,
+    above_threshold_color="b",
     annotate_above=0,
 ):
     """
@@ -275,11 +299,25 @@ def plot_cluster_hiearchy(
     from scipy.spatial.distance import pdist
 
     ddata = dendrogram(
-        Xmat_dist, p=30, truncate_mode=truncate_mode, color_threshold=color_threshold,
-        get_leaves=get_leaves, orientation="top", labels=None,
-        count_sort=False, distance_sort=False, show_leaf_counts=True, no_plot=1 - do_plot,
-        no_labels=False, leaf_font_size=None, leaf_rotation=None, leaf_label_func=None,
-        show_contracted=False, link_color_func=None, ax=None, above_threshold_color="b",
+        Xmat_dist,
+        p=30,
+        truncate_mode=truncate_mode,
+        color_threshold=color_threshold,
+        get_leaves=get_leaves,
+        orientation="top",
+        labels=None,
+        count_sort=False,
+        distance_sort=False,
+        show_leaf_counts=True,
+        no_plot=1 - do_plot,
+        no_labels=False,
+        leaf_font_size=None,
+        leaf_rotation=None,
+        leaf_label_func=None,
+        show_contracted=False,
+        link_color_func=None,
+        ax=None,
+        above_threshold_color="b",
     )
 
     if do_plot:
@@ -348,9 +386,20 @@ sample_x = brentq(func, -99999999, 99999999)  # read brentq-docs about these con
     return kde
 
 
-
-def plot_Y( Yval, typeplot=".b", tsize=None, labels=None, title="", xlabel="", ylabel="",
-            zcolor_label="", figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
+def plot_Y(
+    Yval,
+    typeplot=".b",
+    tsize=None,
+    labels=None,
+    title="",
+    xlabel="",
+    ylabel="",
+    zcolor_label="",
+    figsize=(8, 6),
+    dpi=75,
+    savefile="",
+    color_dot="Blues",
+    doreturn=0,
 ):
     """
      Return plot values
@@ -361,10 +410,21 @@ def plot_Y( Yval, typeplot=".b", tsize=None, labels=None, title="", xlabel="", y
     plt.show()
 
 
-
 def plot_XY(
-    xx, yy, zcolor=None, tsize=None, labels=None, title="", xlabel="", ylabel="",
-    zcolor_label="", figsize=(8, 6), dpi=75, savefile="", color_dot="Blues", doreturn=0,
+    xx,
+    yy,
+    zcolor=None,
+    tsize=None,
+    labels=None,
+    title="",
+    xlabel="",
+    ylabel="",
+    zcolor_label="",
+    figsize=(8, 6),
+    dpi=75,
+    savefile="",
+    color_dot="Blues",
+    doreturn=0,
 ):
     """
       labels= numpy array, ---> Generate HTML File with the labels interactives
@@ -485,24 +545,26 @@ def plot_XY_seaborn(X, Y, Zcolor=None):
     plt.title("X:   , Y:   ,Z:", fontsize=18)
 
 
-
 ############## Added functions
 ######################################
 
+
 def plot_cols_with_NaNs(df, nb_to_show):
-    '''
+    """
     Function to plot highest missing value columns
     Arguments:
         df:         dataframe
         nb_to_show: number of columns to show
     Prints:
         nb_to_show columns with most missing values
-    '''
-    print(f'Out of {df.shape[0]} columns, the columns with most missing values are :\n{df.isna().sum().sort_values(ascending=False)[:nb_to_show]}')
+    """
+    print(
+        f"Out of {df.shape[0]} columns, the columns with most missing values are :\n{df.isna().sum().sort_values(ascending=False)[:nb_to_show]}"
+    )
 
-    
+
 def plot_col_correl_matrix(df, cols, annot=True, size=30):
-    '''
+    """
     Function to plot correlation matrix
     Arguments:
         df:    dataframe
@@ -511,13 +573,14 @@ def plot_col_correl_matrix(df, cols, annot=True, size=30):
         size:  size of correlation matrix (default = 30)
     Prints:
         correlation matrix of columns to each other
-    '''
-    sns.heatmap(df[cols].corr(),cmap='coolwarm',annot=annot).set_title('Correlation Matrix', size=size)
+    """
+    sns.heatmap(df[cols].corr(), cmap="coolwarm", annot=annot).set_title(
+        "Correlation Matrix", size=size
+    )
 
-    
-    
+
 def plot_col_correl_target(df, cols, coltarget, nb_to_show=10, ascending=False):
-    '''
+    """
     Function to plot correlated columns to target
     Arguments:
         df:          dataframe
@@ -527,17 +590,15 @@ def plot_col_correl_target(df, cols, coltarget, nb_to_show=10, ascending=False):
         ascending:   show most correlated (False) or least correlated (True). Default=False
     Prints:
         correlation columns to target
-    '''
+    """
     correlation = df[cols].corr()
     corr_target = correlation[coltarget].sort_values(by=coltarget, ascending=ascending)[:nb_to_show]
-    if ascending==False:
-        state = 'Most'
+    if ascending == False:
+        state = "Most"
     else:
-        state = 'Least'
-    print(f'{state} correlated features to {str(coltarget)} are: \n{corr_target}')
+        state = "Least"
+    print(f"{state} correlated features to {str(coltarget)} are: \n{corr_target}")
 
-
-        
 
 """
 def plot_cluster_embedding(Xmat, title=None):

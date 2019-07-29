@@ -24,16 +24,13 @@ https://dateutil.readthedocs.io/en/stable/examples.html
 
 """
 from datetime import datetime
+
+import dateutil
 import numpy as np
 import pandas as pd
 
 
-import dateutil
-
-
-
-
-def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S" ) :
+def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S"):
     """
       Parsing date
       'Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p'
@@ -41,116 +38,115 @@ def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S" ) :
     :param fmt:
     :return:
     """
-    if fmt=="auto" :
-      if isinstance(datelist, list):
-         return [dateutil.parser.parse(x) for x in datelist]
-      else :
-        return dateutil.parser.parse(datelist)
-    else :    
-      if isinstance(datelist, list):
-        return [datetime.strptime(x, fmt) for x in datelist]
-      else :
-         return datetime.strptime(datelist, fmt)
+    if fmt == "auto":
+        if isinstance(datelist, list):
+            return [dateutil.parser.parse(x) for x in datelist]
+        else:
+            return dateutil.parser.parse(datelist)
+    else:
+        if isinstance(datelist, list):
+            return [datetime.strptime(x, fmt) for x in datelist]
+        else:
+            return datetime.strptime(datelist, fmt)
 
 
-
-def datetime_tostring(datelist, fmt="%Y-%m-%d %H:%M:%S" ) :
-  """
+def datetime_tostring(datelist, fmt="%Y-%m-%d %H:%M:%S"):
+    """
   https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
   :param x:
   :param fmt:
   :return:
   """
-  if isinstance(datelist, list):
-    ll  = [datetime.strftime(x, fmt) for x in datelist ]
-    return ll
-  else:
-    return datetime.strftime(datelist, fmt)
-
-
+    if isinstance(datelist, list):
+        ll = [datetime.strftime(x, fmt) for x in datelist]
+        return ll
+    else:
+        return datetime.strftime(datelist, fmt)
 
 
 def datetime_tointhour(datelist):
     if not isinstance(datelist, list):
         x = datelist
-        y = x.year * 10000 * 10000 * 100 + x.month * 10000 * 10000 \
-        + x.day * 100 * 10000 \
-        + x.hour * 10000 \
-        + x.minute * 100 + x.second
+        y = (
+            x.year * 10000 * 10000 * 100
+            + x.month * 10000 * 10000
+            + x.day * 100 * 10000
+            + x.hour * 10000
+            + x.minute * 100
+            + x.second
+        )
         return y
     yy2 = []
     for x in datelist:
         yy2.append(
-            x.year * 10000 * 10000 * 100 \
-            + x.month * 10000 * 10000 \
-            + x.day * 100 * 10000 \
-            + x.hour * 10000 \
-            + x.minute * 100 \
+            x.year * 10000 * 10000 * 100
+            + x.month * 10000 * 10000
+            + x.day * 100 * 10000
+            + x.hour * 10000
+            + x.minute * 100
             + x.second
         )
     return np.array(yy2)
 
 
-
 def datetime_toint(datelist):
     if not isinstance(datelist, list):
         x = datelist
-        return  x.year * 10000 + x.month * 100 + x.day
+        return x.year * 10000 + x.month * 100 + x.day
     yy2 = []
     for x in datelist:
-        yy2.append(
-            x.year * 10000 + x.month * 100 + x.day
-        )
+        yy2.append(x.year * 10000 + x.month * 100 + x.day)
     return np.array(yy2)
 
 
-
-def datetime_to_milisec(datelist ):
+def datetime_to_milisec(datelist):
     if not isinstance(datelist, list):
-       return  (datelist - datetime(1970, 1, 1)).total_seconds()
-    else :
-       ll = [  (t - datetime.datetime(1970, 1, 1)).total_seconds() for t in datelist ]
-       return ll
+        return (datelist - datetime(1970, 1, 1)).total_seconds()
+    else:
+        ll = [(t - datetime.datetime(1970, 1, 1)).total_seconds() for t in datelist]
+        return ll
 
 
-def datetime_weekday(datelist) :
+def datetime_weekday(datelist):
     if not isinstance(datelist, list):
-      return int( datelist.strftime("%w"))
-    else :
-      return [ int( x.strftime("%w")) for x in datelist ]
+        return int(datelist.strftime("%w"))
+    else:
+        return [int(x.strftime("%w")) for x in datelist]
 
 
-dd_weekday_cache={}
-def datetime_weekday_fast(dateval) :
+dd_weekday_cache = {}
+
+
+def datetime_weekday_fast(dateval):
     """
       date values
     :param dateval:
     :return:
     """
-    try :
+    try:
         return dd_weekday_cache[dateval]
-    except :
+    except:
         d = datetime_weekday(dateval)
         dd_weekday_cache[dateval] = d
         return d
 
 
 def datetime_quarter(datetimex):
-    m=  datetimex.month
+    m = datetimex.month
     return int(m // 3) + 1
 
 
 def dateime_daytime(datetimex):
-    h =  datetimex.hour
-    if   h < 11 :
+    h = datetimex.hour
+    if h < 11:
         return 0
-    elif h < 14 :
+    elif h < 14:
         return 1  # lunch
-    elif h < 18 :
+    elif h < 18:
         return 2  # Afternoon
-    elif h < 21 :
+    elif h < 21:
         return 3  # Dinner
-    else :
+    else:
         return 4  # Night
 
 
@@ -182,23 +178,19 @@ def date_diffsecond(str_t1, str_t0, fmt='YYYY-MM-DD HH:mm:SS') :
     return dd.total_seconds()
 """
 
-def np_dict_tolist(dd) :
-    return [ val  for _, val in list(dd.items()) ]
 
-def np_dict_tostr_val(dd) :
-    return ','.join([ str(val)  for _, val in list(dd.items()) ])
-
-def np_dict_tostr_key(dd) :
-    return ','.join([ str(key)  for key ,_ in list(dd.items()) ])
+def np_dict_tolist(dd):
+    return [val for _, val in list(dd.items())]
 
 
+def np_dict_tostr_val(dd):
+    return ",".join([str(val) for _, val in list(dd.items())])
 
 
+def np_dict_tostr_key(dd):
+    return ",".join([str(key) for key, _ in list(dd.items())])
 
 
-
-    
-    
 """
 >>> import datetime
 >>> datetime.datetime.strptime('20-Nov-2002','%d-%b-%Y').strftime('%Y%m%d')

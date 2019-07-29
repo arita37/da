@@ -1,16 +1,42 @@
 # -*- coding: utf-8 -*-
 %load_ext autoreload
 %autoreload
-import os, sys
+import copy
+import gc
+import os
+import sys
+from collections import defaultdict
+
+import numpy as np
+import pandas as pd
+from dateutil import parser
+from dateutil.parser import parse
+from numpy import linspace, pi
+# Feature vs Feature Distribution / Col vs Col
+from pandas.tools.plotting import scatter_matrix
+
+### Add Date  ----------------------------------------------------------------------
+### Add Date  ----------------------------------------------------------------------
+import arrow
+import bcolz
+import dask
+import dask.dataframe as dd
+##### 0) Create Flat View in SQL join of all multi table columns ---> Generate the CSV
+import datanalysis as da
+################# Pandas SQL  to POSTGRES  ####################################################
+import sqlalchemy as sql
+import util
+from attrdict import AttrDict as dict2
+from blaze import Data, discover, exp, sqrt
+#----------------------Server     ---------------------------------------------------
+from numba import float64, vectorize
+from pandasql import *
+
 DIRCWD=  'G:/_devs/project27/' if sys.platform.find('win')> -1   else  '/home/ubuntu/notebook/' if os.environ['HOME'].find('ubuntu')>-1 else '/media/sf_project27/'
 os.chdir(DIRCWD); sys.path.append(DIRCWD + '/aapackage'); # sys.path.append(DIRCWD + '/linux/aapackage')
 execfile( DIRCWD + '/aapackage/allmodule.py')
-import util,  numpy as np, gc
 # util.a_module_generatedoc("blaze")    util.a_module_codesample('blaze')    util.a_help()    util.a_module_codesample('pandas')
 
-import  pandas as pd, sqlalchemy as sql, dask.dataframe as dd, dask, datanalysis as da, arrow
-from attrdict import AttrDict as dict2
-from collections import defaultdict
 ############################################################################################
 
 ######################### FOLDERS ##########################################################
@@ -1213,7 +1239,6 @@ for k, datek in user_id.items() :
 
 
 
-import copy
 user_id2= copy.deepcopy(user_id)
 
 
@@ -1435,8 +1460,6 @@ Think of colums to be seen
 
 '''
 
-##### 0) Create Flat View in SQL join of all multi table columns ---> Generate the CSV
-import datanalysis as da
 
 
 #### 1) Test CSV and Find Dtypes    #################################################
@@ -1506,8 +1529,6 @@ df_v1.iloc[0,2]
 
  
 
-### Add Date  ----------------------------------------------------------------------
-import arrow
 ###################Faster one   #####################################################
 #'YYYY-MM-DD    HH:mm:ss'
 #"0123456789_10_11
@@ -1676,8 +1697,6 @@ df_pivot1.values - df_pivot2.values
 
 
 
-################# Pandas SQL  to POSTGRES  ####################################################
-import sqlalchemy as sql
 
 # Start Postgres DB in pgadmin
 # psycopg2
@@ -1794,9 +1813,6 @@ gc.collect()  #free memory
 
 
 
-################# Pandas SQL : Crashing with Unicode   #####################################################
-from pandasql import *
-import pandas as pd
 pysqldf = lambda q: sqldf(q, globals())
 
 
@@ -2122,7 +2138,6 @@ http://blaze.readthedocs.io/en/latest/rosetta-sql.html
 
 
 
-import dask
 df= dask.dataframe.csv.read_csv(file3)
 
 
@@ -2451,8 +2466,6 @@ catval_tokeep2= util.np_dict_tolist(catval_tokeep)
 
 
 
-### Add Date  ----------------------------------------------------------------------
-import arrow
 ### arrow is super slow
 
 def day(t):   return arrow.get(t, 'YYYY-MM-DD HH:mm:ss').day
@@ -2541,8 +2554,6 @@ df.describe(), df1.hist()
 df1.groupby('company').hist()
 
 
-# Feature vs Feature Distribution / Col vs Col
-from pandas.tools.plotting import scatter_matrix
 scatter_matrix(df, alpha=0.2, figsize=(6, 6), diagonal='kde')
 '''
 # 25s for 1m line
@@ -2759,7 +2770,6 @@ db.iris.species.map
 
 #Cannot Compute any expression in Blaze
 
-from dateutil.parser import parse
 dateparse= lambda x: parse(x)
 
 
@@ -2837,10 +2847,6 @@ df.peek()
 
 
 
-#----------------------Server     ---------------------------------------------------
-from numba import vectorize, float64
-from numpy import linspace, pi
-from blaze import Data, discover, sqrt, exp
 x = Data(linspace(-5, 5, 100000000))
 mu, sigma = -1.33, 1.25
 expr = 1 / (sigma * sqrt(2 * pi)) * exp(-(x - mu) ** 2 / (2 * sigma ** 2))
@@ -3312,11 +3318,9 @@ type(df2.date.values[0])
 
 df2
 
-from dateutil.parser import parse
 
 dateutil.parser.parse()
 
-import pandas as pd
 
 
 df3= pd.concat([df, df2], axis=0)
@@ -3329,7 +3333,6 @@ df4= df3.sort('date')
 type(df.date.values[0])
 
 
-from dateutil import parser
 parser.parse("9/27/2016  10:55:00 PM")
 
 
@@ -3355,7 +3358,6 @@ parser.parse("9/27/2016  10:55:00 PM")
    return df
 
 
-import util
 
 
 df.drop(df.columns[[0]], axis=1, inplace=True)
@@ -3396,14 +3398,11 @@ c.flush()
 d= bcolz.carray()
 
 
-import util
 
 df= util.pd_array_todataframe()
 
 
 file1= 'E:/_data/stock/intraday/20161207_etf/NKE_20160928_300_6000.csv'
-import bcolz
-import pandas as pd
 
 df = pd.read_csv(file1, delimiter=',')
 
@@ -3816,18 +3815,3 @@ if line.split(",")[3] in offers
 to:
 
 if line.split(",")[4] in offers
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
