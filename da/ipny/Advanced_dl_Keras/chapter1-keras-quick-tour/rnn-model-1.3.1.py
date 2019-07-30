@@ -5,6 +5,7 @@ A Simple RNN model with 30 x 12 input and 5-dim one-hot vector
 from __future__ import absolute_import, division, print_function
 
 from keras.layers import Dense, SimpleRNN
+
 # keras modules
 from keras.models import Sequential
 from keras.optimizers import Adam

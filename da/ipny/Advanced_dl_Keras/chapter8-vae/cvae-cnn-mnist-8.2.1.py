@@ -23,8 +23,7 @@ import keras
 import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.datasets import mnist
-from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,
-                          Lambda, Reshape)
+from keras.layers import Conv2D, Conv2DTranspose, Dense, Flatten, Input, Lambda, Reshape
 from keras.losses import binary_crossentropy, mse
 from keras.models import Model
 from keras.utils import plot_model, to_categorical

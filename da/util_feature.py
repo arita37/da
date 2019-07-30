@@ -1,3 +1,4 @@
+# pylint: disable=C0321,C0103, E1221,C0301
 # -*- coding: utf-8 -*-
 """
 Methods for feature extraction and preprocessing
@@ -19,7 +20,6 @@ from sklearn.preprocessing import KBinsDiscretizer
 
 
 print("os.getcwd", os.getcwd())
-
 
 
 ####################################################################################################
@@ -88,7 +88,13 @@ def pd_colcat_mapping(df, colname):
 
 
 def pd_colnum_tocat(
-    df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin", method="uniform",
+    df,
+    colname=None,
+    colexclude=None,
+    colbinmap=None,
+    bins=5,
+    suffix="_bin",
+    method="uniform",
     return_val="dataframe,param",
 ):
     """
@@ -121,12 +127,12 @@ def pd_colnum_tocat(
         lbins[0] -= 0.01
         return lbins
 
-    def bin_create_kmeans(dfc) :
-      enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy="kmeams")
-      X_binned = enc.fit_transform(dfc.values)
-      dfc["bin"] = X_binned
-      lbins = dfc.groupby("bin").agg({ dfc.columns[0] : "min"  }).values
-      return lbins
+    def bin_create_kmeans(dfc):
+        enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy="kmeams")
+        X_binned = enc.fit_transform(dfc.values)
+        dfc["bin"] = X_binned
+        lbins = dfc.groupby("bin").agg({dfc.columns[0]: "min"}).values
+        return lbins
 
     for c in colname:
         if c in colexclude:
@@ -163,8 +169,6 @@ def pd_colnum_tocat(
         return colmap
     else:
         return df[colnew], colmap
-
-
 
 
 def pd_col_merge_onehot(df, colname):
@@ -275,7 +279,6 @@ def pd_stat_histogram(df, bins=50, coltarget="diff"):
     :param df:
     :param bins:
     :param coltarget:
-    :param colgroupby:
     :return:
     """
     hh = np.histogram(
@@ -335,9 +338,22 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
     ll = {
         x: []
         for x in [
-            "col", "n", "n_na", "n_notna", "n_na_pct", "nunique", "nunique_pct", "xmin",
-            "xmin_freq", "xmin_pct", "xmax", "xmax_freq", "xmax_pct",
-            "xmed", "xmed_freq", "xmed_pct",
+            "col",
+            "n",
+            "n_na",
+            "n_notna",
+            "n_na_pct",
+            "nunique",
+            "nunique_pct",
+            "xmin",
+            "xmin_freq",
+            "xmin_pct",
+            "xmax",
+            "xmax_freq",
+            "xmax_pct",
+            "xmed",
+            "xmed_freq",
+            "xmed_pct",
         ]
     }
 
@@ -419,7 +435,7 @@ def np_conditional_entropy(x, y):
 def np_correl_cat_cat_cramers_v(x, y):
     """
     Calculates Cramer's V statistic for categorical-categorical association.
-    Uses correction from Bergsma and Wicher, Journal of the Korean Statistical Society 42 (2013): 323-328.
+    Uses correction from Bergsma and Wicher, Journal of the Korean Statistical Society 42 (2013):
     This is a symmetric coefficient: V(x,y) = V(y,x)
     Original function taken from: https://stackoverflow.com/a/46498792/5863503
     Wikipedia: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
@@ -432,7 +448,7 @@ def np_correl_cat_cat_cramers_v(x, y):
         A sequence of categorical measurements
     """
     confusion_matrix = pd.crosstab(x, y)
-    chi2 = sci.chi2_contingency(confusion_matrix)[0]
+    chi2 = sci.stats.chi2_contingency(confusion_matrix)[0]
     n = confusion_matrix.sum().sum()
     phi2 = chi2 / n
     r, k = confusion_matrix.shape
@@ -461,11 +477,10 @@ def np_correl_cat_cat_theils_u(x, y):
     x_counter = Counter(x)
     total_occurrences = sum(x_counter.values())
     p_x = list(map(lambda n: n / total_occurrences, x_counter.values()))
-    s_x = sci.entropy(p_x)
+    s_x = sci.stats.entropy(p_x)
     if s_x == 0:
         return 1
-    else:
-        return (s_x - s_xy) / s_x
+    return (s_x - s_xy) / s_x
 
 
 def np_correl_cat_num_ratio(cat_array, num_array):
@@ -503,7 +518,8 @@ def np_correl_cat_num_ratio(cat_array, num_array):
 
 
 def pd_num_correl_associations(
-    df, colcat=None, mark_columns=False, theil_u=False, plot=True, return_results=False, **kwargs
+    df, colcat=None, mark_columns=False, theil_u=False, plot=True,
+    return_results=False, **kwargs
 ):
     """
     Calculate the correlation/strength-of-association of features in data-set with both categorical (eda_tools) and
@@ -567,7 +583,7 @@ def pd_num_correl_associations(
                         corr[col[i]][col[j]] = cell
                         corr[col[j]][col[i]] = cell
                     else:
-                        cell, _ = sci.pearsonr(df[col[i]], df[col[j]])
+                        cell, _ = sci.stats.pearsonr(df[col[i]], df[col[j]])
                         corr[col[i]][col[j]] = cell
                         corr[col[j]][col[i]] = cell
     corr.fillna(value=np.nan, inplace=True)
@@ -718,7 +734,7 @@ def pd_num_segment_limit(
             l2.append([np.round(x[col_score], 1), k, pdi, ndef, nuser])
             k = k + 1
             ndef, nuser = 0, 0
-    l2.append([np.round(x[col_score], 1), k, pdi, ndef, nuser])
+        l2.append([np.round(x[col_score], 1), k, pdi, ndef, nuser])
     l2 = pd.DataFrame(l2, columns=[col_score, "kaiso3", "pd", "ndef", "nuser"])
     return l2
 
@@ -733,7 +749,7 @@ def fun_get_segmentlimit(x, l1):
     for i in range(0, len(l1)):
         if x >= l1[i]:
             return i + 1
-    return i + 1 + 1
+    return i + 1
 
 
 def np_drop_duplicates(l1):
@@ -753,8 +769,8 @@ def col_extractname_colbin(cols2):
     """
     coln = []
     for ss in cols2:
-        xr = ss[sci.rfind("_") + 1 :]
-        xl = ss[: sci.rfind("_")]
+        xr = ss[ss.rfind("_") + 1 :]
+        xl = ss[: ss.rfind("_")]
         if len(xr) < 3:  # -1 or 1
             coln.append(xl)
         else:
@@ -927,7 +943,7 @@ def pd_num_correl_pair(df, coltarget=None, colname=None):
     return df_correl
 
 
-def pd_col_filter(df, filter_val=[], iscol=1):
+def pd_col_filter(df, filter_val=None, iscol=1):
     """
    # Remove Columns where Index Value is not in the filter_value
    # filter1= X_client['client_id'].values
@@ -966,11 +982,23 @@ def pd_stat_distribution_colnum(df):
 
    """
     coldes = [
-        "col", "coltype", "dtype", "count", "min", "max", "nb_na",
-        "pct_na", "median", "mean", "std", "25%", "75%", "outlier",
+        "col",
+        "coltype",
+        "dtype",
+        "count",
+        "min",
+        "max",
+        "nb_na",
+        "pct_na",
+        "median",
+        "mean",
+        "std",
+        "25%",
+        "75%",
+        "outlier",
     ]
 
-    def getstat(col, type1="num"):
+    def getstat(col):
         """
          max, min, nb, nb_na, pct_na, median, qt_25, qt_75,
          nb, nb_unique, nb_na, freq_1st, freq_2th, freq_3th
@@ -1015,13 +1043,14 @@ def pd_df_stack(df_list, ignore_index=True):
         else:
             try:
                 df0 = df0.append(dfi, ignore_index=ignore_index)
-            except:
-                print(("Error appending: " + str(i)))
+            except Exception as e:
+                print("Error appending: " ,i, e)
     return df0
 
 
 def pd_col_fillna(
-    dfref, colname=None, method="median", value=None, colgroupby=None, return_val="dataframe,param"
+    dfref, colname=None, method="median", value=None, colgroupby=None,
+    return_val="dataframe,param"
 ):
     """
     Function to fill NaNs with a specific value in certain columns
@@ -1066,6 +1095,7 @@ def pd_row_drop_above_thresh(df, colnumlist, thresh):
         df:     dataframe
         col:    col from which to remove outliers
         thresh: value above which to remove row
+        colnumlist:list
     Returns:
         df:     dataframe with outliers removed
     """
@@ -1074,9 +1104,3 @@ def pd_row_drop_above_thresh(df, colnumlist, thresh):
     return df
 
 
-def ztest():
-    """
-   Test
-  """
-    print(np.__version, np)
-    print(pd.__version__, pd)

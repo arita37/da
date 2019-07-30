@@ -35,13 +35,13 @@ import scipy as sci
 import nltk
 import sklearn as sk
 from nltk.corpus import stopwords
+
 # Stemming and Lemmatizing
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.snowball import SnowballStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from sklearn import preprocessing
-from sklearn.feature_extraction.text import (CountVectorizer, TfidfTransformer,
-                                             TfidfVectorizer)
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split

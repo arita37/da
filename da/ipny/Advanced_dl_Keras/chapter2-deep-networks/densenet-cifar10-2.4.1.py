@@ -17,11 +17,19 @@ import os
 
 import numpy as np
 
-from keras.callbacks import (LearningRateScheduler, ModelCheckpoint,
-                             ReduceLROnPlateau)
+from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau
 from keras.datasets import cifar10
-from keras.layers import (Activation, AveragePooling2D, BatchNormalization,
-                          Conv2D, Dense, Dropout, Flatten, Input, MaxPooling2D)
+from keras.layers import (
+    Activation,
+    AveragePooling2D,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    MaxPooling2D,
+)
 from keras.layers.merge import concatenate
 from keras.models import Model
 from keras.optimizers import RMSprop

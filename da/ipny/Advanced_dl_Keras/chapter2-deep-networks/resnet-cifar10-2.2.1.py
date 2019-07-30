@@ -15,11 +15,17 @@ import os
 
 import numpy as np
 
-from keras.callbacks import (LearningRateScheduler, ModelCheckpoint,
-                             ReduceLROnPlateau)
+from keras.callbacks import LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau
 from keras.datasets import cifar10
-from keras.layers import (Activation, AveragePooling2D, BatchNormalization,
-                          Conv2D, Dense, Flatten, Input)
+from keras.layers import (
+    Activation,
+    AveragePooling2D,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Flatten,
+    Input,
+)
 from keras.layers.merge import add
 from keras.models import Model
 from keras.optimizers import Adam
