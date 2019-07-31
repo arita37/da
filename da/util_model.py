@@ -92,12 +92,7 @@ def np_transform_pca(X, dimpca=2, whiten=True):
     return pca.transform(X)
 
 
-def sk_feature_impt_logis(clf, cols2):
-    dfeatures = pd.DataFrame(
-        {"feature": cols2, "coef": clf.coef_[0], "coef_abs": np.abs(clf.coef_[0])}
-    ).sort_values("coef_abs", ascending=False)
-    dfeatures["rank"] = np.arange(0, len(dfeatures))
-    return dfeatures
+
 
 
 def split_train_test(X, y, split_ratio=0.8):
@@ -706,27 +701,39 @@ def sk_model_eval_classification(clf, istrain=1, Xtrain=None, ytrain=None, Xtest
 
 
 ###################################################################################################
-def sk_feature_impt(clf, colname):
+def sk_feature_impt(clf, colname, model_type="logistic"):
     """
        Feature importance with colname
     :param clf:  model or colnum with weights
     :param colname:
     :return:
     """
-    if isinstance(clf, list) or isinstance(clf, np.array()):
-        importances = clf
+    if model_type == "logistic" :
+       dfeatures = pd.DataFrame(
+          {"feature":    cols2, "weight": clf.coef_[0], 
+           "weight_abs": np.abs(clf.coef_[0])}
+       ).sort_values("weight_abs", ascending=False)
+       dfeatures["rank"] = np.arange(0, len(dfeatures))
+       return dfeatures
+   
     else:
-        importances = clf.feature_importances_
-    rank = np.argsort(importances)[::-1]
-
-    d = {"col": [], "rank": [], "weight": []}
-    for i in range(0, len(colname)):
+      # RF, Xgboost, LightGBM
+      if isinstance(clf, list) or isinstance(clf, (np.ndarray, np.generic) ) :
+         importances = clf 
+      else :
+         importances = clf.feature_importances_
+      rank = np.argsort(importances)[::-1]
+      d = {"col": [], "rank": [], "weight": []}
+      for i in range(0, len(colname)):
         d["rank"].append(rank[i])
         d["col"].append(colname[rank[i]])
         d["weight"].append(importances[rank[i]])
 
-    return pd.DataFrame(d)
+      return pd.DataFrame(d)
 
+
+
+    
 
 def sk_feature_selection(clf, method="f_classif", colname=None, kbest=50, Xtrain=None, ytrain=None):
     from sklearn.feature_selection import SelectKBest, chi2, f_classif, f_regression

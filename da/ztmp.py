@@ -40,7 +40,10 @@ print(tf, tf.__version__)
 
 
 
+import util_feature
 
+
+from util_feature import pd_col_to_num, pd_colnum_tocat, pd_col_to_onehot
 
 
 
@@ -105,9 +108,32 @@ pipe_preprocess_colnum =[
 
 
 
+### Reproductible pipeline (can be easily re-coded for Spark !!!)
+pipe_preprocess_colnum =[ 
+           (pd_col_to_num,   {"default": np.nan,} , "Conver string to NA")
+           
+          ,(pd_colnum_tocat, { "colname":None, "colbinmap": colnum_binmap,  'bins': 5, 
+                               "method": "uniform", "suffix":"_bin", "return_val": "dataframe"}, 
+                               "Convert Numerics to Category " )
+           
+]
 
 
-###### Category pre-processing
+
+
+
+pipe_preprocess_colnum
+
+
+
+dfnum_test = pd_pipeline_apply( df[colnum], pipe_preprocess_colnum)  
+
+
+
+
+
+####################################################################################################
+###### Category pre-processing  ####################################################################
 #### Replace NA values by flag value "-1"
 df_cat, map_navalue_cat = pd_col_fillna(df[colcat], method="", value="-1" )
 
@@ -160,6 +186,8 @@ def pd_pipeline_apply(df, pipeline) :
      dfi = function[0]( dfi, **function[1] )    
      print("############## Pipeline  ", i, "Finished",  dfi.shape, flush=True )
   return dfi
+
+
 
 
 
@@ -293,6 +321,47 @@ http://ml-ensemble.com/info/
 
 
 
+
+
+
+#### CatbOost
+import catboost as cb
+
+colcat_idx = col_getnumpy_indice(colall, colcat)
+
+clf_cb = cb.CatBoostClassifier( iterations=1000, depth=8,
+                          learning_rate=0.02, loss_function='Logloss',
+                          eval_metric='AUC', random_seed=42,
+                          rsm = 0.2, # features subsample 
+                          od_type = 'Iter', # early stopping odwait = 100, # early stopping
+                          verbose = 100,l2_leaf_reg = 20, # regularisation 
+)
+
+
+
+
+def np_find_indice(v, x) :
+  for i, j in enumerate(v):
+    if j == x :
+       return i
+  return -1
+
+
+
+
+def col_getnumpy_indice(colall, colcat) :
+    return [  np_find_indice(colall, x)  for x in colcat ]
+
+
+
+#clf_cb, dd_cb = sk_model_eval_classification(clf_cb, 1,
+#                                               Xtrain, ytrain, Xtest, ytest)
+
+
+clf_cb.fit(Xtrain, ytrain,
+                 eval_set=(Xtest, ytest),
+                 cat_features= np.arange(0, Xtrain.shape[1]),
+                 use_best_model=True)
 
 
 
