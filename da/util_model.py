@@ -710,7 +710,7 @@ def sk_feature_impt(clf, colname, model_type="logistic"):
     """
     if model_type == "logistic" :
        dfeatures = pd.DataFrame(
-          {"feature":    cols2, "weight": clf.coef_[0], 
+          {"feature":    colname, "weight": clf.coef_[0], 
            "weight_abs": np.abs(clf.coef_[0])}
        ).sort_values("weight_abs", ascending=False)
        dfeatures["rank"] = np.arange(0, len(dfeatures))

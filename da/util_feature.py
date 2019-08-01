@@ -91,14 +91,8 @@ def pd_colcat_mapping(df, colname):
 
 
 def pd_colnum_tocat(
-    df,
-    colname=None,
-    colexclude=None,
-    colbinmap=None,
-    bins=5,
-    suffix="_bin",
-    method="uniform",
-    return_val="dataframe,param",
+    df, colname=None, colexclude=None, colbinmap=None, bins=5,
+    suffix="_bin", method="uniform", return_val="dataframe,param",
 ):
     """
     colbinmap = for each column, definition of bins
@@ -1069,7 +1063,7 @@ def pd_df_stack(df_list, ignore_index=True):
 
 
 def pd_col_fillna(
-    dfref, colname=None, method="median", value=None, colgroupby=None,
+    dfref, colname=None, method="frequent", value=None, colgroupby=None,
     return_val="dataframe,param"
 ):
     """
@@ -1088,17 +1082,19 @@ def pd_col_fillna(
     for col in colname:
         nb_nans = df[col].isna().sum()
 
-        if method == "median":
-            means = df[col].mode()
+        if method == "frequent":
+            x = df[col].value_counts().idxmax()
+
+        if method == "mode":
+            x = df[col].mode()
 
         if method == "median":
-            means = df[col].median()
+            x = df[col].median()
 
         if method == "median_conditional":
-            means = df.groupby(colgroupby)[col].transform(
-                "median")  # Conditional median
+            x = df.groupby(colgroupby)[col].transform("median")  # Conditional median
 
-        value = means if value is None else value
+        value = x if value is None else value
         print(col, nb_nans, "replaceBY", value)
         params["na_value"][col] = value
         df[col] = df[col].fillna(value)
@@ -1107,6 +1103,117 @@ def pd_col_fillna(
         return df, params
     else:
         return df
+
+
+
+def pd_col_fillna_advanced(
+    dfref, colname=None, method="median", colname_na =None, return_val="dataframe,param"
+):
+    """
+    Function to fill NaNs with a specific value in certain columns
+    https://impyute.readthedocs.io/en/master/
+
+    Arguments:
+        df:            dataframe
+        colname:      list of columns to remove text
+        colname_na : target na coluns
+        value:         value to replace NaNs with
+    Returns:
+        df:            new dataframe with filled values
+     https://impyute.readthedocs.io/en/master/user_guide/overview.html
+
+    """
+    import impyute as impy
+
+    colname = list(dfref.columns) if colname is None else colname
+    df = dfref[colname]
+    params = {"method": method, "na_value": {}}
+    for col in colname:
+        nb_nans = df[col].isna().sum()
+        print(nb_nans)
+
+    if method == "mice":
+            from impyute.imputation.cs import mice
+            imputed_df = mice( df.values)
+            dfout= pd.DataFrame(data= imputed_df, columns= colname)
+
+    elif method == "knn" :
+            from impyute.imputation.cs import fast_knn
+            imputed_df = fast_knn( df.values, k=5)
+            dfout= pd.DataFrame(data= imputed_df, columns= colname)
+
+    elif method == "datawig" :
+        import datawig
+        for colna in  colname_na :
+        imputer = datawig.SimpleImputer(
+            input_columns=colname,
+            output_column=colna,  # the column we'd like to impute values for
+            output_path='preprocess_fillna/'  # stores model data and metrics
+        )
+
+        # Fit an imputer model on the train data
+        imputer.fit(train_df=df)
+
+        # Impute missing values and return original dataframe with predictions
+        dfout= imputer.predict(df)
+
+
+
+    if return_val == "dataframe,param":
+        return dfout, params
+    else:
+        return dfout
+
+
+
+def pd_col_fillna_datawig(
+    dfref, colname=None, method="median", colname_na =None, return_val="dataframe,param"
+):
+    """
+    Function to fill NaNs with a specific value in certain columns
+    https://impyute.readthedocs.io/en/master/
+
+    Arguments:
+        df:            dataframe
+        colname:      list of columns to remove text
+        colname_na : target na coluns
+        value:         value to replace NaNs with
+    Returns:
+        df:            new dataframe with filled values
+     https://impyute.readthedocs.io/en/master/user_guide/overview.html
+
+    """
+    import impyute as impy
+
+    colname = list(dfref.columns) if colname is None else colname
+    df = dfref[colname]
+    params = {"method": method, "na_value": {}}
+    for col in colname:
+        nb_nans = df[col].isna().sum()
+        print(nb_nans)
+
+    if method == "datawig" :
+        import datawig
+        for colna in  colname_na :
+        imputer = datawig.SimpleImputer(
+            input_columns=colname,
+            output_column=colna,  # the column we'd like to impute values for
+            output_path='preprocess_fillna/'  # stores model data and metrics
+        )
+
+        # Fit an imputer model on the train data
+        imputer.fit(train_df=df)
+
+        # Impute missing values and return original dataframe with predictions
+        dfout= imputer.predict(df)
+
+
+
+    if return_val == "dataframe,param":
+        return dfout, params
+    else:
+        return dfout
+
 
 
 def pd_row_drop_above_thresh(df, colnumlist, thresh):
