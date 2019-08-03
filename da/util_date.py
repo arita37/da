@@ -1,3 +1,4 @@
+# pylint: disable=C0321,C0103,E1221,C0301,E1305,E1121,C0302,C0330
 # -*- coding: utf-8 -*-
 """
 import datetime
@@ -11,23 +12,46 @@ Formats -
 %m - 2 digit month
 %a
 
-
 df = DataFrame(dict(date = date_range('20130101',periods=10)))
-
-
 https://python-utils.readthedocs.io/en/latest/usage.html#quickstart
-
-
 https://dateutil.readthedocs.io/en/stable/examples.html
 
 
 
 """
+
 from datetime import datetime
 
 import dateutil
 import numpy as np
 import pandas as pd
+
+
+def pd_datestring_split(dfref, coldate, fmt="%Y-%m-%d %H:%M:%S", return_val="split"):
+    """
+      Parsing date
+      'Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p'
+    :param datelist:
+    :param fmt:
+    :return:
+    """
+    fmt = None if fmt in [None, "auto"] else fmt
+    if not isinstance(coldate, str):
+        raise Exception("codlate must be string")
+    df = pd.DataFrame(dfref[coldate])
+
+    coldt = coldate + "_dt"
+    df[coldt] = pd.to_datetime(df[coldate], errors='coerce', format=None,
+                               infer_datetime_format=True, cache=True)
+
+    df[coldate + "_year"] = df[coldt].apply(lambda x: x.year)
+    df[coldate + "_month"] = df[coldt].apply(lambda x: x.month)
+    df[coldate + "_day"] = df[coldt].apply(lambda x: x.day)
+
+    if return_val == "split":
+        return df
+    else:
+        return df[[coldate + "_year", coldate + "_month", coldate + "_day"]]
 
 
 def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S"):
@@ -38,9 +62,16 @@ def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S"):
     :param fmt:
     :return:
     """
+    datenew = []
     if fmt == "auto":
         if isinstance(datelist, list):
-            return [dateutil.parser.parse(x) for x in datelist]
+            for x in datelist :
+                try :
+                    datenew.append( dateutil.parser.parse(x) )
+                except Exception as e:
+                    datenew.append( pd.NaT )
+
+            return datenew
         else:
             return dateutil.parser.parse(datelist)
     else:
@@ -189,6 +220,10 @@ def np_dict_tostr_val(dd):
 
 def np_dict_tostr_key(dd):
     return ",".join([str(key) for key, _ in list(dd.items())])
+
+
+
+
 
 
 """

@@ -5,9 +5,9 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+from keras.datasets import cifar10
 
 import other_utils
-from keras.datasets import cifar10
 
 
 def load_data():

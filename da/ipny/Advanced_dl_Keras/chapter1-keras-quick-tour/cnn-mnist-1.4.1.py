@@ -15,9 +15,9 @@ https://github.com/PacktPublishing/Advanced-Deep-Learning-with-Keras
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-
 from keras.datasets import mnist
-from keras.layers import Activation, Conv2D, Dense, Dropout, Flatten, MaxPooling2D
+from keras.layers import (Activation, Conv2D, Dense, Dropout, Flatten,
+                          MaxPooling2D)
 from keras.models import Sequential
 from keras.utils import plot_model, to_categorical
 

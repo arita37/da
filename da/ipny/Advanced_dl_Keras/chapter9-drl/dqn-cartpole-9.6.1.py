@@ -8,12 +8,12 @@ import random
 from collections import deque
 
 import numpy as np
-
-import gym
-from gym import logger, wrappers
 from keras.layers import Dense, Input
 from keras.models import Model
 from keras.optimizers import Adam
+
+import gym
+from gym import logger, wrappers
 
 
 class DQNAgent:

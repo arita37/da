@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 from dateutil import parser
 from dateutil.parser import parse
+#----------------------Server     ---------------------------------------------------
+from numba import float64, vectorize
 from numpy import linspace, pi
 # Feature vs Feature Distribution / Col vs Col
 from pandas.tools.plotting import scatter_matrix
@@ -32,8 +34,6 @@ import sqlalchemy as sql
 import util
 from attrdict import AttrDict as dict2
 from blaze import Data, discover, exp, sqrt
-#----------------------Server     ---------------------------------------------------
-from numba import float64, vectorize
 from pandasql import *
 
 DIRCWD=  'G:/_devs/project27/' if sys.platform.find('win')> -1   else  '/home/ubuntu/notebook/' if os.environ['HOME'].find('ubuntu')>-1 else '/media/sf_project27/'

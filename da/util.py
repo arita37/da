@@ -1,3 +1,4 @@
+# pylint: disable=C0321,C0103,E1221,C0301,E1305,E1121,C0302,C0330
 # -*- coding: utf-8 -*-
 """
 Various utilities
@@ -45,39 +46,51 @@ def os_make_dirs(filename):
 
 ####################################################################################################
 def save_all(variable_list, folder, globals_main=None):
+    """ Pickle saving batch
+    :param variable_list:
+    :param folder:
+    :param globals_main:
+    :return:
+    """
     for x in variable_list:
         try:
-            filename = save(globals_main[x], folder + x + ".pkl")
+            filename = save(globals_main[x], "{a}/{b}.pkl".format(a=folder, b=x))
             print(filename)
         except Exception as e:
             print("error", e)
 
 
 def save(obj, filename="/folder1/keyname", isabsolutpath=0):
-    """
+    """ Pickle saving
     :param obj:
     :param filename:
     :param isabsolutpath:
     :return:
     """
-    folder = os_make_dirs(filename)
+    try  :
+      folder = os_make_dirs(filename)
 
-    with open(filename, "wb") as f:
+      with open(filename, "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-    return filename
+      return filename
+    except Exception as e:
+      print("error", e)
 
 
 def load(filename="/folder1/keyname", isabsolutpath=0, encoding1="utf-8"):
-    """
-
+    """ pickle load
     :param filename:
     :param isabsolutpath:
     :param encoding1:
     :return:
     """
-    folder = os_make_dirs(filename)
-    with open(filename, "rb") as f:
+    try  :
+      folder = os_make_dirs(filename)
+      with open(filename, "rb") as f:
         return pickle.load(f)
+    except Exception as e:
+      print("error", e)
+
 
 
 ####################################################################################################

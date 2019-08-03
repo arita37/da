@@ -7,7 +7,6 @@ from collections import Counter, OrderedDict
 import numpy as np
 import pandas as pd
 import scipy as sci
-
 import sklearn as sk
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import TfidfVectorizer

@@ -5,17 +5,13 @@
 import os
 import re
 
-import numpy as np
-import pandas as pd
-
-########################################
-import da
 import matplotlib
 import matplotlib.pyplot as plt
 import nltk
+import numpy as np
+import pandas as pd
 import seaborn as sns
 import tensorflow as tf
-import util_date
 # Cleaning text of stopwords
 from nltk.corpus import stopwords
 # Stemming and Lemmatizing
@@ -32,6 +28,10 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+
+########################################
+import da
+import util_date
 from util_date import *
 from util_feature import *
 from util_model import *

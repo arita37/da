@@ -18,32 +18,23 @@ from calendar import isleap
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pylab as pl
 import requests
 import scipy as sci
-from dateutil.parser import parse
-
-import arrow
-import datanalysis as da
-import kmodes
-import matplotlib.pyplot as plt
-import pylab as pl
 import sklearn as sk
 import statsmodels as sm
-import util
-from attrdict import AttrDict as dict2
-from kmodes.kmodes import KModes
+from dateutil.parser import parse
 from sklearn import covariance, linear_model, model_selection
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.ensemble import (
-    AdaBoostClassifier,
-    ExtraTreesClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
+from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
+                                           QuadraticDiscriminantAnalysis)
+from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
+                              GradientBoostingClassifier,
+                              RandomForestClassifier)
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
@@ -51,6 +42,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+
+import arrow
+import datanalysis as da
+import kmodes
+import util
+from attrdict import AttrDict as dict2
+from kmodes.kmodes import KModes
 from tabulate import tabulate
 
 #########################################################################################################

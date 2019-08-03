@@ -9,16 +9,11 @@ except Exception as e:
     print(e)
 
 
-
-
 from sklearn.preprocessing import KBinsDiscretizer
 
 
 def bin_create_kmeans(dfc):
-    enc = KBinsDiscretizer(
-        n_bins=bins,
-        encode="ordinal",
-        strategy="kmeams")
+    enc = KBinsDiscretizer(n_bins=bins, encode="ordinal", strategy="kmeams")
     X_binned = enc.fit_transform(dfc.values)
     dfc["bin"] = X_binned
     lbins = dfc.groupby("bin").agg({dfc.columns[0]: "min"}).values

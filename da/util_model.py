@@ -1,3 +1,4 @@
+# pylint: disable=C0321,C0103,E1221,C0301,E1305,E1121,C0302,C0330
 # -*- coding: utf-8 -*-
 """
 Methods for ML models, model ensembels, metrics etc.
@@ -12,37 +13,24 @@ from importlib import import_module
 import numpy as np
 import pandas as pd
 import scipy as sci
-from dateutil.parser import parse
-
 import sklearn as sk
+from dateutil.parser import parse
 from matplotlib import pyplot as plt
 from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
-from sklearn.decomposition import PCA, pca
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.ensemble import (
-    AdaBoostClassifier,
-    ExtraTreesClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
+from sklearn.decomposition import PCA, pca, TruncatedSVD, LatentDirichletAllocation, NMF
+
+from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
+                                           QuadraticDiscriminantAnalysis)
+from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
+                              GradientBoostingClassifier,
+                              RandomForestClassifier)
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    make_scorer,
-    mean_absolute_error,
-    roc_auc_score,
-    roc_curve,
-)
-from sklearn.model_selection import (
-    GridSearchCV,
-    KFold,
-    StratifiedKFold,
-    cross_val_score,
-    train_test_split,
-)
+from sklearn.metrics import (accuracy_score, classification_report,
+                             confusion_matrix, make_scorer,
+                             mean_absolute_error, roc_auc_score, roc_curve)
+from sklearn.model_selection import (GridSearchCV, KFold, StratifiedKFold,
+                                     cross_val_score, train_test_split)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
@@ -86,11 +74,38 @@ class dict2(object):
 
 
 ####################################################################################################
-def np_transform_pca(X, dimpca=2, whiten=True):
-    """Project ndim data into dimpca sub-space  """
-    pca = PCA(n_components=dimpca, whiten=whiten).fit(X)
-    return pca.transform(X)
+def pd_dim_reduction(df, colname, colprefix="colsvd", method="svd", dimpca=2,
+                     model_pretrain=None,
+                     return_val="dataframe,param"):
+    """
+       Dimension reduction technics
+       dftext_svd, svd = pd_dim_reduction(dfcat_test, None,colprefix="colsvd",
+                     method="svd", dimpca=2, return_val="dataframe,param")
+    :param df:
+    :param colname:
+    :param colprefix:
+    :param method:
+    :param dimpca:
+    :param return_val:
+    :return:
+    """
+    colname = colname if colname is not None else list(df.columns)
+    if method == "svd":
+        if model_pretrain is None:
+          svd = TruncatedSVD(n_components=dimpca, algorithm='randomized')
+          svd = svd.fit(df[colname].values)
+        else :
+          svd = copy.deepcopy(model_pretrain)
 
+        X2 = svd.transform(df[colname].values)
+        # print(X2)
+        dfnew = pd.DataFrame(X2)
+        dfnew.columns = [colprefix + "_" + str(i) for i in dfnew.columns]
+
+        if return_val == "dataframe,param":
+           return dfnew, svd
+        else :
+           return dfnew
 
 
 
@@ -171,7 +186,6 @@ def split_train2(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None, 
 
 
 def model_lightgbm_kfold(
-    # LightGBM GBDT with KFold or Stratified KFold
     df,
     colname=None,
     num_folds=2,
@@ -179,6 +193,7 @@ def model_lightgbm_kfold(
     colexclude=None,
     debug=False,
 ):
+    # LightGBM GBDT with KFold or Stratified KFold
     # Cross validation model
     if stratified:
         folds = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=326)
@@ -326,10 +341,7 @@ def sk_model_auto_tpot(
     clf.fit(X_train, y_train)
     print((tpot.score(X_test, y_test)))
     file1 = (
-        DIRCWD
-        + "/"
-        + outfolder
-        + "/tpot_regression_pipeline_"
+        "/" + outfolder + "/tpot_regression_pipeline_"
         + str(np.random.randint(1000, 9999))
         + ".py"
     )
@@ -348,9 +360,7 @@ def sk_score_get(name="r2"):
 
 
 def sk_params_search_best(
-    clf,
-    X,
-    y,
+    clf, X, y,
     param_grid={"alpha": np.linspace(0, 1, 5)},
     method="gridsearch",
     param_search={"scorename": "r2", "cv": 5, "population_size": 5, "generations_number": 3},
@@ -398,21 +408,17 @@ def sk_params_search_best(
         return cv.best_score_, cv.best_params_
 
 
-def sk_error_r2(Ypred, y_true, sample_weight=None, multioutput=None):
+def sk_error(ypred, ytrue, method="r2", sample_weight=None, multioutput=None):
     from sklearn.metrics import r2_score
+    if method == "rmse" :
+      aux = np.sqrt(np.sum((ypred - ytrue) ** 2)) / len(ytrue)
+      print("Error:", aux, "Error/Stdev:", aux / np.std(ytrue))
+      return aux / np.std(ytrue)
 
-    r2 = r2_score(y_true, Ypred, sample_weight=sample_weight, multioutput=multioutput)
-    r = np.sign(r2) * np.sqrt(np.abs(r2))
-    if r <= -1:
-        return -1
-    else:
-        return r
-
-
-def sk_error_rmse(Ypred, Ytrue):
-    aux = np.sqrt(np.sum((Ypred - Ytrue) ** 2)) / len(Ytrue)
-    print("Error:", aux, "Error/Stdev:", aux / np.std(Ytrue))
-    return aux / np.std(Ytrue)
+    elif method == "r2" :
+      r2 = r2_score(ytrue, ypred, sample_weight=sample_weight, multioutput=multioutput)
+      r = np.sign(r2) * np.sqrt(np.abs(r2))
+      return -1 if r <= -1 else  r
 
 
 def sk_cluster(
@@ -544,14 +550,14 @@ class model_template1(sk.base.BaseEstimator):
         return r2_score(Ytrue, Y)
 
 
-def sk_model_ensemble_weight(vv, acclevel, maxlevel=0.88):
-    imax = min(acclevel, len(vv))
+def sk_model_ensemble_weight(model_list, acclevel, maxlevel=0.88):
+    imax = min(acclevel, len(model_list))
     estlist = np.empty(imax, dtype=np.object)
     estww = []
     for i in range(0, imax):
-        # if vv[i,3]> acclevel:
-        estlist[i] = vv[i, 1]
-        estww.append(vv[i, 3])
+        # if model_list[i,3]> acclevel:
+        estlist[i] = model_list[i, 1]
+        estww.append(model_list[i, 3])
         # print 5
 
     # Log Proba Weighted + Impact of recent False discovery
@@ -561,7 +567,7 @@ def sk_model_ensemble_weight(vv, acclevel, maxlevel=0.88):
     return estlist, np.array(estww)
 
 
-def sk_votingpredict(estimators, voting, ww, X_test):
+def sk_model_votingpredict(estimators, voting, ww, X_test):
     ww = ww / np.sum(ww)
     Yproba0 = np.zeros((len(X_test), 2))
     Y1 = np.zeros((len(X_test)))
@@ -708,32 +714,28 @@ def sk_feature_impt(clf, colname, model_type="logistic"):
     :param colname:
     :return:
     """
-    if model_type == "logistic" :
-       dfeatures = pd.DataFrame(
-          {"feature":    colname, "weight": clf.coef_[0], 
-           "weight_abs": np.abs(clf.coef_[0])}
-       ).sort_values("weight_abs", ascending=False)
-       dfeatures["rank"] = np.arange(0, len(dfeatures))
-       return dfeatures
-   
+    if model_type == "logistic":
+        dfeatures = pd.DataFrame(
+            {"feature": colname, "weight": clf.coef_[0], "weight_abs": np.abs(clf.coef_[0])}
+        ).sort_values("weight_abs", ascending=False)
+        dfeatures["rank"] = np.arange(0, len(dfeatures))
+        return dfeatures
+
     else:
-      # RF, Xgboost, LightGBM
-      if isinstance(clf, list) or isinstance(clf, (np.ndarray, np.generic) ) :
-         importances = clf 
-      else :
-         importances = clf.feature_importances_
-      rank = np.argsort(importances)[::-1]
-      d = {"col": [], "rank": [], "weight": []}
-      for i in range(0, len(colname)):
-        d["rank"].append(rank[i])
-        d["col"].append(colname[rank[i]])
-        d["weight"].append(importances[rank[i]])
+        # RF, Xgboost, LightGBM
+        if isinstance(clf, list) or isinstance(clf, (np.ndarray, np.generic)):
+            importances = clf
+        else:
+            importances = clf.feature_importances_
+        rank = np.argsort(importances)[::-1]
+        d = {"col": [], "rank": [], "weight": []}
+        for i in range(0, len(colname)):
+            d["rank"].append(rank[i])
+            d["col"].append(colname[rank[i]])
+            d["weight"].append(importances[rank[i]])
 
-      return pd.DataFrame(d)
+        return pd.DataFrame(d)
 
-
-
-    
 
 def sk_feature_selection(clf, method="f_classif", colname=None, kbest=50, Xtrain=None, ytrain=None):
     from sklearn.feature_selection import SelectKBest, chi2, f_classif, f_regression

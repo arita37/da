@@ -25,16 +25,16 @@ import sys
 import time
 
 import numpy as np
-
-import gym
 import tensorflow as tf
-from gym import logger, wrappers
 from keras import backend as K
 from keras.layers import Activation, Dense, Input, Lambda
 from keras.models import Model
 from keras.optimizers import Adam, RMSprop
 from keras.utils import plot_model
 from keras.utils.generic_utils import get_custom_objects
+
+import gym
+from gym import logger, wrappers
 
 
 # some implementations use a modified softplus to ensure that

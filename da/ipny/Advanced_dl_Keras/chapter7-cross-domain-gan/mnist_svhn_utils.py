@@ -16,11 +16,11 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
+from keras.datasets import mnist
+from keras.utils.data_utils import get_file
 from scipy import io
 
 import other_utils
-from keras.datasets import mnist
-from keras.utils.data_utils import get_file
 
 
 def get_datadir():

@@ -16,13 +16,11 @@ import numpy as np
 import pandas as pd
 import scipy as sci
 
-
 print("os.getcwd", os.getcwd())
 
 
 ####################################################################################################
-def pd_col_to_onehot(dfref, colname=None, colonehot=None,
-                     return_val="dataframe,column"):
+def pd_col_to_onehot(dfref, colname=None, colonehot=None, return_val="dataframe,column"):
     """
     :param df:
     :param colname:
@@ -41,8 +39,7 @@ def pd_col_to_onehot(dfref, colname=None, colonehot=None,
             print(x, nunique, df.shape, flush=True)
 
             if nunique > 2:
-                df = pd.concat([df, pd.get_dummies(df[x], prefix=x)], axis=1).drop(
-                    [x], axis=1)
+                df = pd.concat([df, pd.get_dummies(df[x], prefix=x)], axis=1).drop([x], axis=1)
             else:
                 df[x] = df[x].factorize()[0]  # put into 0,1 format
             coladded.append(x)
@@ -57,8 +54,7 @@ def pd_col_to_onehot(dfref, colname=None, colonehot=None,
                 print(x, "added")
                 coladded.append(x)
 
-    colnew = colonehot if colonehot is not None else [
-        c for c in df.columns if c not in colname]
+    colnew = colonehot if colonehot is not None else [c for c in df.columns if c not in colname]
     if return_val == "dataframe,param":
         return df[colnew], colnew
 
@@ -76,14 +72,12 @@ def pd_colcat_mapping(df, colname):
     :return:
     """
     mapping_rev = {
-        col: {n: cat for n, cat in enumerate(
-            df[col].astype("category").cat.categories)}
+        col: {n: cat for n, cat in enumerate(df[col].astype("category").cat.categories)}
         for col in df[colname]
     }
 
     mapping = {
-        col: {cat: n for n, cat in enumerate(
-            df[col].astype("category").cat.categories)}
+        col: {cat: n for n, cat in enumerate(df[col].astype("category").cat.categories)}
         for col in df[colname]
     }
 
@@ -91,8 +85,14 @@ def pd_colcat_mapping(df, colname):
 
 
 def pd_colnum_tocat(
-    df, colname=None, colexclude=None, colbinmap=None, bins=5,
-    suffix="_bin", method="uniform", return_val="dataframe,param",
+    df,
+    colname=None,
+    colexclude=None,
+    colbinmap=None,
+    bins=5,
+    suffix="_bin",
+    method="uniform",
+    return_val="dataframe,param",
 ):
     """
     colbinmap = for each column, definition of bins
@@ -145,8 +145,7 @@ def pd_colnum_tocat(
 
         # NA processing
         df[cbin] = df[cbin].astype("int")
-        df[cbin] = df[cbin].apply(
-            lambda x: x if x >= 0.0 else - 1)  # 3 NA Values
+        df[cbin] = df[cbin].apply(lambda x: x if x >= 0.0 else -1)  # 3 NA Values
         col_stat = df.groupby(cbin).agg({c: {"size", "min", "mean", "max"}})
         colmap[c] = lbins
         colnew.append(cbin)
@@ -173,7 +172,7 @@ def pd_col_merge_onehot(df, colname):
     for x in colname:
         merge_array = []
         for t in df.columns:
-            if x in t and t[len(x): len(x) + 1] == "_":
+            if x in t and t[len(x) : len(x) + 1] == "_":
                 merge_array.append(t)
         dd[x] = merge_array
     return dd
@@ -190,8 +189,8 @@ def pd_colcat_mergecol(df, col_list, x0, colid="easy_id"):
     dfz = pd.DataFrame({colid: df[colid].values})
     for t in col_list:
         ix = t.rfind("_")
-        val = int(t[ix + 1:])
-        print(ix, t[ix + 1:])
+        val = int(t[ix + 1 :])
+        print(ix, t[ix + 1 :])
         dfz[t] = df[t].apply(lambda x: val if x > 0 else 0)
 
     # print(dfz)
@@ -237,12 +236,7 @@ def pd_pipeline_apply(df, pipeline):
             "############## Pipeline ", i, "Start", dfi.shape, str(function[0].__name__), flush=True
         )
         dfi = function[0](dfi, **function[1])
-        print(
-            "############## Pipeline  ",
-            i,
-            "Finished",
-            dfi.shape,
-            flush=True)
+        print("############## Pipeline  ", i, "Finished", dfi.shape, flush=True)
     return dfi
 
 
@@ -299,8 +293,7 @@ def pd_stat_histogram_groupby(df, bins=50, coltarget="diff", colgroupby="y"):
 
     # todo : issues with naming
     for x in xunique:
-        dfhisto1 = pd_stat_histogram_groupby(
-            df[df[colgroupby] == x], bins, coltarget)
+        dfhisto1 = pd_stat_histogram_groupby(df[df[colgroupby] == x], bins, coltarget)
         dfhisto = pd.concat((dfhisto, dfhisto1))
 
     return dfhisto
@@ -321,8 +314,7 @@ def pd_stat_na_perow(df, n=10 ** 6):
                 ii = ii + 1
         ll.append(ii)
     dfna_user = pd.DataFrame(
-        {"": df.index.values[:n], "n_na": ll,
-            "n_ok": len(df.columns) - np.array(ll)}
+        {"": df.index.values[:n], "n_na": ll, "n_ok": len(df.columns) - np.array(ll)}
     )
     return dfna_user
 
@@ -506,14 +498,7 @@ def np_correl_cat_num_ratio(cat_array, num_array):
         n_array[i] = len(cat_measures)
         y_avg_array[i] = np.average(cat_measures)
     y_total_avg = np.sum(np.multiply(y_avg_array, n_array)) / np.sum(n_array)
-    numerator = np.sum(
-        np.multiply(
-            n_array,
-            np.power(
-                np.subtract(
-                    y_avg_array,
-                    y_total_avg),
-                2)))
+    numerator = np.sum(np.multiply(n_array, np.power(np.subtract(y_avg_array, y_total_avg), 2)))
     denominator = np.sum(np.power(np.subtract(num_array, y_total_avg), 2))
     if numerator == 0:
         eta = 0.0
@@ -523,8 +508,7 @@ def np_correl_cat_num_ratio(cat_array, num_array):
 
 
 def pd_num_correl_associations(
-    df, colcat=None, mark_columns=False, theil_u=False, plot=True,
-    return_results=False, **kwargs
+    df, colcat=None, mark_columns=False, theil_u=False, plot=True, return_results=False, **kwargs
 ):
     """
     Calculate the correlation/strength-of-association of features in data-set with both categorical (eda_tools) and
@@ -575,8 +559,7 @@ def pd_num_correl_associations(
                                 df[col[j]], df[col[i]]
                             )
                         else:
-                            cell = np_correl_cat_cat_cramers_v(
-                                df[col[i]], df[col[j]])
+                            cell = np_correl_cat_cat_cramers_v(df[col[i]], df[col[j]])
                             corr[col[i]][col[j]] = cell
                             corr[col[j]][col[i]] = cell
                     else:
@@ -610,8 +593,7 @@ def pd_num_correl_associations(
         return corr
 
 
-def pd_colcat_tonum(df, colcat="all", drop_single_label=False,
-                    drop_fact_dict=True):
+def pd_colcat_tonum(df, colcat="all", drop_single_label=False, drop_fact_dict=True):
     """
     Encoding a data-set with mixed data (numerical and categorical) to a numerical-only data-set,
     using the following logic:
@@ -653,8 +635,7 @@ def pd_colcat_tonum(df, colcat="all", drop_single_label=False,
             if len(unique_values) == 1 and not drop_single_label:
                 df_out.loc[:, col] = 0
             elif len(unique_values) == 2:
-                df_out.loc[:, col], binary_columns_dict[col] = pd.factorize(
-                    df[col])
+                df_out.loc[:, col], binary_columns_dict[col] = pd.factorize(df[col])
             else:
                 dummies = pd.get_dummies(df[col], prefix=col)
                 df_out = pd.concat([df_out, dummies], axis=1)
@@ -695,9 +676,7 @@ def convert(data, to):
     else:
         raise ValueError("Unknown data conversion: {}".format(to))
     if converted is None:
-        raise TypeError(
-            "cannot handle data conversion of type: {} to {}".format(
-                type(data), to))
+        raise TypeError("cannot handle data conversion of type: {} to {}".format(type(data), to))
     else:
         return converted
 
@@ -725,8 +704,7 @@ def pd_num_segment_limit(
         .agg({col_score: "mean", coldefault: {"sum", "count"}})
         .reset_index()
     )
-    dfs5.columns = [x[0] if x[0] == x[1] else x[0] + "_" + x[1]
-                    for x in dfs5.columns]
+    dfs5.columns = [x[0] if x[0] == x[1] else x[0] + "_" + x[1] for x in dfs5.columns]
     dfs5 = dfs5.sort_values(col_score, ascending=False)
     # return dfs5
 
@@ -780,7 +758,7 @@ def col_extractname_colbin(cols2):
     """
     coln = []
     for ss in cols2:
-        xr = ss[ss.rfind("_") + 1:]
+        xr = ss[ss.rfind("_") + 1 :]
         xl = ss[: ss.rfind("_")]
         if len(xr) < 3:  # -1 or 1
             coln.append(xl)
@@ -926,8 +904,7 @@ def col_stat_getcategorydict_freq(catedict):
         df["freq_pct"] = 100.0 * df["freq"] / df["freq"].sum()
         df["freq_zscore"] = df["freq"] / df["freq"].std()
         df = df.sort_values(by=["freq"], ascending=0)
-        df["freq_cumpct"] = 100.0 * df["freq_pct"].cumsum() / \
-            df["freq_pct"].sum()
+        df["freq_cumpct"] = 100.0 * df["freq_pct"].cumsum() / df["freq_pct"].sum()
         df["rank"] = np.arange(0, len(df.index.values))
         catlist.append((key, df))
     return catlist
@@ -950,8 +927,7 @@ def pd_num_correl_pair(df, coltarget=None, colname=None):
     for col in colname:
         target_corr.append(pearsonr(df[col].values, df[coltarget].values)[0])
 
-    df_correl = pd.DataFrame(
-        {"colx": [""] * len(colname), "coly": colname, "correl": target_corr})
+    df_correl = pd.DataFrame({"colx": [""] * len(colname), "coly": colname, "correl": target_corr})
     df_correl[coltarget] = colname
     return df_correl
 
@@ -975,8 +951,7 @@ def pd_col_filter(df, filter_val=None, iscol=1):
     return df2
 
 
-def pd_stat_jupyter_profile(
-        df, savefile="report.html", title="Pandas Profile"):
+def pd_stat_jupyter_profile(df, savefile="report.html", title="Pandas Profile"):
     """ Describe the tables
         #Pandas-Profiling 2.0.0
         df.profile_report()
@@ -1029,8 +1004,7 @@ def pd_stat_distribution_colnum(df):
 
         return pd.Series(
             ss,
-            ["dtype", "count", "mean", "std", "min", "25%",
-                "50%", "75%", "max", "nb_na", "pct_na"],
+            ["dtype", "count", "mean", "std", "min", "25%", "50%", "75%", "max", "nb_na", "pct_na"],
         )
 
     dfdes = pd.DataFrame([], columns=coldes)
@@ -1064,8 +1038,7 @@ def pd_df_stack(df_list, ignore_index=True):
 
 
 def pd_col_fillna(
-    dfref, colname=None, method="median", value=None, colgroupby=None,
-    return_val="dataframe,param"
+    dfref, colname=None, method="median", value=None, colgroupby=None, return_val="dataframe,param"
 ):
     """
     Function to fill NaNs with a specific value in certain columns
@@ -1090,8 +1063,7 @@ def pd_col_fillna(
             means = df[col].median()
 
         if method == "median_conditional":
-            means = df.groupby(colgroupby)[col].transform(
-                "median")  # Conditional median
+            means = df.groupby(colgroupby)[col].transform("median")  # Conditional median
 
         value = means if value is None else value
         print(col, nb_nans, "replaceBY", value)

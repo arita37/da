@@ -1,5 +1,4 @@
 import numpy as np
-
 from keras.losses import sparse_categorical_crossentropy
 from keras.models import Sequential
 from keras.preprocessing.text import Tokenizer

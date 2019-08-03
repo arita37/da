@@ -6,9 +6,9 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
+import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib.pyplot as plt
 import mnist_svhn_utils
 
 # load dataset

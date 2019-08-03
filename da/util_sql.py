@@ -2,7 +2,6 @@
 from __future__ import division
 
 import datetime
-
 # -*- coding: utf-8 -*-
 # ---------Various Utilities function for Python--------------------------------------
 import os
@@ -11,13 +10,13 @@ import sys
 import time
 from builtins import map, next, object, range, str, zip
 
+import matplotlib.pyplot as plt
+import numexpr as ne
 import numpy as np
 import pandas as pd
 import scipy as sci
 
 import arrow
-import matplotlib.pyplot as plt
-import numexpr as ne
 import sqlalchemy as sql
 from future import standard_library
 from past.builtins import basestring

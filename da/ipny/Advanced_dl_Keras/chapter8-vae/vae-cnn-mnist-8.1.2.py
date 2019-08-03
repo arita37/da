@@ -18,12 +18,12 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import os
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 from keras import backend as K
 from keras.datasets import mnist
-from keras.layers import Conv2D, Conv2DTranspose, Dense, Flatten, Input, Lambda, Reshape
+from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,
+                          Lambda, Reshape)
 from keras.losses import binary_crossentropy, mse
 from keras.models import Model
 from keras.utils import plot_model

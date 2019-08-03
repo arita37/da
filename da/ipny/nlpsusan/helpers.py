@@ -6,6 +6,7 @@ from itertools import chain
 
 import matplotlib.image as mplimg
 import matplotlib.pyplot as plt
+
 import networkx as nx
 
 Sentence = namedtuple("Sentence", "words tags")

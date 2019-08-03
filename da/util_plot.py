@@ -1,14 +1,14 @@
+# pylint: disable=C0321,C0103,E1221,C0301,E1305,E1121,C0302,C0330
 """
 Methods for data plotting
 """
 import itertools
 from collections import Counter
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sci
-
-import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn as sk
 

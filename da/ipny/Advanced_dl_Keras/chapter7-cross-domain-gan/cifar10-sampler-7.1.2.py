@@ -6,11 +6,11 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
-import numpy as np
-
 import matplotlib.pyplot as plt
-import other_utils
+import numpy as np
 from keras.datasets import cifar10
+
+import other_utils
 
 # load dataset
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()

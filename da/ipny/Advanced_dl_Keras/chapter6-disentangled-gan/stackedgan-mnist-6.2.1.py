@@ -26,16 +26,17 @@ import math
 import os
 import sys
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 from keras import backend as K
 from keras.datasets import mnist
-from keras.layers import Activation, BatchNormalization, Conv2D, Dense, Flatten, Input, MaxPooling2D
+from keras.layers import (Activation, BatchNormalization, Conv2D, Dense,
+                          Flatten, Input, MaxPooling2D)
 from keras.layers.merge import concatenate
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
 from keras.utils import to_categorical
+
 from lib import gan
 
 sys.path.append("..")

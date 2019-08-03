@@ -6,12 +6,10 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
-# numpy package
-import numpy as np
-
 # for plotting
 import matplotlib.pyplot as plt
-
+# numpy package
+import numpy as np
 # keras mnist module
 from keras.datasets import cifar10
 

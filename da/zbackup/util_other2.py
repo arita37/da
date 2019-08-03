@@ -4,13 +4,12 @@
 import math
 from collections import Counter
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
-from scipy import interp
-
-import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy import interp
 from sklearn.metrics import auc, roc_curve
 
 

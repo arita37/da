@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
-%reload_ext autoreload
+%load_ext autoreload
 %autoreload 2
+
+
+
+
+
+
 
 import os
 from collections import OrderedDict
 
-import pandas as pd
-
-########################################
-import da
+#### CatbOost
+import catboost as cb
 import lightgbm as lgb
+import pandas as pd
 import tensorflow as tf
-import util_date
 from lightgbm.sklearn import LGBMClassifier, LGBMClassifiers
 from mlens.ensemble import BlendEnsemble, SuperLearner
 ####################################################################################################
@@ -26,11 +30,22 @@ from sklearn.preprocessing import (
     FunctionTransformer, Imputer, OneHotEncoder, StandardScaler)
 from sklearn.svm import SVC
 from sklearn_pandas import DataFrameMapper, cross_val_score
-from util_date import *
-from util_feature import *
-from util_model import *
-from util_plot import *
-from util_text import *
+
+
+
+import da
+####################################################################################################
+################ Serialized the models #############################################################
+import util
+import util_feature
+#from dask.multiprocessing import get
+from util_feature import pd_col_to_num, pd_col_to_onehot, pd_colnum_tocat
+import util_model 
+import util_plot 
+import util_text 
+import util_date 
+
+
 
 dir0 = os.getcwd()
 os.chdir( dir0 + "/da/")
@@ -39,11 +54,9 @@ print( os.getcwd() )
 print(tf, tf.__version__)
 
 
+util_text.
 
-import util_feature
 
-
-from util_feature import pd_col_to_num, pd_colnum_tocat, pd_col_to_onehot
 
 
 
@@ -91,7 +104,7 @@ dfnum, colnum_onehot = pd_col_to_onehot(df_num, colname=None, colonehot=None,
 dfnum.head(5)
 
 
-### Reproductible pipeline (can be easily re-coded for Spark !!!)
+### Reproductible pipeline (can be easily re-coded for Spark !!!) ##################################
 pipe_preprocess_colnum =[ 
            (pd_col_to_num,   {"default": np.nan,} , "Conver string to NA")
            
@@ -106,9 +119,7 @@ pipe_preprocess_colnum =[
 
 
 
-
-
-### Reproductible pipeline (can be easily re-coded for Spark !!!)
+### Reproductible pipeline (can be easily re-coded for Spark !!!) ##################################
 pipe_preprocess_colnum =[ 
            (pd_col_to_num,   {"default": np.nan,} , "Conver string to NA")
            
@@ -119,14 +130,10 @@ pipe_preprocess_colnum =[
 ]
 
 
-
-
-
 pipe_preprocess_colnum
 
-
-
 dfnum_test = pd_pipeline_apply( df[colnum], pipe_preprocess_colnum)  
+
 
 
 
@@ -163,6 +170,7 @@ pipe_preprocess_colcat =[
 dftrain = pd.concat((  df_num, df_cat  ) , axis=1)
 
 
+coltext
 
 
 
@@ -171,6 +179,331 @@ dftrain = pd.concat((  df_num, df_cat  ) , axis=1)
 
 
 
+from  column_encoder import MinHashEncoder
+
+
+#### Output Vector Dimension
+enc =  MinHashEncoder(2)
+enc.fit( df['phone_equality']  )
+
+
+vv = enc.transform( df['phone_equality'].values  )
+df2 = pd.DataFrame( vv )
+
+df2["cat0"] = df['phone_equality'].reset_index().iloc[:,1]
+
+
+dfs = df2.groupby("cat0"  ).agg({ "cat1" :  {"min", "max"}  })
+
+
+
+
+df2
+
+
+
+
+def pd_coltext_minhash(dfref, colname, n_component=2, model_pretrain_dict=None, return_val="dataframe,param"):
+    """
+    dfhash, colcat_hash_param = pd_colcat_minhash(df, colcat, n_component=[2] * len(colcat),
+                                              return_val="dataframe,param")
+    :param dfref:
+    :param colname:
+    :param n_component:
+    :param return_val:
+    :return:
+    """
+    df = dfref[colname]
+    model_pretrain_dict= {}  if model_pretrain_dict is None else model_pretrain_dict
+    enc_dict = {}
+    for i, col in enumerate(colname):
+        
+        if model_pretrain_dict.get(col) is None :
+           clf = MinHashEncoder(n_component[i])
+           clf = clf.fit(df[col])
+        else :
+           clf = copy.deepcopy( model_pretrain_dict[col] )  
+            
+        v = clf.transform(df[col].values)
+        
+        enc_dict[col] = copy.deepcopy(clf)
+        dfcat = pd.DataFrame(v, columns=["{col}_hash_{t}".format(col=col, t=t) for t in
+                                         range(0, v.shape[1])])
+
+        try:
+            dfall = pd.concat((dfall, dfcat), axis=1)
+        except:
+            dfall = dfcat
+
+    if return_val == "dataframe,param":
+        return dfall, enc_dict
+
+    else:
+        return dfall
+
+
+
+
+import util_plot
+util_plot.plotxy( dfhash.iloc[ :, -2], dfhash.iloc[ :, -1]   )
+
+
+util_text.
+
+
+dfdate_hash, coldate_hash_model= pd_coltext_minhash(df, coldate, n_component=[4, 2], 
+                                               model_pretrain_dict=None,       
+                                              return_val="dataframe,param") 
+
+
+
+
+######### Pipeline ##########################################
+pipe_preprocess_coldate_01 =[ 
+           (pd_coltext_minhash , {"colname": coldate, "n_component" : [],
+                                          "model_pretrain_dict" : coldate_hash_model,
+                                           "return_val": "dataframe"  },  )        
+     
+]
+
+    
+    
+### Check pipeline
+print( coldate )
+util_feature.pd_pipeline_apply( df[ coldate ].iloc[:10, :], pipe_preprocess_coldate_01).iloc[:10]  
+
+
+
+
+
+coldate = ['first_review', 'host_since']
+
+
+
+
+df[coldate] = df[coldate].fillna("")
+
+df[coldate].nunique()
+
+
+df[]
+
+
+
+
+
+
+      
+####################################################################################################         
+####################################################################################################
+from sklearn.decomposition import PCA, pca, TruncatedSVD,LatentDirichletAllocation, NMF
+    
+    
+
+def pd_dim_reduction(df, colname, colprefix="colsvd", method="svd", dimpca=2, whiten=True,
+                     return_val="dataframe,param"):
+    """
+       Into Smaller space
+       dftext_svd, svd = pd_dim_reduction(dfcat_test, None,colprefix="colsvd",
+                     method="svd", dimpca=2, return_val="dataframe,param")
+
+    :param df:
+    :param colname:
+    :param colprefix:
+    :param method:
+    :param dimpca:
+    :param whiten:
+    :param return_val:
+    :return:
+    """
+    colname = colname if colname is not None else list(df.columns)
+    if method == "svd" :
+      svd = TruncatedSVD( n_components= dimpca, algorithm='randomized')
+      svd = svd.fit( df[colname].values )
+      X2 = svd.transform(df[colname].values)
+      print(X2)
+      dfnew = pd.DataFrame(X2)
+      dfnew.columns = [ colprefix + "_" +str(i) for i in dfnew.columns  ]
+
+      if return_val == "dataframe,param" :
+        return dfnew, svd
+      else :
+        return dfnew
+    
+    
+col = 'house_rules'
+dftext_svd_list, svd_list = pd_dim_reduction(dftext_tdidf[col], None,colprefix="colsvd",
+                     method="svd", dimpca=2, return_val="dataframe,param")
+
+
+
+
+
+dftext_svd_list, svd_list = pd_dim_reduction(dfcat_test, None,colprefix="colsvd",
+                     method="svd", dimpca=2, return_val="dataframe,param")
+
+
+
+
+        
+def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1,
+                     return_val="dataframe,param"):
+    """
+    Function that adds tf-idf of a given column for words in a text corpus.
+    Arguments:
+        df:             original dataframe
+        word_tokeep: corpus of words to look into
+        col_tofilter:   column of df to apply tf-idf to
+    Returns:
+        concat_df:      dataframe with a new column for each word
+        https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+    """
+    from sklearn.feature_extraction.text import CountVectorizer
+    if not isinstance(coltext, str) :
+        raise "coltext should be column string"
+
+    if word_tokeep is None:
+        cv = CountVectorizer(min_df=1, ngram_range=(1,3),
+                       strip_accents='unicode',
+                       lowercase =True, analyzer='word', token_pattern=r'\w+',
+                       stop_words = None)
+        X = cv.fit_transform(df[coltext])
+        word_tokeep = cv.get_feature_names()
+        count_list = np.asarray(X.sum(axis=0))
+        word_dict = dict(zip(word_tokeep, count_list))
+        print(len(word_tokeep))
+
+    # Calculate td-idf vector
+    vectorizer = TfidfVectorizer()
+    vectorizer.fit(word_tokeep)
+    v = vectorizer.transform(df[col])
+    v = v.toarray()
+    print(v.shape)
+
+    voca = vectorizer.vocabulary_
+
+    df_vector = pd.DataFrame(v)
+    # df_new = pd.concat([df, df_vector],axis=1)
+    if return_val == "dataframe,param":
+        return df_vector, voca
+
+    else:
+        return df_vector
+
+    
+import string
+import util_text
+
+def pd_coltext_clean(dfref, colname, stopwords):
+    df = dfref[colname]
+    # fromword = [ r"\b({w})\b".format(w=w)  for w in fromword    ]  
+    # print(fromword)
+    for col in colname:
+        df[col] = df[col].fillna("")
+        df[col] = df[col].str.lower()
+        df[col] = df[col].apply(lambda x: x.translate(string.punctuation))
+        df[col] = df[col].apply(lambda x: x.translate(string.digits))
+        df[col] = df[col].apply(lambda x: re.sub("[!@,#$+%*:()'-]", ' ', x))
+
+        df[col] = df[col].apply(lambda x: coltext_stopwords(x, stopwords=stopwords ))
+
+    return df
+
+
+df1 
+
+
+stopwords = ['', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', 'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any', 'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't", 'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven', "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll', 'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself', 'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't", 'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't', 'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very', 'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y', 'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves', '{', '|', '}', '~', '€']
+
+
+
+def coltext_stopwords(text, stopwords=None, sep=" "):
+    # data_stem['TWEET_SENT_1'] = data_stem['TWEET_SENT_1'].apply(stem_texts)
+    tokens = text.split(" ")
+    stemmed_tokens = [t.strip() for t in tokens if t.strip() not in stopwords ]
+    return " ".join(stemmed_tokens)
+
+
+
+
+## To pipeline
+#  Save each feature processing into "Reproductible pipeline".
+#  For Scalability, for repreoduction process
+ntoken=20
+col = 'house_rules'
+
+
+word_tokeep = coltext_freq[col]["word"].values[:ntoken]
+word_tokeep = [  t for t in word_tokeep if t not in stopwords   ]
+
+
+
+word_tokeep =  ['please', 'die', 'und', 'apartment', 'smoking', 'der', 'check', 'bitte', 'ist', 'zu', 'use', '00', 'house', 'wohnung', '5', 'für', 'sie', 'nicht', 'das']
+
+
+
+col = 'summary'
+
+pipe_preprocess_coltext01 =[ 
+           ( pd_coltext_clean , {"colname": [col], "stopwords"  : stopwords },  )        
+
+          ,( pd_coltext_tdidf, { "coltext": col,  "word_minfreq" : 1,
+                                          "word_tokeep" : word_tokeep ,
+                                          "return_val": "dataframe"  } , "convert to TD-IDF vector")
+]
+
+
+
+pipe_preprocess_coltext01 =[ 
+           ( pd_coltext_clean , {"colname": col, "stopwords"  : stopwords },  )        
+
+]
+
+    
+
+print( col, word_tokeep )
+### Check pipeline
+
+
+util_feature.pd_pipeline_apply( dftext.iloc[:100,:], pipe_preprocess_coltext01)  
+
+
+
+string.punctuation
+
+
+folder = os.getcwd() + "/data/airbnb/"
+df = pd.read_csv(folder+'listings_summary.zip', delimiter=',')
+
+
+
+
+colid = "id"
+colnum = [  "review_scores_communication", "review_scores_location", "review_scores_rating"      ]
+
+colcat = [ "cancellation_policy", "host_response_rate", "host_response_time" ]
+
+coltext = ["house_rules", "neighborhood_overview", "notes", "street"  ]
+
+coldate = [  "calendar_last_scraped", "first_review", "host_since" ]
+
+
+coly = "price"
+
+
+coltext = [ "summary", "space" ]
+
+dftext = df[coltext ]
+
+
+
+dftext[  "house_rules"  ]
+
+    
+    
+
+
+df.columns
 
 
 
@@ -212,9 +545,6 @@ dftest = pd.concat(( dfnum_test, dfcat_test ), axis= 1)
 
 
 
-####################################################################################################
-################ Serialized the models #############################################################
-import util
 
 colname_list  =  [  "colnum", "colnum_bin",  
                   "colcat", "colcat_onehot" ] 
@@ -278,7 +608,6 @@ dsk = {'load-1': (load, 'myfile.a.data'),
        'analyze': (analyze, ['clean-%d' % i for i in [1, 2, 3]]),
        'store': (store, 'analyze')}
 
-from dask.multiprocessing import get
 get(dsk, 'store')  # executes in parallel
 
 http://ml-ensemble.com/info/
@@ -324,8 +653,6 @@ http://ml-ensemble.com/info/
 
 
 
-#### CatbOost
-import catboost as cb
 
 colcat_idx = col_getnumpy_indice(colall, colcat)
 
