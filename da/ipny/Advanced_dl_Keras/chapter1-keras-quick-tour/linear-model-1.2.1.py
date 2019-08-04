@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 # numpy package
 import numpy as np
+
 from keras.layers import Dense
 # keras modules
 from keras.models import Sequential

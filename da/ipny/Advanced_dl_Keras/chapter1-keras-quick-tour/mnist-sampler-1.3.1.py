@@ -6,8 +6,9 @@ https://github.com/PacktPublishing/Advanced-Deep-Learning-with-Keras
 
 from __future__ import absolute_import, division, print_function
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 from keras.datasets import mnist
 
 # load dataset

@@ -1,16 +1,16 @@
 # version 1.0
 
+import numpy
+import pandas as pd
+
+import graphviz
 import matplotlib.cm as cm
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import numpy
-import pandas as pd
 import seaborn as sn
 from matplotlib.colors import BoundaryNorm, ListedColormap
 from sklearn import neighbors
 from sklearn.tree import export_graphviz
-
-import graphviz
 
 
 def load_crime_dataset():

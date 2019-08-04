@@ -24,60 +24,53 @@ feature_extraction.text.TfidfVectorizer([ÿ])  Convert a collection of raw docum
 
 """
 import copy
+import json
 import math
 import os
 import re
+import string
 from collections import Counter, OrderedDict
-
 
 import numpy as np
 import pandas as pd
 import scipy as sci
-import sklearn as sk
-
 
 import nltk
+import sklearn as sk
+########### Local Import #####################################################################
+from column_encoder import MinHashEncoder
 from nltk.corpus import stopwords
 # Stemming and Lemmatizing
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.snowball import SnowballStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
-
-
 from sklearn import preprocessing
 from sklearn.feature_extraction.text import (CountVectorizer, TfidfTransformer,
                                              TfidfVectorizer)
-
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
-import string
-import json
 
-#import spacy
-#import gensim
+# import spacy
+# import gensim
 
-########### Local Import #####################################################################
-from column_encoder import MinHashEncoder
 
 print("os.getcwd", os.getcwd())
 
 
 ##############################################################################################
-punctuations = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-
-
-
-
+punctuations = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 
 
 #############################################################################################
 #############################################################################################
 def get_stopwords(lang):
-    if lang == "en" :
-       return json.load(open("stopwords_en.json"))["word"]
+    if lang == "en":
+        return json.load(open("stopwords_en.json"))["word"]
 
 
 porter = PorterStemmer()
+
+
 def coltext_stemporter(text):
     # data_stem['TWEET_SENT_1'] = data_stem['TWEET_SENT_1'].apply(stem_texts)
     tokens = text.split(" ")
@@ -86,6 +79,8 @@ def coltext_stemporter(text):
 
 
 wordnet = WordNetLemmatizer()
+
+
 def coltext_lemmatizer(text):
     # data_stem['TWEET_SENT_1'] = data_stem['TWEET_SENT_1'].apply(stem_texts)
     tokens = text.split()
@@ -94,6 +89,8 @@ def coltext_lemmatizer(text):
 
 
 snowball = SnowballStemmer("english")
+
+
 def coltext_stemmer(text, sep=" "):
     tokens = text.split(sep)
     stemmed_tokens = [snowball.stem(token) for token in tokens]
@@ -102,17 +99,17 @@ def coltext_stemmer(text, sep=" "):
 
 def coltext_stopwords(text, stopwords=None, sep=" "):
     tokens = text.split(sep)
-    tokens = [t.strip() for t in tokens if t.strip() not in stopwords  ]
+    tokens = [t.strip() for t in tokens if t.strip() not in stopwords]
     return " ".join(tokens)
 
 
-def pd_coltext_fillna(df, colname, val="") :
-   return df[colname].fillna(val)
+def pd_coltext_fillna(df, colname, val=""):
+    return df[colname].fillna(val)
 
 
 def pd_coltext_clean(dfref, colname, stopwords):
-    if isinstance(colname, str) :
-       raise Exception("colname should be list of colname")
+    if isinstance(colname, str):
+        raise Exception("colname should be list of colname")
 
     df = dfref[colname]
     # fromword = [ r"\b({w})\b".format(w=w)  for w in fromword    ]
@@ -122,7 +119,7 @@ def pd_coltext_clean(dfref, colname, stopwords):
         df[col] = df[col].str.lower()
         df[col] = df[col].apply(lambda x: x.translate(string.punctuation))
         df[col] = df[col].apply(lambda x: x.translate(string.digits))
-        df[col] = df[col].apply(lambda x: re.sub("[!@,#$+%*:()'-]", ' ', x))
+        df[col] = df[col].apply(lambda x: re.sub("[!@,#$+%*:()'-]", " ", x))
 
         df[col] = df[col].apply(lambda x: coltext_stopwords(x, stopwords=stopwords))
     return df
@@ -130,7 +127,7 @@ def pd_coltext_clean(dfref, colname, stopwords):
 
 def pd_coltext_clean_advanced(dfref, colname, fromword, toword):
     df = dfref[colname]
-    #fromword = [r"\b({w})\b".format(w=w) for w in fromword]
+    # fromword = [r"\b({w})\b".format(w=w) for w in fromword]
     fromword = set(fromword)
     # print(fromword)
     for col in colname:
@@ -178,8 +175,10 @@ def pd_coltext_encoder(df):
     """
     pass
 
-def pd_coltext_countvect(df, coltext, word_tokeep=None, word_minfreq=1,
-                         return_val="dataframe,param"):
+
+def pd_coltext_countvect(
+    df, coltext, word_tokeep=None, word_minfreq=1, return_val="dataframe,param"
+):
     """
     Function that adds count of a given column for words in a text corpus.
     Arguments:
@@ -190,20 +189,25 @@ def pd_coltext_countvect(df, coltext, word_tokeep=None, word_minfreq=1,
         concat_df:      dataframe with a new column for each word
         https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
     """
-    if not isinstance(coltext, str) :
+    if not isinstance(coltext, str):
         raise Exception("coltext should be column string")
 
     # Calculate count word
-    vect = CountVectorizer(min_df=word_minfreq, ngram_range=(1, 3),
-                         strip_accents='unicode',
-                         lowercase=True, analyzer='word', token_pattern=r'\w+',
-                         stop_words=None)
+    vect = CountVectorizer(
+        min_df=word_minfreq,
+        ngram_range=(1, 3),
+        strip_accents="unicode",
+        lowercase=True,
+        analyzer="word",
+        token_pattern=r"\w+",
+        stop_words=None,
+    )
 
     if word_tokeep is None:
-       v = vect.fit_transform(df[coltext])
-    else :
-       vect.fit(word_tokeep)
-       v = vect.transform(df[coltext])
+        v = vect.fit_transform(df[coltext])
+    else:
+        vect.fit(word_tokeep)
+        v = vect.transform(df[coltext])
 
     v = v.toarray()
     voca = vect.get_feature_names()
@@ -211,7 +215,7 @@ def pd_coltext_countvect(df, coltext, word_tokeep=None, word_minfreq=1,
     count_list = np.asarray(v.sum(axis=0))
     word_dict = dict(zip(word_tokeep, count_list))
     # print(len(word_tokeep))
-    #voca = vect.vocabulary_
+    # voca = vect.vocabulary_
 
     df_vector = pd.DataFrame(v)
     df_vector.columns = vect.vocabulary_
@@ -221,8 +225,7 @@ def pd_coltext_countvect(df, coltext, word_tokeep=None, word_minfreq=1,
         return df_vector
 
 
-def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1,
-                     return_val="dataframe,param"):
+def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1, return_val="dataframe,param"):
     """
     Function that adds tf-idf of a given column for words in a text corpus.
     Arguments:
@@ -234,14 +237,20 @@ def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1,
         https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
     """
     from sklearn.feature_extraction.text import CountVectorizer
-    if not isinstance(coltext, str) :
+
+    if not isinstance(coltext, str):
         raise Exception("coltext should be string")
 
     if word_tokeep is None:
-        cv = CountVectorizer(min_df=1, ngram_range=(1,3),
-                       strip_accents='unicode',
-                       lowercase =True, analyzer='word', token_pattern=r'\w+',
-                       stop_words = None)
+        cv = CountVectorizer(
+            min_df=1,
+            ngram_range=(1, 3),
+            strip_accents="unicode",
+            lowercase=True,
+            analyzer="word",
+            token_pattern=r"\w+",
+            stop_words=None,
+        )
         X = cv.fit_transform(df[coltext])
         word_tokeep = cv.get_feature_names()
         count_list = np.asarray(X.sum(axis=0))
@@ -265,8 +274,9 @@ def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1,
         return df_vector
 
 
-def pd_coltext_minhash(dfref, colname, n_component=2, model_pretrain_dict=None,
-                       return_val="dataframe,param"):
+def pd_coltext_minhash(
+    dfref, colname, n_component=2, model_pretrain_dict=None, return_val="dataframe,param"
+):
     """
     dfhash, colcat_hash_param = pd_colcat_minhash(df, colcat, n_component=[2] * len(colcat),
                                               return_val="dataframe,param")
@@ -290,8 +300,9 @@ def pd_coltext_minhash(dfref, colname, n_component=2, model_pretrain_dict=None,
         v = clf.transform(df[col].values)
 
         enc_dict[col] = copy.deepcopy(clf)
-        dfcat = pd.DataFrame(v, columns=["{col}_hash_{t}".format(col=col, t=t) for t in
-                                         range(0, v.shape[1])])
+        dfcat = pd.DataFrame(
+            v, columns=["{col}_hash_{t}".format(col=col, t=t) for t in range(0, v.shape[1])]
+        )
 
         try:
             dfall = pd.concat((dfall, dfcat), axis=1)
@@ -305,7 +316,7 @@ def pd_coltext_minhash(dfref, colname, n_component=2, model_pretrain_dict=None,
         return dfall
 
 
-def pd_coltext_hashing(df, coltext, n_features=20 ):
+def pd_coltext_hashing(df, coltext, n_features=20):
     """
     Function that adds Hash a given column for words in a text corpus.
     Arguments:
@@ -327,9 +338,15 @@ def pd_coltext_hashing(df, coltext, n_features=20 ):
     return df_vector
 
 
-def pd_coltext_tdidf_multi(df, coltext, coltext_freq, ntoken=100, word_tokeep_dict=None,
-                           stopwords=None,
-                           return_val="dataframe,param"):
+def pd_coltext_tdidf_multi(
+    df,
+    coltext,
+    coltext_freq,
+    ntoken=100,
+    word_tokeep_dict=None,
+    stopwords=None,
+    return_val="dataframe,param",
+):
     dftext_tdidf = {}
     word_tokeep_dict_new = {}
     for col in coltext:
@@ -339,14 +356,11 @@ def pd_coltext_tdidf_multi(df, coltext, coltext_freq, ntoken=100, word_tokeep_di
         else:
             word_tokeep = word_tokeep_dict[col]
 
-        dftext_tdidf[col], word_tokeep_dict_new[col] = pd_coltext_tdidf(df, col,
-                                                                        word_tokeep=word_tokeep,
-                                                                        word_minfreq=1,
-                                                                        return_val="dataframe,param")
+        dftext_tdidf[col], word_tokeep_dict_new[col] = pd_coltext_tdidf(
+            df, col, word_tokeep=word_tokeep, word_minfreq=1, return_val="dataframe,param"
+        )
 
     if return_val == "dataframe,param":
         return dftext_tdidf, word_tokeep_dict_new
     else:
         return dftext_tdidf
-
-

@@ -3,13 +3,14 @@
 # Necessary for newer version of matplotlib
 import warnings
 
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 #
 # Display inline matplotlib plots with IPython
 from IPython import get_ipython
+
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 get_ipython().run_line_magic("matplotlib", "inline")

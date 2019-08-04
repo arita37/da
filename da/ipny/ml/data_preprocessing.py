@@ -1,7 +1,8 @@
 # Import the libraries
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+import matplotlib.pyplot as plt
 # Splitting the dataset into the training set and test set
 from sklearn.cross_validation import train_test_split
 # Feature scaling

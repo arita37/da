@@ -3,8 +3,9 @@ Utility for plotting 2 parallel distributions
 
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 want_noise = True
 # grayscale plot, comment if color is wanted

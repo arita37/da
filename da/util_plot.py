@@ -5,10 +5,11 @@ Methods for data plotting
 import itertools
 from collections import Counter
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sci
+
+import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn as sk
 

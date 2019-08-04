@@ -5,9 +5,10 @@ from __future__ import absolute_import, division, print_function
 
 import math
 
+import numpy as np
+
 import keras
 import matplotlib.pyplot as plt
-import numpy as np
 from keras import backend as K
 from keras.callbacks import TensorBoard
 from keras.datasets import mnist

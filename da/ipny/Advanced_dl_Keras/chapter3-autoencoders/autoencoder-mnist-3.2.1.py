@@ -8,8 +8,9 @@ of input data for low-dim visualization like PCA or TSNE.
 
 from __future__ import absolute_import, division, print_function
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.datasets import mnist
 from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,

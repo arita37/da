@@ -17,9 +17,10 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import os
 
+import numpy as np
+
 import keras
 import matplotlib.pyplot as plt
-import numpy as np
 from keras import backend as K
 from keras.datasets import mnist
 from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,

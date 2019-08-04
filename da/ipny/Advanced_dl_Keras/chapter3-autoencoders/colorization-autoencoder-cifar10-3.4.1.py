@@ -13,8 +13,9 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras.datasets import cifar10

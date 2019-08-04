@@ -8,8 +8,9 @@ from __future__ import absolute_import, division, print_function
 import math
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 
 def rgb2gray(rgb):

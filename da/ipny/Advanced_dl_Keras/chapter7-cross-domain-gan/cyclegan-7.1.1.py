@@ -42,15 +42,15 @@ import argparse
 import datetime
 
 import numpy as np
+
+import cifar10_utils
+import mnist_svhn_utils
+import other_utils
 from keras.layers import (Activation, Conv2D, Conv2DTranspose, Dense, Flatten,
                           Input, LeakyReLU)
 from keras.layers.merge import concatenate
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
-
-import cifar10_utils
-import mnist_svhn_utils
-import other_utils
 # from keras_contrib.layers.normalization import InstanceNormalization
 from keras_contrib.layers.normalization.instancenormalization import \
     InstanceNormalization

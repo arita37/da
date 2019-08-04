@@ -13,13 +13,14 @@ from importlib import import_module
 import numpy as np
 import pandas as pd
 import scipy as sci
-import sklearn as sk
 from dateutil.parser import parse
+
+import sklearn as sk
 from matplotlib import pyplot as plt
 from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
-from sklearn.decomposition import PCA, pca, TruncatedSVD, LatentDirichletAllocation, NMF
-
+from sklearn.decomposition import (NMF, PCA, LatentDirichletAllocation,
+                                   TruncatedSVD, pca)
 from sklearn.discriminant_analysis import (LinearDiscriminantAnalysis,
                                            QuadraticDiscriminantAnalysis)
 from sklearn.ensemble import (AdaBoostClassifier, ExtraTreesClassifier,
@@ -74,9 +75,15 @@ class dict2(object):
 
 
 ####################################################################################################
-def pd_dim_reduction(df, colname, colprefix="colsvd", method="svd", dimpca=2,
-                     model_pretrain=None,
-                     return_val="dataframe,param"):
+def pd_dim_reduction(
+    df,
+    colname,
+    colprefix="colsvd",
+    method="svd",
+    dimpca=2,
+    model_pretrain=None,
+    return_val="dataframe,param",
+):
     """
        Dimension reduction technics
        dftext_svd, svd = pd_dim_reduction(dfcat_test, None,colprefix="colsvd",
@@ -92,10 +99,10 @@ def pd_dim_reduction(df, colname, colprefix="colsvd", method="svd", dimpca=2,
     colname = colname if colname is not None else list(df.columns)
     if method == "svd":
         if model_pretrain is None:
-          svd = TruncatedSVD(n_components=dimpca, algorithm='randomized')
-          svd = svd.fit(df[colname].values)
-        else :
-          svd = copy.deepcopy(model_pretrain)
+            svd = TruncatedSVD(n_components=dimpca, algorithm="randomized")
+            svd = svd.fit(df[colname].values)
+        else:
+            svd = copy.deepcopy(model_pretrain)
 
         X2 = svd.transform(df[colname].values)
         # print(X2)
@@ -103,11 +110,9 @@ def pd_dim_reduction(df, colname, colprefix="colsvd", method="svd", dimpca=2,
         dfnew.columns = [colprefix + "_" + str(i) for i in dfnew.columns]
 
         if return_val == "dataframe,param":
-           return dfnew, svd
-        else :
-           return dfnew
-
-
+            return dfnew, svd
+        else:
+            return dfnew
 
 
 def split_train_test(X, y, split_ratio=0.8):
@@ -186,12 +191,7 @@ def split_train2(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None, 
 
 
 def model_lightgbm_kfold(
-    df,
-    colname=None,
-    num_folds=2,
-    stratified=False,
-    colexclude=None,
-    debug=False,
+    df, colname=None, num_folds=2, stratified=False, colexclude=None, debug=False
 ):
     # LightGBM GBDT with KFold or Stratified KFold
     # Cross validation model
@@ -341,9 +341,7 @@ def sk_model_auto_tpot(
     clf.fit(X_train, y_train)
     print((tpot.score(X_test, y_test)))
     file1 = (
-        "/" + outfolder + "/tpot_regression_pipeline_"
-        + str(np.random.randint(1000, 9999))
-        + ".py"
+        "/" + outfolder + "/tpot_regression_pipeline_" + str(np.random.randint(1000, 9999)) + ".py"
     )
     tpot.export(file1)
     return file1
@@ -360,7 +358,9 @@ def sk_score_get(name="r2"):
 
 
 def sk_params_search_best(
-    clf, X, y,
+    clf,
+    X,
+    y,
     param_grid={"alpha": np.linspace(0, 1, 5)},
     method="gridsearch",
     param_search={"scorename": "r2", "cv": 5, "population_size": 5, "generations_number": 3},
@@ -410,15 +410,16 @@ def sk_params_search_best(
 
 def sk_error(ypred, ytrue, method="r2", sample_weight=None, multioutput=None):
     from sklearn.metrics import r2_score
-    if method == "rmse" :
-      aux = np.sqrt(np.sum((ypred - ytrue) ** 2)) / len(ytrue)
-      print("Error:", aux, "Error/Stdev:", aux / np.std(ytrue))
-      return aux / np.std(ytrue)
 
-    elif method == "r2" :
-      r2 = r2_score(ytrue, ypred, sample_weight=sample_weight, multioutput=multioutput)
-      r = np.sign(r2) * np.sqrt(np.abs(r2))
-      return -1 if r <= -1 else  r
+    if method == "rmse":
+        aux = np.sqrt(np.sum((ypred - ytrue) ** 2)) / len(ytrue)
+        print("Error:", aux, "Error/Stdev:", aux / np.std(ytrue))
+        return aux / np.std(ytrue)
+
+    elif method == "r2":
+        r2 = r2_score(ytrue, ypred, sample_weight=sample_weight, multioutput=multioutput)
+        r = np.sign(r2) * np.sqrt(np.abs(r2))
+        return -1 if r <= -1 else r
 
 
 def sk_cluster(
@@ -631,6 +632,89 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"], ret
 
     if return_stat:
         return {"auc": auc, "f1macro": f1macro, "acc": acc, "confusion": mtest}
+
+
+
+############## ML metrics    ###################################
+def sk_metric_roc_optimal_Cutoff(ytest, ytest_proba):
+    """ Find the optimal probability cutoff point for a classification model related to event rate
+    Parameters
+    ----------
+    ytest : Matrix with dependent or target data, where rows are observations
+    ytest_proba : Matrix with predicted data, where rows are observations
+
+    # Find prediction to the dataframe applying threshold
+    data['pred'] = data['pred_proba'].map(lambda x: 1 if x > threshold else 0)
+    # Print confusion Matrix
+    from sklearn.metrics import confusion_matrix
+    confusion_matrix(data['admit'], data['pred'])
+    # array([[175,  98],
+    #        [ 46,  81]])
+    Returns: with optimal cutoff value
+    """
+    fpr, tpr, threshold = roc_curve(ytest, ytest_proba)
+    i = np.arange(len(tpr))
+    roc = pd.DataFrame({'tf': pd.Series(tpr - (1 - fpr), index=i),
+                        'threshold': pd.Series(threshold, index=i)})
+    roc_t = roc.ix[(roc.tf - 0).abs().argsort()[:1]]
+
+    return roc_t['threshold']
+
+def sk_metric_roc_auc_multiclass(n_classes=3, y_test=None, y_test_pred=None, y_predict_proba=None):
+    # Compute ROC curve and ROC AUC for each class
+    # n_classes = 3
+    conf_mat = sk.metrics.confusion_matrix(y_test, y_test_pred)
+    print(conf_mat)
+    if y_predict_proba is None:
+        return conf_mat
+
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    all_y_test_i = np.array([])
+    all_y_predict_proba = np.array([])
+    for i in range(n_classes):
+        y_test_i = list(map(lambda x: 1 if x == i else 0, y_test))
+        # print(y_test_i)
+        all_y_test_i = np.concatenate([all_y_test_i, y_test_i])
+        all_y_predict_proba = np.concatenate([all_y_predict_proba, y_predict_proba[:, i]])
+        fpr[i], tpr[i], _ = roc_curve(y_test_i, y_predict_proba[:, i])
+        roc_auc[i] = sk.metrics.auc(fpr[i], tpr[i])
+
+    # Compute micro-average ROC curve and ROC area
+    fpr["average"], tpr["average"], _ = roc_curve(all_y_test_i, all_y_predict_proba)
+    roc_auc["average"] = sk.metrics.auc(fpr["average"], tpr["average"])
+
+    print("auc average", roc_auc["average"])
+
+    # Plot average ROC Curve
+    plt.figure()
+    plt.plot(fpr["average"], tpr["average"],
+             label='Average ROC curve (area = {0:0.2f})'
+                   ''.format(roc_auc["average"]),
+             color='deeppink', linestyle=':', linewidth=4)
+
+    # Plot each individual ROC curve
+    for i in range(n_classes):
+        plt.plot(fpr[i], tpr[i], lw=2,
+                 label='ROC curve of class {0} (area = {1:0.2f})'
+                       ''.format(i, roc_auc[i]))
+
+    try  :
+      plt.plot([0, 1], [0, 1], 'k--', lw=2)
+      plt.xlim([0.0, 1.0])
+      plt.ylim([0.0, 1.05])
+      plt.xlabel('False Positive Rate')
+      plt.ylabel('True Positive Rate')
+      plt.title('Some extension of Receiver operating characteristic to multi-class')
+      plt.legend(loc="lower right")
+      plt.show()
+    except BaseException :
+      pass
+
+    res = { "roc_auc" : roc_auc, "tpr" : tpr, "fpr" : fpr   }
+    return res
+
 
 
 def model_logistic_score(clf, df1, cols, coltarget, outype="score"):

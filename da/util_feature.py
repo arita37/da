@@ -65,9 +65,6 @@ def pd_col_to_onehot(dfref, colname=None, colonehot=None, return_val="dataframe,
         return df[colnew]
 
 
-
-
-
 def pd_colcat_mapping(df, colname):
     """
      for col in colcat :
@@ -1044,8 +1041,12 @@ def pd_df_stack(df_list, ignore_index=True):
 
 
 def pd_col_fillna(
-    dfref, colname=None, method="frequent",
-    value=None, colgroupby=None, return_val="dataframe,param",
+    dfref,
+    colname=None,
+    method="frequent",
+    value=None,
+    colgroupby=None,
+    return_val="dataframe,param",
 ):
     """
     Function to fill NaNs with a specific value in certain columns

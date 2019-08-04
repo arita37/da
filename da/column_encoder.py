@@ -1,27 +1,32 @@
 import os
 import sys
-import numpy as np
 import warnings
 
-from scipy.special import logsumexp
+import numpy as np
 from scipy import sparse
+from scipy.special import logsumexp
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import (NMF, PCA, LatentDirichletAllocation,
+                                   TruncatedSVD)
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.preprocessing import OneHotEncoder, FunctionTransformer, \
-    LabelEncoder
-from sklearn.random_projection import GaussianRandomProjection
-from sklearn.decomposition import PCA, LatentDirichletAllocation, NMF, \
-    TruncatedSVD
 from sklearn.pipeline import Pipeline
-from sklearn.utils import murmurhash3_32, check_random_state
-
+from sklearn.preprocessing import (FunctionTransformer, LabelEncoder,
+                                   OneHotEncoder)
+from sklearn.random_projection import GaussianRandomProjection
+from sklearn.utils import check_random_state, murmurhash3_32
 
 
 class OneHotEncoderRemoveOne(OneHotEncoder):
-    def __init__(self, n_values=None, categorical_features=None,
-                 categories='auto', sparse=True, dtype=np.float64,
-                 handle_unknown='error'):
+    def __init__(
+        self,
+        n_values=None,
+        categorical_features=None,
+        categories="auto",
+        sparse=True,
+        dtype=np.float64,
+        handle_unknown="error",
+    ):
         super().__init__()
         self.categories = categories
         self.sparse = sparse
@@ -33,8 +38,6 @@ class OneHotEncoderRemoveOne(OneHotEncoder):
     def transform(self, X, y=None):
         Xout = super().transform(X)
         return Xout[:, :-1]
-
-
 
 
 class MinHashEncoder(BaseEstimator, TransformerMixin):
@@ -52,7 +55,7 @@ class MinHashEncoder(BaseEstimator, TransformerMixin):
         """
         Return a list of different n-grams in a string
         """
-        spaces = ' '  # * (n // 2 + n % 2)
+        spaces = " "  # * (n // 2 + n % 2)
         string = spaces + " ".join(string.lower().split()) + spaces
         ngram_list = []
         for n in range(ngram_range[0], ngram_range[1] + 1):
@@ -64,13 +67,13 @@ class MinHashEncoder(BaseEstimator, TransformerMixin):
         min_hashes = np.ones(n_components) * np.infty
         grams = self.get_unique_ngrams(string, self.ngram_range)
         if len(grams) == 0:
-            grams = self.get_unique_ngrams(' Na ', self.ngram_range)
+            grams = self.get_unique_ngrams(" Na ", self.ngram_range)
         for gram in grams:
-            hash_array = np.array([
-                murmurhash3_32(''.join(gram), seed=d, positive=True)
-                for d in range(n_components)])
+            hash_array = np.array(
+                [murmurhash3_32("".join(gram), seed=d, positive=True) for d in range(n_components)]
+            )
             min_hashes = np.minimum(min_hashes, hash_array)
-        return min_hashes/(2**32-1)
+        return min_hashes / (2 ** 32 - 1)
 
     def fit(self, X, y=None):
 
@@ -78,8 +81,8 @@ class MinHashEncoder(BaseEstimator, TransformerMixin):
         for i, x in enumerate(X):
             if x not in self.hash_dict:
                 self.hash_dict[x] = self.minhash(
-                    x, n_components=self.n_components,
-                    ngram_range=self.ngram_range)
+                    x, n_components=self.n_components, ngram_range=self.ngram_range
+                )
         return self
 
     def transform(self, X):
@@ -89,15 +92,13 @@ class MinHashEncoder(BaseEstimator, TransformerMixin):
         for i, x in enumerate(X):
             if x not in self.hash_dict:
                 self.hash_dict[x] = self.minhash(
-                    x, n_components=self.n_components,
-                    ngram_range=self.ngram_range)
+                    x, n_components=self.n_components, ngram_range=self.ngram_range
+                )
 
         for i, x in enumerate(X):
             X_out[i, :] = self.hash_dict[x]
 
         return X_out
-
-
 
 
 class PasstroughEncoder(BaseEstimator, TransformerMixin):
@@ -115,4 +116,3 @@ class PasstroughEncoder(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         return self.encoder.transform(X)
-

@@ -6,6 +6,7 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+
 from keras.datasets import mnist
 from keras.layers import Conv2D, Dense, Dropout, Flatten, Input, MaxPooling2D
 from keras.models import Model

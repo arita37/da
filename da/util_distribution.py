@@ -11,8 +11,9 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import scipy as sci
-import sklearn as sk
 from dateutil.parser import parse
+
+import sklearn as sk
 from sklearn import covariance, linear_model, model_selection, preprocessing
 from sklearn.cluster import dbscan, k_means
 from sklearn.decomposition import PCA, pca

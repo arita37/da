@@ -18,8 +18,9 @@ import numpy as np
 import pandas as pd
 import requests
 import scipy as sci
-import sklearn as sk
 from dateutil.parser import parse
+
+import sklearn as sk
 from sklearn.model_selection import train_test_split
 
 # from attrdict import AttrDict as dict2

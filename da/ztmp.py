@@ -1,6 +1,149 @@
-# -*- coding: utf-8 -*-
-%load_ext autoreload
-%autoreload 2
+# coding: utf-8
+# # Init
+get_ipython().run_line_magic('load_ext', 'autoreload')
+get_ipython().run_line_magic('autoreload', '')
+
+### Local Import
+import util_model
+import util_feature
+import util_plot
+import util_text
+import util_date
+
+print(util_feature)
+
+
+
+
+
+
+
+
+import logging
+import numpy as np
+from optparse import OptionParser
+import sys
+from time import time
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.feature_selection import SelectFromModel
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.linear_model import RidgeClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import PassiveAggressiveClassifier
+from sklearn.naive_bayes import BernoulliNB, ComplementNB, MultinomialNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import NearestCentroid
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.utils.extmath import density
+from sklearn import metrics
+
+
+
+categories = [
+        'alt.atheism',
+        'talk.religion.misc',
+        'comp.graphics',
+        'sci.space',
+    ]
+
+remove = ('headers', 'footers', 'quotes')
+
+  
+data_train = fetch_20newsgroups(subset='train', categories=categories,
+                                shuffle=True, random_state=42,
+                                remove=remove)
+
+data_test = fetch_20newsgroups(subset='test', categories=categories,
+                               shuffle=True, random_state=42,
+                               remove=remove)
+
+
+target_names = data_train.target_names
+
+
+
+####################################################################################################
+dfnews_train = pd.DataFrame({"news" :data_train.data, "y" : data_train.target })
+dfnews_test = pd.DataFrame({"news" :data_test.data, "y" : data_test.target })
+
+
+dfnews_train.to_csv( "data/news_train.csv"  , index= False)
+dfnews_test.to_csv( "data/news_test.csv"  , index= False)
+
+
+dfnews = dfnews_train
+
+
+
+
+Precision = True Positives / (True Positives + False Positives)
+
+Recall = True Positives / (True Positives + False Negatives)
+Sensitive
+
+The main reason for this optimistic picture is because of the use of true negatives in the False Positive Rate in the ROC Curve and the careful avoidance of this rate in the Precision-Recall curve.
+
+
+2
+# calculate precision-recall curve
+precision, recall, thresholds = precision_recall_curve(testy, probs)
+
+
+
+
+— The Precision-Recall Plot Is More Informative
+ than the ROC Plot When Evaluating Binary Classifiers on Imbalanced Datasets, 2015.
+
+A precision-recall curve is 
+
+
+— The Precision-Recall Plot Is More Informative than the ROC Plot When Evaluating 
+Binary Classifiers on Imbalanced Datasets, 2015.
+
+
+
+
+# plot the precision-recall curve for the model
+pyplot.plot(recall, precision, marker='.')
+
+
+
+
+
+
+
+
+
+####################################################################################################
+####################################################################################################
+import gc, os, sys, copy, string, logging
+from datetime import datetime
+import warnings
+import numpy as np, pandas as pd, sklearn as sk
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+import lightgbm as lgb
+from tqdm import tqdm_notebook
+
+warnings.filterwarnings('ignore')
+
+
+os.getcwd()
+
+
+# In[648]:
+
+
+# In[649]:
 
 
 
@@ -9,18 +152,34 @@
 
 
 import os
+import string
 from collections import OrderedDict
+
+import pandas as pd
 
 #### CatbOost
 import catboost as cb
+import da
 import lightgbm as lgb
-import pandas as pd
 import tensorflow as tf
+####################################################################################################
+################ Serialized the models #############################################################
+import util
+import util_date
+import util_feature
+import util_model
+import util_plot
+import util_text
+from column_encoder import MinHashEncoder
 from lightgbm.sklearn import LGBMClassifier, LGBMClassifiers
 from mlens.ensemble import BlendEnsemble, SuperLearner
 ####################################################################################################
 ####################################################################################################
 from sklearn.base import BaseEstimator, TransformerMixin
+####################################################################################################         
+####################################################################################################
+from sklearn.decomposition import (NMF, PCA, LatentDirichletAllocation,
+                                   TruncatedSVD, pca)
 from sklearn.ensemble import ExtraTreesClassifier
 ####Ensemble Learning
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
@@ -30,22 +189,8 @@ from sklearn.preprocessing import (
     FunctionTransformer, Imputer, OneHotEncoder, StandardScaler)
 from sklearn.svm import SVC
 from sklearn_pandas import DataFrameMapper, cross_val_score
-
-
-
-import da
-####################################################################################################
-################ Serialized the models #############################################################
-import util
-import util_feature
 #from dask.multiprocessing import get
 from util_feature import pd_col_to_num, pd_col_to_onehot, pd_colnum_tocat
-import util_model 
-import util_plot 
-import util_text 
-import util_date 
-
-
 
 dir0 = os.getcwd()
 os.chdir( dir0 + "/da/")
@@ -179,7 +324,6 @@ coltext
 
 
 
-from  column_encoder import MinHashEncoder
 
 
 #### Output Vector Dimension
@@ -244,7 +388,6 @@ def pd_coltext_minhash(dfref, colname, n_component=2, model_pretrain_dict=None, 
 
 
 
-import util_plot
 util_plot.plotxy( dfhash.iloc[ :, -2], dfhash.iloc[ :, -1]   )
 
 
@@ -294,9 +437,6 @@ df[]
 
 
       
-####################################################################################################         
-####################################################################################################
-from sklearn.decomposition import PCA, pca, TruncatedSVD,LatentDirichletAllocation, NMF
     
     
 
@@ -391,8 +531,6 @@ def pd_coltext_tdidf(df, coltext, word_tokeep=None, word_minfreq=1,
         return df_vector
 
     
-import string
-import util_text
 
 def pd_coltext_clean(dfref, colname, stopwords):
     df = dfref[colname]

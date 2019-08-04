@@ -19,12 +19,12 @@ import argparse
 import sys
 
 import numpy as np
+
 from keras import backend as K
 from keras.datasets import mnist
 from keras.layers import Input
 from keras.models import Model, load_model
 from keras.optimizers import RMSprop
-
 from lib import gan
 
 sys.path.append("..")

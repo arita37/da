@@ -2,8 +2,9 @@
 with and without noise
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 want_noise = True
 # grayscale plot, comment if color is wanted

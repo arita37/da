@@ -27,7 +27,8 @@ import numpy as np
 import pandas as pd
 
 
-def pd_datestring_split(dfref, coldate, fmt="%Y-%m-%d %H:%M:%S", return_val="split"):
+def pd_datestring_split(
+        dfref, coldate, fmt="%Y-%m-%d %H:%M:%S", return_val="split"):
     """
       Parsing date
       'Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p'
@@ -41,8 +42,9 @@ def pd_datestring_split(dfref, coldate, fmt="%Y-%m-%d %H:%M:%S", return_val="spl
     df = pd.DataFrame(dfref[coldate])
 
     coldt = coldate + "_dt"
-    df[coldt] = pd.to_datetime(df[coldate], errors='coerce', format=None,
-                               infer_datetime_format=True, cache=True)
+    df[coldt] = pd.to_datetime(
+        df[coldate], errors="coerce", format=None, infer_datetime_format=True, cache=True
+    )
 
     df[coldate + "_year"] = df[coldt].apply(lambda x: x.year)
     df[coldate + "_month"] = df[coldt].apply(lambda x: x.month)
@@ -65,11 +67,11 @@ def datestring_todatetime(datelist, fmt="%Y-%m-%d %H:%M:%S"):
     datenew = []
     if fmt == "auto":
         if isinstance(datelist, list):
-            for x in datelist :
-                try :
-                    datenew.append( dateutil.parser.parse(x) )
+            for x in datelist:
+                try:
+                    datenew.append(dateutil.parser.parse(x))
                 except Exception as e:
-                    datenew.append( pd.NaT )
+                    datenew.append(pd.NaT)
 
             return datenew
         else:
@@ -220,10 +222,6 @@ def np_dict_tostr_val(dd):
 
 def np_dict_tostr_key(dd):
     return ",".join([str(key) for key, _ in list(dd.items())])
-
-
-
-
 
 
 """

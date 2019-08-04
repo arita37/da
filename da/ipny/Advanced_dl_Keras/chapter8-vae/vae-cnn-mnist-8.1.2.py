@@ -18,8 +18,9 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.datasets import mnist
 from keras.layers import (Conv2D, Conv2DTranspose, Dense, Flatten, Input,

@@ -1,4 +1,4 @@
-# pylint: disable=C0321,C0103,E1221,C0301,E1305,E1121,C0302,C0330
+# pylint: disable=C0321,C0103,C0301,E1305,E1121,C0302,C0330,C0111,W0613,W0611,R1705
 # -*- coding: utf-8 -*-
 """
 Various utilities
@@ -38,10 +38,18 @@ FORMATTER_5 = logging.Formatter(
 
 
 def os_make_dirs(filename):
-    folder = os.path.dirname(filename)
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    return folder
+    if isinstance(filename, str):
+        filename = [os.path.dirname(filename)]
+
+    if isinstance(filename, list):
+        folder_list = filename
+        for f in folder_list:
+            try:
+                if not os.path.exists(f):
+                    os.makedirs(f)
+            except Exception as e:
+                print(e)
+        return folder_list
 
 
 ####################################################################################################
@@ -67,14 +75,14 @@ def save(obj, filename="/folder1/keyname", isabsolutpath=0):
     :param isabsolutpath:
     :return:
     """
-    try  :
-      folder = os_make_dirs(filename)
+    try:
+        folder = os_make_dirs(filename)
 
-      with open(filename, "wb") as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-      return filename
+        with open(filename, "wb") as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+        return filename
     except Exception as e:
-      print("error", e)
+        print("error", e)
 
 
 def load(filename="/folder1/keyname", isabsolutpath=0, encoding1="utf-8"):
@@ -84,13 +92,12 @@ def load(filename="/folder1/keyname", isabsolutpath=0, encoding1="utf-8"):
     :param encoding1:
     :return:
     """
-    try  :
-      folder = os_make_dirs(filename)
-      with open(filename, "rb") as f:
-        return pickle.load(f)
+    try:
+        folder = os_make_dirs(filename)
+        with open(filename, "rb") as f:
+            return pickle.load(f)
     except Exception as e:
-      print("error", e)
-
+        print("error", e)
 
 
 ####################################################################################################
