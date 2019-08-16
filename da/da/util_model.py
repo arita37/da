@@ -636,7 +636,7 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"], ret
 
 
 ############## ML metrics    ###################################
-def sk_metric_roc_optimal_Cutoff(ytest, ytest_proba):
+def sk_metric_roc_optimal_cutoff(ytest, ytest_proba):
     """ Find the optimal probability cutoff point for a classification model related to event rate
     Parameters
     ----------
@@ -688,20 +688,21 @@ def sk_metric_roc_auc_multiclass(n_classes=3, y_test=None, y_test_pred=None, y_p
 
     print("auc average", roc_auc["average"])
 
-    # Plot average ROC Curve
-    plt.figure()
-    plt.plot(fpr["average"], tpr["average"],
+    try  :
+      # Plot average ROC Curve
+      plt.figure()
+      plt.plot(fpr["average"], tpr["average"],
              label='Average ROC curve (area = {0:0.2f})'
                    ''.format(roc_auc["average"]),
              color='deeppink', linestyle=':', linewidth=4)
 
-    # Plot each individual ROC curve
-    for i in range(n_classes):
+      # Plot each individual ROC curve
+      for i in range(n_classes):
         plt.plot(fpr[i], tpr[i], lw=2,
                  label='ROC curve of class {0} (area = {1:0.2f})'
                        ''.format(i, roc_auc[i]))
 
-    try  :
+
       plt.plot([0, 1], [0, 1], 'k--', lw=2)
       plt.xlim([0.0, 1.0])
       plt.ylim([0.0, 1.05])
@@ -713,7 +714,7 @@ def sk_metric_roc_auc_multiclass(n_classes=3, y_test=None, y_test_pred=None, y_p
     except BaseException :
       pass
 
-    res = { "roc_auc" : roc_auc, "tpr" : tpr, "fpr" : fpr   }
+    res = { "roc_auc" : roc_auc, "tpr" : tpr, "fpr" : fpr , "confusion" : conf_mat  }
     return res
 
 
