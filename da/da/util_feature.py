@@ -88,14 +88,8 @@ def pd_colcat_mapping(df, colname):
 
 
 def pd_colnum_tocat(
-    df,
-    colname=None,
-    colexclude=None,
-    colbinmap=None,
-    bins=5,
-    suffix="_bin",
-    method="uniform",
-    return_val="dataframe,param",
+    df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
+    method="uniform", return_val="dataframe,param",
 ):
     """
     colbinmap = for each column, definition of bins
@@ -394,12 +388,28 @@ def pd_stat_distribution(df, subsample_ratio=1.0):
     return ll
 
 
-def pd_colcat_toint(df, colname, suffix=None):
+def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
+    df = dfref[colname]
     suffix = "" if suffix is None else suffix
+    colname_new = []
+    
+    if colcat_map is not None:
+        for col in colname:
+            ddict = colcat_map[col]["encode"]
+            df[col + suffix], label = df[col].apply(lambda x: ddict.get(x))
+            colname_new.append(col + suffix)
+        
+        return df[colname], colcat_map
+    
+    colcat_map = {}
     for col in colname:
-        df[col + suffix], lunique = df[col].factorize()
-        print(col + suffix)
-    return df
+        colcat_map[col] = {}
+        df[col + suffix], label = df[col].factorize()
+        colcat_map[col]["decode"] = {i: t for i, t in enumerate(list(label))}
+        colcat_map[col]["encode"] = {t: i for i, t in enumerate(list(label))}
+        colname_new.append(col + suffix)
+    
+    return df[colname_new], colcat_map
 
 
 def np_conditional_entropy(x, y):
@@ -540,7 +550,7 @@ def pd_num_correl_associations(
     kwargs : any key-value pairs
         Arguments to be passed to used function and methods
     """
-    df = convert(df, "dataframe")
+    # df = convert(df, "dataframe")
     col = df.columns
     if colcat is None:
         colcat = list()

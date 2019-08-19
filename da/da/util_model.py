@@ -661,6 +661,23 @@ def sk_metric_roc_optimal_cutoff(ytest, ytest_proba):
     return roc_t['threshold']
 
 
+def sk_metric_roc_auc(y_test, ytest_pred, ytest_proba):
+    ####sk_showmetrics Confusion matrix
+    conf_mat = sk.metrics.confusion_matrix(y_test, ytest_pred)
+    print(conf_mat)
+    if ytest_proba is None:
+        return conf_mat
+    
+    # mtrain = sk_showconfusion( y_train , ytrain_pred, isprint=False)
+    roc_auc = roc_auc_score(y_test, ytest_proba)  #
+    fpr, tpr, thresholds = roc_curve(y_test, ytest_proba)
+    freport = classification_report(y_test, ytest_pred, target_names=[0,1])
+
+    res = { "roc_auc" : roc_auc, "tpr" : tpr, "fpr" : fpr , "confusion" : conf_mat,
+            "freport" : freport }
+    return res
+
+
 def sk_metric_roc_auc_multiclass(n_classes=3, y_test=None, y_test_pred=None, y_predict_proba=None):
     # Compute ROC curve and ROC AUC for each class
     # n_classes = 3
