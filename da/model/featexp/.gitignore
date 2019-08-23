@@ -1,0 +1,18 @@
+*.xml
+*.csv
+.idea/*
+*.pyc
+demo/.ipynb_checkpoints/
+# pip installer build files
+/dist/
+/build/
+/*.egg-info
+
+/.eggs
+.ipython
+
+# IDE files
+.idea
+.vscode
+# Jupyter
+.ipynb_checkpoints
