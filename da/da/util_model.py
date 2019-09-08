@@ -4,6 +4,43 @@
 Methods for ML models, model ensembels, metrics etc.
 util_model : input/output is numpy
 
+
+https://stats.stackexchange.com/questions/222558/classification-evaluation-metrics-for-highly-imbalanced-data
+
+
+Besides the AUC and Kohonen's kappa already discussed in the other answers, I'd also like to add a few metrics I've found useful for imbalanced data. They are both related to precision and recall. Because by averaging these you get a metric weighing TPs and both types of errors (FP and FN):
+
+F1 score, which is the harmonic mean of precision and recall.
+G-measure, which is the geometric mean of precision and recall. Compared to F1, I've found it a bit better for imbalanced data.
+Jaccard index, which you can think of as the TP/(TP+FP+FN). This is actually the metric that has worked for me the best.
+Note: For imbalanced datasets, it is best to have your metrics be macro-averaged.
+
+esides the AUC and Kohonen's kappa already discussed in the other answers, I'd also like to add a few metrics I've found useful for imbalanced data. They are both related to precision and recall. Because by averaging these you get a metric weighing TPs and both types of errors (FP and FN):
+
+F1 score, which is the harmonic mean of precision and recall.
+G-measure, which is the geometric mean of precision and recall. Compared to F1, I've found it a bit better for imbalanced data.
+Jaccard index, which you can think of as the TP/(TP+FP+FN). This is actually the metric that has worked for me the best.
+Note: For imbalanced datasets, it is best to have your metrics be macro-averaged.
+
+
+
+Final intuition to metric selection
+Use precision and recall to focus on small positive class — When the positive class is smaller and the ability to detect correctly positive samples is our main focus (correct detection of negatives examples is less important to the problem) we should use precision and recall.
+Use ROC when both classes detection is equally important — When we want to give equal weight to both classes prediction ability we should look at the ROC curve.
+Use ROC when the positives are the majority or switch the labels and use precision and recall — When the positive class is larger we should probably use the ROC metrics because the precision and recall would reflect mostly the ability of prediction of the positive class and not the negative class which will naturally be harder to detect due to the smaller number of samples. If the negative class (the minority in this case) is more important, we can switch the labels and use precision and recall (As we saw in the examples above — switching the labels can change everything).
+Towards Data Science
+Sharing concepts, ideas, and codes.
+Following
+1.2K
+
+Machine Learning
+Data Science
+
+
+
+
+
+
 """
 import copy
 import os
