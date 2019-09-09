@@ -9,14 +9,14 @@ from setuptools import find_packages, setup
 root = os.path.abspath(os.path.dirname(__file__))
 
 
-##### check if GPU available  #######################################################
+##### check if GPU available  #########################################################
 p = subprocess.Popen(["command -v nvidia-smi"], stdout=subprocess.PIPE, shell=True)
 out = p.communicate()[0].decode("utf8")
 gpu_available = len(out) > 0
 
 
 ##### Version
-version = "0.1.0"
+version ='12.1.0'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -29,8 +29,9 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 
+
 ### Packages  ####################################################
-packages = ["da"] + ["da." + p for p in find_packages("da")]
+packages = ["dsa"] + ["dsa." + p for p in find_packages("da")]
 
 
 ### CLI Scripts
@@ -38,13 +39,13 @@ scripts = []
 
 
 setup(
-    name="da",
+    name="dsa",
     version=version,
-    description="Tools for Python",
-    uthor="KN",
-    author_email="brookm gmail",
-    url="https://github.com/arita37/da",
-    install_requires=["numpy", "pandas"],
+    description="Data Science Library, (automation, dataset shift, ..)",
+    author="Kevin Noel",
+    author_email="brookm291@gmail.com",
+    url="https://github.com/arita37/",
+    install_requires=[ ],
     packages=packages,
     scripts=scripts,
 )
