@@ -16,7 +16,7 @@ gpu_available = len(out) > 0
 
 
 ##### Version
-version ='12.1.0'
+version ='13.2.0'
 """"
 with io.open(os.path.join(root, 'nlp_architect', 'version.py'), encoding='utf8') as f:
     version_f = {}
@@ -31,7 +31,7 @@ with open("README.md", "r") as fh:
 
 
 ### Packages  ####################################################
-packages = ["dsa"] + ["dsa." + p for p in find_packages("da")]
+packages = ["dsa"] + ["dsa." + p for p in find_packages("dsa")]
 
 
 ### CLI Scripts
