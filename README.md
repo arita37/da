@@ -1,11 +1,15 @@
 # da
 
 ```
-########################################################################
-Install as editable package
+###############################################################################
+Install as editable package   ONLY dev branch
+
 
 cd yourfolder
-git clone
+git clone https://github.com/arita37/dsa.git dsa
+cd dsa
+git checkout dev     
+
 pip install -e .
 
 
@@ -22,7 +26,11 @@ util_feature.ztest()
 
 
 
-########################################################################
+
+
+
+
+###############################################################################
 Naming convention for functions, arguments :
 
 For module file has LIMITED dependency and logic flow :
