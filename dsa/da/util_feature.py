@@ -22,6 +22,11 @@ import scipy as sci
 print("os.getcwd", os.getcwd())
 
 
+
+def ztest():
+    import sklearn as sk
+    print(sk)
+
 ####################################################################################################
 def pd_col_to_onehot(dfref, colname=None, colonehot=None, return_val="dataframe,column"):
     """

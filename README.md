@@ -8,7 +8,8 @@ cd yourfolder
 git clone
 pip install -e .
 
-### In Jupyter / Editor
+
+###### In Jupyter / python Editor   ###########################################
 from dsa.da import util_feature 
 util_feature.ztest()
 
