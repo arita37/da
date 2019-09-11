@@ -2,15 +2,20 @@
 
 ```
 ########################################################################
-Install as package
+Install as editable package
 
 cd yourfolder
 git clone
 pip install -e .
 
 ### In Jupyter / Editor
-from da import util_feature 
+from dsa.da import util_feature 
 util_feature.ztest()
+
+
+
+
+
 
 
 
