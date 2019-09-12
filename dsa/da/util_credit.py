@@ -91,4 +91,129 @@ def fun_get_segmentlimit(x, l1):
 
 
 
+def np_drop_duplicates(l1):
+    """
+    :param l1:
+    :return :
+    """
+    l0 = np.array( list(OrderedDict((x, True) for x in l1).keys()) )
+    return l0
+
+
+def model_logistic_score(clf, df1, cols, coltarget, outype="score"):
+    """
+
+    :param clf:
+    :param df1:
+    :param cols:
+    :param outype:
+    :return:
+    """
+
+    def score_calc(yproba, pnorm=1000.0):
+        yy = np.log(0.00001 + (1 - yproba) / (yproba + 0.001))
+        # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )
+        # return  np.maximum( 0.01 , yy )    ## Error it bias proba
+        return yy
+
+    X_all = df1[cols].values
+
+    yall_proba = clf.predict_proba(X_all)[:, 1]
+    yall_pred = clf.predict(X_all)
+    try:
+        y_all = df1[coltarget].values
+        sk_showmetrics(y_all, yall_pred, yall_proba)
+    except:
+        pass
+
+    yall_score = score_calc(yall_proba)
+    yall_score = (
+        1000 * (yall_score - np.min(yall_score)) / (np.max(yall_score) - np.min(yall_score))
+    )
+
+    if outype == "score":
+        return yall_score
+    if outype == "proba":
+        return yall_proba, yall_pred
+
+
+
+
+
+def split_train_test(X, y, split_ratio=0.8):
+    train_X, val_X, train_y, val_y = train_test_split(
+        X, y, test_size=split_ratio, random_state=42, shuffle=False
+    )
+    print("train_X shape:", train_X.shape)
+    print("val_X shape:", val_X.shape)
+
+    print("train_y shape:", train_y.shape)
+    print("val_y shape:", val_y.shape)
+
+    return train_X, val_X, train_y, val_y
+
+
+def split_train(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None):
+    n1 = len(df1[df1[coltarget] == 0])
+    dft = pd.concat(
+        (
+            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntest, False), :],
+            df1[(df1[coltarget] == 1) & (df1["def"] > 201803)].iloc[:, :],
+        )
+    )
+
+    X_test = dft[colused].values
+    y_test = dft[coltarget].values
+    print("test", sum(y_test))
+
+    ######## Train data
+    n1 = len(df1[df1[coltarget] == 0])
+    dft2 = pd.concat(
+        (
+            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntrain, False), :],
+            df1[(df1[coltarget] == 1) & (df1["def"] > 201703) & (df1["def"] < 201804)].iloc[:, :],
+        )
+    )
+    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
+
+    X_train = dft2[colused].values
+    y_train = dft2[coltarget].values
+    print("train", sum(y_train))
+    return X_train, X_test, y_train, y_test
+
+
+def split_train2(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None, nratio=0.4):
+    n1 = len(df1[df1[coltarget] == 0])
+    n2 = len(df1[df1[coltarget] == 1])
+    n2s = int(n2 * nratio)  # 80% of default
+
+    #### Test data
+    dft = pd.concat(
+        (
+            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntest, False), :],
+            df1[(df1[coltarget] == 1)].iloc[:, :],
+        )
+    )
+
+    X_test = dft[colused].values
+    y_test = dft[coltarget].values
+    print("test", sum(y_test))
+
+    ######## Train data
+    n1 = len(df1[df1[coltarget] == 0])
+    dft2 = pd.concat(
+        (
+            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntrain, False), :],
+            df1[(df1[coltarget] == 1)].iloc[np.random.choice(n2, n2s, False), :],
+        )
+    )
+    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
+
+    X_train = dft2[colused].values
+    y_train = dft2[coltarget].values
+    print("train", sum(y_train))
+    return X_train, X_test, y_train, y_test
+
+
+
 

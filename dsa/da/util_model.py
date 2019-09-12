@@ -111,6 +111,8 @@ class dict2(object):
         self.__dict__ = d
 
 
+
+
 ####################################################################################################
 def pd_dim_reduction(
     df,
@@ -124,7 +126,7 @@ def pd_dim_reduction(
     """
        Dimension reduction technics
        dftext_svd, svd = pd_dim_reduction(dfcat_test, None,colprefix="colsvd",
-                     method="svd", dimpca=2, return_val="dataframe,param")
+                         method="svd", dimpca=2, return_val="dataframe,param")
     :param df:
     :param colname:
     :param colprefix:
@@ -151,80 +153,6 @@ def pd_dim_reduction(
         else:
             return dfnew
 
-
-def split_train_test(X, y, split_ratio=0.8):
-    train_X, val_X, train_y, val_y = train_test_split(
-        X, y, test_size=split_ratio, random_state=42, shuffle=False
-    )
-    print("train_X shape:", train_X.shape)
-    print("val_X shape:", val_X.shape)
-
-    print("train_y shape:", train_y.shape)
-    print("val_y shape:", val_y.shape)
-
-    return train_X, val_X, train_y, val_y
-
-
-def split_train(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None):
-    n1 = len(df1[df1[coltarget] == 0])
-    dft = pd.concat(
-        (
-            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntest, False), :],
-            df1[(df1[coltarget] == 1) & (df1["def"] > 201803)].iloc[:, :],
-        )
-    )
-
-    X_test = dft[colused].values
-    y_test = dft[coltarget].values
-    print("test", sum(y_test))
-
-    ######## Train data
-    n1 = len(df1[df1[coltarget] == 0])
-    dft2 = pd.concat(
-        (
-            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntrain, False), :],
-            df1[(df1[coltarget] == 1) & (df1["def"] > 201703) & (df1["def"] < 201804)].iloc[:, :],
-        )
-    )
-    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
-
-    X_train = dft2[colused].values
-    y_train = dft2[coltarget].values
-    print("train", sum(y_train))
-    return X_train, X_test, y_train, y_test
-
-
-def split_train2(df1, ntrain=10000, ntest=100000, colused=None, coltarget=None, nratio=0.4):
-    n1 = len(df1[df1[coltarget] == 0])
-    n2 = len(df1[df1[coltarget] == 1])
-    n2s = int(n2 * nratio)  # 80% of default
-
-    #### Test data
-    dft = pd.concat(
-        (
-            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntest, False), :],
-            df1[(df1[coltarget] == 1)].iloc[:, :],
-        )
-    )
-
-    X_test = dft[colused].values
-    y_test = dft[coltarget].values
-    print("test", sum(y_test))
-
-    ######## Train data
-    n1 = len(df1[df1[coltarget] == 0])
-    dft2 = pd.concat(
-        (
-            df1[df1[coltarget] == 0].iloc[np.random.choice(n1, ntrain, False), :],
-            df1[(df1[coltarget] == 1)].iloc[np.random.choice(n2, n2s, False), :],
-        )
-    )
-    dft2 = dft2.iloc[np.random.choice(len(dft2), len(dft2), False), :]
-
-    X_train = dft2[colused].values
-    y_train = dft2[coltarget].values
-    print("train", sum(y_train))
-    return X_train, X_test, y_train, y_test
 
 
 def model_lightgbm_kfold(
@@ -340,48 +268,6 @@ preds_proba = model.predict_proba(test_pool)
         print(cm)
     return clf, cm, cm_norm
 
-
-######################  ALGO  #########################################################################
-def sk_model_auto_tpot(
-    Xmat,
-    y,
-    outfolder="aaserialize/",
-    model_type="regressor/classifier",
-    train_size=0.5,
-    generation=1,
-    population_size=5,
-    verbosity=2,
-):
-    """ Automatic training of Xmat--->Y, Generate SKlearn code in outfile
-      Very Slow Process, use lower number of Sample
-  :param Xmat:
-  :param y:
-  :param outfolder:
-  :param model_type:
-  :param train_size:
-  :param generation:
-  :param population_size:
-  :param verbosity:
-  :return:
-  """
-    X_train, X_test, y_train, y_test = train_test_split(Xmat, y, train_size=0.5, test_size=0.5)
-
-    if model_type == "regressor":
-        clf = tpot.TPOTRegressor(
-            generations=generation, population_size=population_size, verbosity=verbosity
-        )
-    elif model_type == "classifier":
-        clf = tpot.TPOTClassifier(
-            generations=generation, population_size=population_size, verbosity=verbosity
-        )
-
-    clf.fit(X_train, y_train)
-    print((tpot.score(X_test, y_test)))
-    file1 = (
-        "/" + outfolder + "/tpot_regression_pipeline_" + str(np.random.randint(1000, 9999)) + ".py"
-    )
-    tpot.export(file1)
-    return file1
 
 
 def sk_score_get(name="r2"):
@@ -622,9 +508,9 @@ def sk_model_votingpredict(estimators, voting, ww, X_test):
     return Y1, Yproba0
 
 
-#### ML metrics
 
 
+############## ML metrics    ###################################
 def sk_showconfusion(Y, Ypred, isprint=True):
     cm = sk.metrics.confusion_matrix(Y, Ypred)
     cm_norm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
@@ -672,7 +558,7 @@ def sk_showmetrics(y_test, ytest_pred, ytest_proba, target_names=["0", "1"], ret
 
 
 
-############## ML metrics    ###################################
+
 def sk_metric_roc_optimal_cutoff(ytest, ytest_proba):
     """ Find the optimal probability cutoff point for a classification model related to event rate
     Parameters
@@ -772,42 +658,6 @@ def sk_metric_roc_auc_multiclass(n_classes=3, y_test=None, y_test_pred=None, y_p
     return res
 
 
-
-def model_logistic_score(clf, df1, cols, coltarget, outype="score"):
-    """
-
-    :param clf:
-    :param df1:
-    :param cols:
-    :param outype:
-    :return:
-    """
-
-    def score_calc(yproba, pnorm=1000.0):
-        yy = np.log(0.00001 + (1 - yproba) / (yproba + 0.001))
-        # yy =  (yy  -  np.minimum(yy)   ) / ( np.maximum(yy) - np.minimum(yy)  )
-        # return  np.maximum( 0.01 , yy )    ## Error it bias proba
-        return yy
-
-    X_all = df1[cols].values
-
-    yall_proba = clf.predict_proba(X_all)[:, 1]
-    yall_pred = clf.predict(X_all)
-    try:
-        y_all = df1[coltarget].values
-        sk_showmetrics(y_all, yall_pred, yall_proba)
-    except:
-        pass
-
-    yall_score = score_calc(yall_proba)
-    yall_score = (
-        1000 * (yall_score - np.min(yall_score)) / (np.max(yall_score) - np.min(yall_score))
-    )
-
-    if outype == "score":
-        return yall_score
-    if outype == "proba":
-        return yall_proba, yall_pred
 
 
 def sk_model_eval_regression(clf, istrain=1, Xtrain=None, ytrain=None, Xval=None, yval=None):
@@ -1003,48 +853,6 @@ def sk_model_eval_classification_cv(clf, X, y, test_size=0.5, ncv=1, method="ran
 
     return clf_list
 
-
-def sk_tree_get_ifthen(tree, feature_names, target_names, spacer_base=" "):
-    """Produce psuedo-code for decision tree.
-    tree -- scikit-leant DescisionTree.
-    feature_names -- list of feature names.
-    target_names -- list of target (output) names.
-    spacer_base -- used for spacing code (default: "    ").
-    """
-    left = tree.tree_.children_left
-    right = tree.tree_.children_right
-    threshold = tree.tree_.threshold
-    features = [feature_names[i] for i in tree.tree_.feature]
-    value = tree.tree_.value
-
-    def recurse(left, right, threshold, features, node, depth):
-        spacer = spacer_base * depth
-        if threshold[node] != -2:
-            print((spacer + "if " + features[node] + " <= " + str(threshold[node]) + " :"))
-            #            print(spacer + "if ( " + features[node] + " <= " + str(threshold[node]) + " ) :")
-            if left[node] != -1:
-                recurse(left, right, threshold, features, left[node], depth + 1)
-            print(("" + spacer + "else :"))
-            if right[node] != -1:
-                recurse(left, right, threshold, features, right[node], depth + 1)
-        #     print(spacer + "")
-        else:
-            target = value[node]
-            for i, v in zip(np.nonzero(target)[1], target[np.nonzero(target)]):
-                target_name = target_names[i]
-                target_count = int(v)
-                print(
-                    (
-                        spacer
-                        + "return "
-                        + str(target_name)
-                        + " ( "
-                        + str(target_count)
-                        + ' examples )"'
-                    )
-                )
-
-    recurse(left, right, threshold, features, 0, 0)
 
 
 """ 
