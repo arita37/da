@@ -797,7 +797,67 @@ def sk_feature_evaluation(clf, df, kbest=30, colname_best=None, dfy=None):
     return df
 
 
-def sk_feature_drift_covariance(dftrain, dftest, colname, nsample=10000):
+
+
+####################################################################################################
+####################################################################################################
+def sk_feature_prior_shift(df) :
+    """
+     Label is drifting
+    https://dkopczyk.quantee.co.uk/covariate_shift/
+
+    Parameters
+    ----------
+    df : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    pass
+
+
+def sk_feature_concept_shift(df) :
+    """
+
+       (X,y) distribution relation is shifting.
+    https://dkopczyk.quantee.co.uk/covariate_shift/
+
+    Parameters
+    ----------
+    df : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    pass
+
+
+def sk_feature_covariate_shift(dftrain, dftest, colname, nsample=10000):
+    """
+      X is drifting
+    Parameters
+    ----------
+    dftrain : TYPE
+        DESCRIPTION.
+    dftest : TYPE
+        DESCRIPTION.
+    colname : TYPE
+        DESCRIPTION.
+    nsample : TYPE, optional
+        DESCRIPTION. The default is 10000.
+
+    Returns
+    -------
+    drop_list : TYPE
+        DESCRIPTION.
+
+    """
     n1 = nsample if len(dftrain) > nsample else len(dftrain)
     n2 = nsample if len(dftest) > nsample else len(dftest)
     train = dftrain[colname].sample(n1, random_state=12)
@@ -818,10 +878,12 @@ def sk_feature_drift_covariance(dftrain, dftest, colname, nsample=10000):
     for i in combi.columns:
         score = cross_val_score(model, pd.DataFrame(combi[i]), y, cv=2, scoring="roc_auc")
 
+
         if np.mean(score) > 0.8:
             drop_list.append(i)
         print(i, np.mean(score))
     return drop_list
+
 
 
 def sk_model_eval_classification_cv(clf, X, y, test_size=0.5, ncv=1, method="random"):
