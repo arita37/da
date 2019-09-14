@@ -4,10 +4,6 @@
    contain the root `toctree` directive.
 
 
-.. automodule:: dsa.da.util
-    :members:
-
-
 .. toctree::
    :maxdepth: 5
    :caption: Table of Contents
@@ -22,6 +18,15 @@
 
 
 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
+
 Welcome to DSA's documentation!
 ******************************
 
@@ -29,7 +34,7 @@ Overview of using the DSA library
 ================================
 1. Create a Python virtual environment and  install the required packages.
 2. git clone    cd folder
-3. pip install -e  <DA package name>
+3. pip install -e  <DSA package name>
 
 
 
@@ -89,10 +94,4 @@ util_csv
 
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
