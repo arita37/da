@@ -6,6 +6,10 @@
 https://gitter.im/arita37/data_science_library#
 
 
+#### Docs here:
+https://dsa.readthedocs.io/en/latest/
+
+
 
 
 
