@@ -4,10 +4,6 @@
    contain the root `toctree` directive.
 
 
-.. automodule:: dsa.da.util
-    :members:
-
-
 .. toctree::
    :maxdepth: 5
    :caption: Table of Contents
@@ -22,6 +18,8 @@
 
 
 
+
+
 Welcome to DSA's documentation!
 ******************************
 
@@ -29,7 +27,7 @@ Overview of using the DSA library
 ================================
 1. Create a Python virtual environment and  install the required packages.
 2. git clone    cd folder
-3. pip install -e  <DA package name>
+3. pip install -e  <DSA package name>
 
 
 
@@ -71,18 +69,6 @@ dsa.da.util
 .. automodule:: dsa.da.util
    :members:
 
-
-
-dsa.da.util_sql
-===================
-.. automodule:: dsa.da.util_sql
-   :members:
-
-
-util_csv
-===================
-.. automodule:: dsa.da.util_csv
-   :members:
 
 
 
