@@ -53,7 +53,7 @@ from sklearn.pipeline import Pipeline
 # import gensim
 
 
-from model.column_encoder import MinHashEncoder
+from dsa.da.model.column_encoder import MinHashEncoder
 
 
 print("os.getcwd", os.getcwd())
