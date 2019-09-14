@@ -24,11 +24,6 @@
 
 Welcome to DSA's documentation!
 ******************************
-This contains the description of using the DA python library in your projects.
-
-Configuration/Setup of DSA Project. 
-**********************************
-This is an utility library that has various functionalitie.
 
 Overview of using the DSA library
 ================================
@@ -40,24 +35,57 @@ Overview of using the DSA library
 
 5. Refer to code for more details
 
+dsa.da.util_feature
+===================
+.. automodule:: dsa.da.util_feature
+   :members:
 
 
-DA util_sql
+dsa.da.util_model
+===================
+.. automodule:: dsa.da.util_model
+   :members:
+
+
+dsa.da.util_text
+===================
+.. automodule:: dsa.da.util_text
+   :members:
+
+
+dsa.da.util_stat
+===================
+.. automodule:: dsa.da.util_stat
+   :members:
+
+
+dsa.da.util_date
+===================
+.. automodule:: dsa.da.util_date
+   :members:
+
+
+
+dsa.da.util
+===================
+.. automodule:: dsa.da.util
+   :members:
+
+
+
+dsa.da.util_sql
 ===================
 .. automodule:: dsa.da.util_sql
    :members:
 
 
-DA util_csv
+util_csv
 ===================
 .. automodule:: dsa.da.util_csv
    :members:
 
 
-DA util_feature
-===================
-.. automodule:: dsa.da.util_feature
-   :members:
+
 
 
 
