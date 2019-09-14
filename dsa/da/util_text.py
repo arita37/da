@@ -38,7 +38,6 @@ import scipy as sci
 import nltk
 import sklearn as sk
 ########### Local Import #####################################################################
-from column_encoder import MinHashEncoder
 from nltk.corpus import stopwords
 # Stemming and Lemmatizing
 from nltk.stem.porter import PorterStemmer
@@ -52,6 +51,9 @@ from sklearn.pipeline import Pipeline
 
 # import spacy
 # import gensim
+
+
+from model.column_encoder import MinHashEncoder
 
 
 print("os.getcwd", os.getcwd())
