@@ -9,8 +9,17 @@
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :caption: Table of Contents
+
+
+.. toctree::
+    :maxdepth: 2
+    :glob:
+    :caption: Code:
+
+    _autogen/*
+
 
 
 Welcome to DSA's documentation!

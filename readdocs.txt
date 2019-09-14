@@ -7,10 +7,13 @@
 2)  Load from https://readthedocs.org/projects/dsa/builds/9658123/
 
 
-3)  
+3)  Read the DOCS
+   index.rst
+   conf.py
 
 
 4)  
+
 
 
 5)
