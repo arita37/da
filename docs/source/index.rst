@@ -78,17 +78,6 @@ dsa.da.util
 
 
 
-dsa.da.util_sql
-===================
-.. automodule:: dsa.da.util_sql
-   :members:
-
-
-util_csv
-===================
-.. automodule:: dsa.da.util_csv
-   :members:
-
 
 
 
