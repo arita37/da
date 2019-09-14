@@ -950,30 +950,34 @@ def col_extractname(col_onehot):
     return colnew
 
 
-def col_remove(cols, colsremove):
-    # cols = list(df1.columns)
+def col_remove(cols, colsremove, mode="exact"):
     """
-      remove column name from list
+    Parameters
+    ----------
+    cols : TYPE
+        DESCRIPTION.
+    colsremove : TYPE
+        DESCRIPTION.
+    mode : TYPE, optional
+        DESCRIPTION. The default is "exact", "fuzzy"
+
+    Returns
+    -------
+    cols : TYPE
+        DESCRIPTION.  remove column name from list
+
     """
-    for x in colsremove:
-        try:
+    if mode == "exact" :
+      for x in colsremove:
+         try:
             cols.remove(x)
-        except BaseException:
+         except BaseException:
             pass
-    return cols
+      return cols
 
-
-def col_remove_fuzzy(cols, colsremove):
-    # cols = list(df1.columns)
-    """
-    :param cols:
-    :param colsremove:
-    :return:
-
-      Remove column from Fuzzy matching.
-    """
-    cols3 = []
-    for t in cols:
+    if mode == "fuzzy" :
+     cols3 = []
+     for t in cols:
         flag = 0
         for x in colsremove:
             if x in t:
@@ -981,5 +985,7 @@ def col_remove_fuzzy(cols, colsremove):
                 break
         if flag == 0:
             cols3.append(t)
-    return cols3
+     return cols3
+
+
 
