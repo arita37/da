@@ -15,6 +15,9 @@ from collections import Counter, OrderedDict
 import numpy as np
 import pandas as pd
 import scipy as sci
+from sklearn.cluster import KMeans
+
+
 
 ########### LOCAL ##################################################################################
 print("os.getcwd", os.getcwd())
@@ -203,6 +206,10 @@ def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
     method="uniform", na_value=-1, return_val="dataframe,param",
+    KMeans_n_clusters=8, KMeans_init='k-means++', KMeans_n_init=10, 
+    KMeans_max_iter=300, KMeans_tol=0.0001, KMeans_precompute_distances='auto', 
+    KMeans_verbose=0, KMeans_random_state=None, 
+    KMeans_copy_x=True, KMeans_n_jobs=None, KMeans_algorithm='auto',
 ):
     """
     colbinmap = for each column, definition of bins
@@ -234,6 +241,13 @@ def pd_colnum_tocat(
         lbins[0] -= 0.01
         return lbins
 
+    def bin_create_cluster(dfc):
+        kmeans = KMeans(n_clusters=KMeans_n_clusters, init=KMeans_init, n_init=KMeans_n_init, 
+            max_iter=KMeans_max_iter, tol=KMeans_tol, precompute_distances=KMeans_precompute_distances, 
+            verbose=KMeans_verbose, random_state=KMeans_random_state, 
+            copy_x=KMeans_copy_x, n_jobs=KMeans_n_jobs, algorithm=KMeans_algorithm).fit(dfc)
+        return kmeans.predict(dfc)
+
     for c in colname:
         if c in colexclude:
             continue
@@ -246,12 +260,19 @@ def pd_colnum_tocat(
         else:
             if method == "quantile":
                 lbins = bin_create_quantile(df[c], bins)
+            elif method == "cluster":
+                non_nan_index = np.where(~np.isnan(df[c]))[0]
+                lbins = bin_create_cluster(df.loc[non_nan_index][c].values.reshape((-1, 1))).reshape((-1,))
             else:
                 lbins = bin_create(df[c], bins)
 
         cbin = c + suffix
-        labels = np.arange(0, len(lbins) - 1)
-        df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
+        if method == 'cluster':
+            df.loc[non_nan_index][cbin] = lbins
+        else:
+            labels = np.arange(0, len(lbins) - 1)
+            df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
+
 
         # NA processing
         df[cbin] = df[cbin].astype("float")
