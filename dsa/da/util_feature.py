@@ -202,7 +202,7 @@ def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
 
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
-    method="uniform", return_val="dataframe,param",
+    method="uniform", na_value=-1, return_val="dataframe,param",
 ):
     """
     colbinmap = for each column, definition of bins
@@ -254,8 +254,9 @@ def pd_colnum_tocat(
         df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
 
         # NA processing
+        df[cbin] = df[cbin].astype("float")
+        df[cbin] = df[cbin].apply(lambda x: x if x >= 0.0 else na_value)  # 3 NA Values
         df[cbin] = df[cbin].astype("int")
-        df[cbin] = df[cbin].apply(lambda x: x if x >= 0.0 else -1)  # 3 NA Values
         col_stat = df.groupby(cbin).agg({c: {"size", "min", "mean", "max"}})
         colmap[c] = lbins
         colnew.append(cbin)
