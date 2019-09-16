@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
+# attention, prototype, perhaps will merged with util_feature.py
+
+
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.decomposition import PCA, NMF
