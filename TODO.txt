@@ -1,0 +1,25 @@
+
+Goal is to have a simple functionnal layer on top of libraries :
+   We can do Kaggle with MIMUM AMOUNT OF CODE.
+   We can re-use pre-built functionnalities.
+
+
+
+No cross platform : only linux (a bit windows)
+
+
+Add Clustering interface function code.
+
+Add Imbalance dataset interface function code.
+
+
+Add basic code testing :
+   Load one dataset and run the pipeline.
+
+
+Add Automatic feature selection.
+
+
+
+
+
