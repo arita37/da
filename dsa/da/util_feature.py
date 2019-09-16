@@ -23,6 +23,11 @@ from sklearn.cluster import KMeans
 print("os.getcwd", os.getcwd())
 
 
+class dict2(object):
+    def __init__(self, d):
+        self.__dict__ = d
+
+
 
 def ztest():
     import sklearn as sk
@@ -206,6 +211,7 @@ def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
     method="uniform", na_value=-1, return_val="dataframe,param",
+    params = { "KMeans_n_clusters" : 8   }
     KMeans_n_clusters=8, KMeans_init='k-means++', KMeans_n_init=10, 
     KMeans_max_iter=300, KMeans_tol=0.0001, KMeans_precompute_distances='auto', 
     KMeans_verbose=0, KMeans_random_state=None, 
@@ -218,6 +224,7 @@ def pd_colnum_tocat(
        :param method:
        :return:
     """
+    p = dict2(params)
     colexclude = [] if colexclude is None else colexclude
     colname = colname if colname is not None else list(df.columns)
     colnew = []
