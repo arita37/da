@@ -97,7 +97,7 @@ def model_auto_tpot(
         )
 
 
-    print(("Start")
+    print("Start")
     clf.fit(X_train, y_train)
     
     score = tpot.score(X_test, y_test)
@@ -111,9 +111,8 @@ def model_auto_tpot(
 
 
 ######################  ALGO  ######################################################################
-def model_auto_mlbox(
-    filepath= = ["../input/train.csv","../input/test.csv"],
-    colX, coly,
+def model_auto_mlbox( filepath= [ "train.csv", "test.csv" ],
+    colX=None, coly=None,
     outfolder="aaserialize/",
     model_type="regressor/classifier",
     params={"train_size" : 0.5},
