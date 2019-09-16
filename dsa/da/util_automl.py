@@ -113,6 +113,7 @@ def model_auto_tpot(
 ######################  ALGO  ######################################################################
 def model_auto_mlbox( filepath= [ "train.csv", "test.csv" ],
     colX=None, coly=None,
+    do="predict",
     outfolder="aaserialize/",
     model_type="regressor/classifier",
     params={"train_size" : 0.5},
