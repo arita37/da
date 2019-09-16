@@ -211,12 +211,11 @@ def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
     method="uniform", na_value=-1, return_val="dataframe,param",
-    params = { "KMeans_n_clusters" : 8   }
-    KMeans_n_clusters=8, KMeans_init='k-means++', KMeans_n_init=10, 
-    KMeans_max_iter=300, KMeans_tol=0.0001, KMeans_precompute_distances='auto', 
-    KMeans_verbose=0, KMeans_random_state=None, 
-    KMeans_copy_x=True, KMeans_n_jobs=None, KMeans_algorithm='auto',
-):
+    params = { "KMeans_n_clusters" : 8   , "KMeans_init": 'k-means++', "KMeans_n_init":10,
+               "KMeans_max_iter" : 300, "KMeans_tol": 0.0001, "KMeans_precompute_distances" : 'auto',
+               "KMeans_verbose" : 0, "KMeans_random_state": None,
+               "KMeans_copy_x": True, "KMeans_n_jobs" : None, "KMeans_algorithm" : 'auto'}
+ ):
     """
     colbinmap = for each column, definition of bins
     https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
@@ -224,13 +223,15 @@ def pd_colnum_tocat(
        :param method:
        :return:
     """
-    p = dict2(params)
+
     colexclude = [] if colexclude is None else colexclude
     colname = colname if colname is not None else list(df.columns)
     colnew = []
     col_stat = OrderedDict()
     colmap = OrderedDict()
 
+    #Bin Algo
+    p = dict2(params)  # Bin  model params
     def bin_create(dfc, bins):
         mi, ma = dfc.min(), dfc.max()
         space = (ma - mi) / bins
@@ -241,7 +242,6 @@ def pd_colnum_tocat(
     def bin_create_quantile(dfc, bins):
         qt_list_ref = np.arange(0, 1.00001, 1.0 / bins)
         # print(qt_list_ref )
-
         qt_list = dfc.quantile(qt_list_ref)
         # print(qt_list )
         lbins = list(qt_list.values)
@@ -249,12 +249,13 @@ def pd_colnum_tocat(
         return lbins
 
     def bin_create_cluster(dfc):
-        kmeans = KMeans(n_clusters=KMeans_n_clusters, init=KMeans_init, n_init=KMeans_n_init, 
-            max_iter=KMeans_max_iter, tol=KMeans_tol, precompute_distances=KMeans_precompute_distances, 
-            verbose=KMeans_verbose, random_state=KMeans_random_state, 
-            copy_x=KMeans_copy_x, n_jobs=KMeans_n_jobs, algorithm=KMeans_algorithm).fit(dfc)
+        kmeans = KMeans(n_clusters= p.KMeans_n_clusters, init=p.KMeans_init, n_init=p.KMeans_n_init,
+            max_iter=p.KMeans_max_iter, tol=p.KMeans_tol, precompute_distances=p.KMeans_precompute_distances,
+            verbose=p.KMeans_verbose, random_state=p.KMeans_random_state,
+            copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm).fit(dfc)
         return kmeans.predict(dfc)
 
+    # Loop  on all columns
     for c in colname:
         if c in colexclude:
             continue
