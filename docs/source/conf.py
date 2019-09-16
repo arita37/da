@@ -41,6 +41,8 @@ release = "0.0.1"
 
 
 import sphinx.apidoc
+
+"""
 def setup(app):
     sphinx.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
@@ -52,6 +54,7 @@ def setup(app):
                         './../dsa/da', #Main Module directory
                         ]
     )
+"""
 
 # -- General configuration ---------------------------------------------------
 
@@ -70,7 +73,7 @@ extensions = [
 ]
 
 ### 
-###
+###  https://github.com/readthedocs/readthedocs.org/issues/2569
 master_doc = 'index'
 
 
