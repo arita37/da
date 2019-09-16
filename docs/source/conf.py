@@ -37,6 +37,22 @@ copyright = "2019, YN"
 release = "0.0.1"
 
 
+
+
+
+import sphinx.apidoc
+def setup(app):
+    sphinx.apidoc.main(['-f', #Overwrite existing files
+                        '-T', #Create table of contents
+                        #'-e', #Give modules their own pages
+                        '-E', #user docstring headers
+                        #'-M', #Modules first
+                        '-o', #Output the files to:
+                        './source/_autogen/', #Output Directory
+                        './../dsa/da', #Main Module directory
+                        ]
+    )
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -49,7 +65,15 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
     'sphinx.ext.napoleon',
+
+
 ]
+
+### 
+###
+master_doc = 'index'
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
