@@ -206,7 +206,73 @@ def pd_colcat_toint(dfref, colname, colcat_map=None, suffix=None):
     return df[colname_new], colcat_map
 
 
+def pd_col_tocluster(
+    df, colname=None, colexclude=None, colmodelmap=None, suffix="_bin",
+    na_value=-1, return_val="dataframe,param",
+    params = { "KMeans_n_clusters" : 8   , "KMeans_init": 'k-means++', "KMeans_n_init":10,
+               "KMeans_max_iter" : 300, "KMeans_tol": 0.0001, "KMeans_precompute_distances" : 'auto',
+               "KMeans_verbose" : 0, "KMeans_random_state": None,
+               "KMeans_copy_x": True, "KMeans_n_jobs" : None, "KMeans_algorithm" : 'auto'}
+ ):
 
+    """
+    colbinmap = for each column, definition of bins
+    https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing
+       :param df:
+       :param method:
+       :return:
+    """
+
+    colexclude = [] if colexclude is None else colexclude
+    colname = colname if colname is not None else list(df.columns)
+    colnew = []
+    col_stat = OrderedDict()
+    colmap = OrderedDict()
+
+    #Bin Algo
+    p = dict2(params)  # Bin  model params
+    
+    def bin_create_cluster(dfc):
+        kmeans_model = KMeans(n_clusters= p.KMeans_n_clusters, init=p.KMeans_init, n_init=p.KMeans_n_init,
+            max_iter=p.KMeans_max_iter, tol=p.KMeans_tol, precompute_distances=p.KMeans_precompute_distances,
+            verbose=p.KMeans_verbose, random_state=p.KMeans_random_state,
+            copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm).fit(dfc)
+        return kmeans_model
+
+    # Loop  on all columns
+    for c in colname:
+        if c in colexclude:
+            continue
+        print(c)
+        df[c] = df[c].astype(np.float32)
+        non_nan_index = np.where(~np.isnan(df[c]))[0]
+
+        if colmodelmap is not None:
+            model = colmodelmap.get(c)
+        else:   
+            model = bin_create_cluster(df.loc[non_nan_index][c].values.reshape((-1, 1)))
+
+        cbin = c + suffix
+        df.loc[non_nan_index][cbin] = model.predict(df.loc[non_nan_index][c].values.reshape((-1, 1))).reshape((-1,))
+
+
+        # NA processing
+        df[cbin] = df[cbin].astype("float")
+        df[cbin] = df[cbin].apply(lambda x: x if x >= 0.0 else na_value)  # 3 NA Values
+        df[cbin] = df[cbin].astype("int")
+        col_stat = df.groupby(cbin).agg({c: {"size", "min", "mean", "max"}})
+        colmap[c] = model
+        colnew.append(cbin)
+
+        print(col_stat)
+
+    if return_val == "dataframe":
+        return df[colnew]
+
+    elif return_val == "param":
+        return colmap
+    else:
+        return df[colnew], colmap
 
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
@@ -248,12 +314,12 @@ def pd_colnum_tocat(
         lbins[0] -= 0.01
         return lbins
 
-    def bin_create_cluster(dfc):
-        kmeans = KMeans(n_clusters= p.KMeans_n_clusters, init=p.KMeans_init, n_init=p.KMeans_n_init,
-            max_iter=p.KMeans_max_iter, tol=p.KMeans_tol, precompute_distances=p.KMeans_precompute_distances,
-            verbose=p.KMeans_verbose, random_state=p.KMeans_random_state,
-            copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm).fit(dfc)
-        return kmeans.predict(dfc)
+    # def bin_create_cluster(dfc):
+    #     kmeans = KMeans(n_clusters= p.KMeans_n_clusters, init=p.KMeans_init, n_init=p.KMeans_n_init,
+    #         max_iter=p.KMeans_max_iter, tol=p.KMeans_tol, precompute_distances=p.KMeans_precompute_distances,
+    #         verbose=p.KMeans_verbose, random_state=p.KMeans_random_state,
+    #         copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm).fit(dfc)
+    #     return kmeans.predict(dfc)
 
     # Loop  on all columns
     for c in colname:
@@ -268,18 +334,18 @@ def pd_colnum_tocat(
         else:
             if method == "quantile":
                 lbins = bin_create_quantile(df[c], bins)
-            elif method == "cluster":
-                non_nan_index = np.where(~np.isnan(df[c]))[0]
-                lbins = bin_create_cluster(df.loc[non_nan_index][c].values.reshape((-1, 1))).reshape((-1,))
+            # elif method == "cluster":
+            #     non_nan_index = np.where(~np.isnan(df[c]))[0]
+            #     lbins = bin_create_cluster(df.loc[non_nan_index][c].values.reshape((-1, 1))).reshape((-1,))
             else:
                 lbins = bin_create(df[c], bins)
 
         cbin = c + suffix
-        if method == 'cluster':
-            df.loc[non_nan_index][cbin] = lbins
-        else:
-            labels = np.arange(0, len(lbins) - 1)
-            df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
+        # if method == 'cluster':
+        #     df.loc[non_nan_index][cbin] = lbins
+        # else:
+        labels = np.arange(0, len(lbins) - 1)
+        df[cbin] = pd.cut(df[c], bins=lbins, labels=labels)
 
 
         # NA processing
