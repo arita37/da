@@ -72,7 +72,7 @@ dsa.da.util
 
 dsa.da.util_automl
 ===================
-.. automodule:: dsa.da.util_toml
+.. automodule:: dsa.da.util_automl
    :members:
 
 
