@@ -17,10 +17,20 @@
     _autogen/*
 
 
-
-
 Welcome to DSA's documentation!
 ******************************
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
+
+
 
 dsa.da.util_feature
 ===================
@@ -70,11 +80,4 @@ dsa.da.util_automl
 
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
