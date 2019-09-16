@@ -53,3 +53,6 @@ print(os.getcwd())
 class dict2(object):
     def __init__(self, d):
         self.__dict__ = d
+
+
+
