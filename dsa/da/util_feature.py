@@ -231,13 +231,16 @@ def pd_col_tocluster(
 
     #Bin Algo
     p = dict2(params)  # Bin  model params
-    
+
     def bin_create_cluster(dfc):
         kmeans_model = KMeans(n_clusters= p.KMeans_n_clusters, init=p.KMeans_init, n_init=p.KMeans_n_init,
             max_iter=p.KMeans_max_iter, tol=p.KMeans_tol, precompute_distances=p.KMeans_precompute_distances,
             verbose=p.KMeans_verbose, random_state=p.KMeans_random_state,
-            copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm).fit(dfc)
+            copy_x=p.KMeans_copy_x, n_jobs=p.KMeans_n_jobs, algorithm=p.KMeans_algorithm)
+
+        kmeans_model.fit(dfc.values)
         return kmeans_model
+
 
     # Loop  on all columns
     for c in colname:
@@ -274,6 +277,7 @@ def pd_col_tocluster(
     else:
         return df[colnew], colmap
 
+
 def pd_colnum_tocat(
     df, colname=None, colexclude=None, colbinmap=None, bins=5, suffix="_bin",
     method="uniform", na_value=-1, return_val="dataframe,param",
@@ -297,7 +301,7 @@ def pd_colnum_tocat(
     colmap = OrderedDict()
 
     #Bin Algo
-    p = dict2(params)  # Bin  model params
+    # p = dict2(params)  # Bin  model params
     def bin_create(dfc, bins):
         mi, ma = dfc.min(), dfc.max()
         space = (ma - mi) / bins
