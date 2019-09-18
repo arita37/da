@@ -20,6 +20,11 @@ from dateutil.parser import parse
 import sklearn as sk
 from matplotlib import pyplot as plt
 
+from sklearn.preprocessing import train_test_split
+####################################################################################################
+
+
+from util import save_all
 
 
 def import_(abs_module_path, class_name=None):
@@ -57,7 +62,7 @@ class dict2(object):
 
 
 
-######################  ALGO  ######################################################################
+############# TPOT  ################################################################################
 def model_auto_tpot(
     df,
     colX, coly,
@@ -110,13 +115,22 @@ def model_auto_tpot(
 
 
 
-######################  ALGO  ######################################################################
+######################MLBOX  ######################################################################
 def model_auto_mlbox( filepath= [ "train.csv", "test.csv" ],
     colX=None, coly=None,
     do="predict",
     outfolder="aaserialize/",
     model_type="regressor/classifier",
-    params={"train_size" : 0.5},
+    params={ "csv_seprator" : ",", "train_size" : 0.5, "score_metric" : "accuracy",
+             "n_folds": 3, "n_step": 10},
+    param_space =  {
+        'est__strategy':{"search":"choice",                         "space":["LightGBM"]},
+        'est__n_estimators':{"search":"choice",                     "space":[150]},
+        'est__colsample_bytree':{"search":"uniform",                "space":[0.8,0.95]},
+        'est__subsample':{"search":"uniform",                       "space":[0.8,0.95]},
+        'est__max_depth':{"search":"choice",                        "space":[5,6,7,8,9]},
+        'est__learning_rate':{"search":"choice",                    "space":[0.07]}
+    },
     generation=1,
     population_size=5,
     verbosity=2,
@@ -152,48 +166,174 @@ def model_auto_mlbox( filepath= [ "train.csv", "test.csv" ],
     None.
 
     """
-    mlbox = import_("mlbox")
+    from mlbox.preprocessing import Reader,Drift_thresholder
+    from mlbox.optimisation import Optimiser
+    from mlbox.prediction import Predictor
 
     p = dict2(params)
-    from mlbox.preprocessing import *
-    from mlbox.optimisation import *
-    from mlbox.prediction import *
 
 
-    paths = filepath
-    target_name = coly
+    ## Pre-process
+    """
+    df (dict, default = None) –
+    Dataset dictionary. Must contain keys and values:
 
+    ”train”: pandas DataFrame for the train set.
+    ”test” : pandas DataFrame for the test set.
+    ”target” : encoded pandas Serie for the target on train set (with dtype=’float’ for a regression or dtype=’int’ for a classification). Indexes should match the train set.
 
-    rd = Reader(sep = ",")
-    df = rd.train_test_split(paths, target_name)   #reading and preprocessing (dates, ...)
+    """
+    rd = Reader(sep = p.csv_separator)
+    df = rd.train_test_split( filepath, coly)   # Reading and preprocessing (dates, ...)
     dft = Drift_thresholder()
-    df = dft.fit_transform(df)   #removing non-stable features (like ID,...)
-    opt = Optimiser(scoring = "accuracy", n_folds = 5)
+    df = dft.fit_transform(df)      # Removing non-stable features (like ID,...)
 
-    space = {
-    
+
+    ### Optimal parameter
+    # score_rmse = make_scorer(lambda y_true, y_pred: np.sqrt(np.sum((y_true - y_pred)**2)/len(y_true)), greater_is_better=False, needs_proba=False)
+    #                    opt = Optimiser(scoring = rmse, n_folds = 3)
+
+    opt = Optimiser(scoring = p.score_metric, n_folds = p.n_folds)
+    param_optim = opt.optimise(param_space, df, p.n_step)
+
+
+    if do == "prediction" :
+      clf = Predictor(to_path= outfolder, verbose=True)
+
+      #Fit and predict and save on disk
+      clf.fit_predict(param_optim, df)
+
+      # Load the predictions
+      preds = pd.read_csv("save/"+coly+"_predictions.csv")
+      print(preds.shape, preds.head(5))
+
+
+
+
+      """
+      submit = pd.read_csv("../input/gendermodel.csv", sep=',')
+      submit[coly] =  preds[coly+"_predicted"].values
+
+      submit.to_csv( outfolder + "/mlbox.csv", index=False)
+      """
+
+
+
+######################  ATOML GS  ##################################################################
+def model_auto_automlgs( filepath= [ "train.csv", "test.csv" ],
+    colX=None, coly=None,
+    do="predict",
+    outfolder="aaserialize/",
+    model_type="regressor/classifier",
+    params={ "csv_seprator" : ",", "train_size" : 0.5, "score_metric" : "accuracy",
+             "n_folds": 3, "n_step": 10},
+    param_space =  {
         'est__strategy':{"search":"choice",                         "space":["LightGBM"]},
         'est__n_estimators':{"search":"choice",                     "space":[150]},
         'est__colsample_bytree':{"search":"uniform",                "space":[0.8,0.95]},
         'est__subsample':{"search":"uniform",                       "space":[0.8,0.95]},
         'est__max_depth':{"search":"choice",                        "space":[5,6,7,8,9]},
         'est__learning_rate':{"search":"choice",                    "space":[0.07]}
-    }
+    },
+    generation=1,
+    population_size=5,
+    verbosity=2,
+):
+    """
+     https://github.com/minimaxir/automl-gs
 
-    params = opt.optimise(space, df,15)
+     https://github.com/minimaxir/automl-gs
+
+     automl_gs titanic.csv Survived --framework xgboost --num_trials 1000
 
 
-    if do == "prediction" :
-      prd = Predictor()
-      prd.fit_predict(params, df)
+csv_path: Path to the CSV file (must be in the current directory) [Required]
+target_field: Target field to predict [Required]
+target_metric: Target metric to optimize [Default: Automatically determined depending on problem type]
+framework: Machine learning framework to use [Default: 'tensorflow']
+model_name: Name of the model (if you want to train models with different names) [Default: 'automl']
+num_trials: Number of trials / different hyperparameter combos to test. [Default: 100]
+split: Train-validation split when training the models [Default: 0.7]
+num_epochs: Number of epochs / passes through the data when training the models. [Default: 20]
+col_types: Dictionary of fields:data types to use to override automl-gs's guesses. (only when using in Python) [Default: {}]
+gpu: For non-Tensorflow frameworks and Pascal-or-later GPUs, boolean to determine whether to use GPU-optimized training methods (TensorFlow can detect it automatically) [Default: False]
+tpu_address: For TensorFlow, hardware address of the TPU on the system. [Default: None]   
+
+   The output of the automl-gs training is:
+
+A timestamped folder (e.g. automl_tensorflow_20190317_020434) with contains:
+model.py: The generated model file.
+pipeline.py: The generated pipeline file.
+requirements.txt: The generated requirements file.
+/encoders: A folder containing JSON-serialized encoder files
+/metadata: A folder containing training statistics + other cool stuff not yet implemented!
+The model itself (format depends on framework)
+automl_results.csv: A CSV containing the training results after each epoch and the hyperparameters used to train at that time.
+Once the training is done, you can run the generated files from the command line within the generated folder above.
 
 
-      submit = pd.read_csv("../input/gendermodel.csv", sep=',')
-      preds = pd.read_csv("save/"+target_name+"_predictions.csv")
+    Parameters
+    ----------
+    filepath : TYPE, optional
+        DESCRIPTION. The default is [ "train.csv", "test.csv" ].
+    colX : TYPE, optional
+        DESCRIPTION. The default is None.
+    coly : TYPE, optional
+        DESCRIPTION. The default is None.
+    do : TYPE, optional
+        DESCRIPTION. The default is "predict".
+    outfolder : TYPE, optional
+        DESCRIPTION. The default is "aaserialize/".
+    model_type : TYPE, optional
+        DESCRIPTION. The default is "regressor/classifier".
+    params : TYPE, optional
+        DESCRIPTION. The default is { "csv_seprator" : ",", "train_size" : 0.5, "score_metric" : "accuracy",             "n_folds": 3, "n_step": 10}.
+    param_space : TYPE, optional
+        DESCRIPTION. The default is {        'est__strategy':{"search":"choice",                         "space":["LightGBM"]},        'est__n_estimators':{"search":"choice",                     "space":[150]},        'est__colsample_bytree':{"search":"uniform",                "space":[0.8,0.95]},        'est__subsample':{"search":"uniform",                       "space":[0.8,0.95]},        'est__max_depth':{"search":"choice",                        "space":[5,6,7,8,9]},        'est__learning_rate':{"search":"choice",                    "space":[0.07]}    }.
+    generation : TYPE, optional
+        DESCRIPTION. The default is 1.
+    population_size : TYPE, optional
+        DESCRIPTION. The default is 5.
+    verbosity : TYPE, optional
+        DESCRIPTION. The default is 2.
 
-      submit[target_name] =  preds[target_name+"_predicted"].values
+    Returns
+    -------
+    None.
 
-      submit.to_csv( outfolder + "/mlbox.csv", index=False)
+    """
+
+    p = dict2(params)
+
+    from automl_gs import automl_grid_search
+    automl_grid_search( filepath, coly, framework = p.framework,
+                        model_name=p.model_name,
+                        col_type=p.col_types,
+                        num_epochs= p.num_epochs
+                        gpu=False)
+
+
+    """
+      csv_path: Path to the CSV file (must be in the current directory) [Required]
+target_field: Target field to predict [Required]
+target_metric: Target metric to optimize [Default: Automatically determined depending on problem type]
+framework: Machine learning framework to use [Default: 'tensorflow']
+model_name: Name of the model (if you want to train models with different names) [Default: 'automl']
+num_trials: Number of trials / different hyperparameter combos to test. [Default: 100]
+split: Train-validation split when training the models [Default: 0.7]
+num_epochs: Number of epochs / passes through the data when training the models. [Default: 20]
+col_types: Dictionary of fields:data types to use to override automl-gs's guesses. (only when using in Python) [Default: {}]
+gpu: For non-Tensorflow frameworks and Pascal-or-later GPUs, boolean to determine whether to use GPU-optimized training methods (TensorFlow can detect it automatically) [Default: False]
+tpu_address: For TensorFlow, hardware address of the TPU on the system. [Default: None]   
+
+
+    """
+
+
+
+
+
+
 
 
 
