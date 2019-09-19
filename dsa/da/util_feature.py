@@ -1094,6 +1094,8 @@ def col_remove(cols, colsremove, mode="exact"):
 
 ####################################################################################################
 """
+https://github.com/abhayspawar/featexp
+
 from featexp import get_univariate_plots
 get_univariate_plots(data=data_train, target_col='target', data_test=data_test, features_list=['DAYS_EMPLOYED'])
 
