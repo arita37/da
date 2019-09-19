@@ -20,30 +20,216 @@ except Exception as e:
     print(e)
 
 
+
+
 ####################################################################################################
-def plot_plotly(df):
+########### Distribution Analsyis ##################################################################
+def pd_colnum_tocat_stat(input_data, feature, target_col, bins, cuts=0):
     """
-    pip install plotly # Plotly is a pre-requisite before installing cufflinks
-pip install cufflinks
-
-    #importing Pandas
-import pandas as pd
-#importing plotly and cufflinks in offline mode
-import cufflinks as cf
-import plotly.offline
-cf.go_offline()
-cf.set_config_file(offline=False, world_readable=True)
-
-
-    :param df:
-    :return:
+    Bins continuous features into equal sample size buckets and returns the target mean in each bucket. Separates out
+    nulls into another bucket.
+    :param input_data: dataframe containg features and target column
+    :param feature: feature column name
+    :param target_col: target column
+    :param bins: Number bins required
+    :param cuts: if buckets of certain specific cuts are required. Used on test data to use cuts from train.
+    :return: If cuts are passed only grouped data is returned, else cuts and grouped data is returned
     """
-    import cufflinks as cf
-    import plotly.offline
+    has_null = pd.isnull(input_data[feature]).sum() > 0
+    if has_null == 1:
+        data_null = input_data[pd.isnull(input_data[feature])]
+        input_data = input_data[~pd.isnull(input_data[feature])]
+        input_data.reset_index(inplace=True, drop=True)
 
-    cf.go_offline()
-    cf.set_config_file(offline=False, world_readable=True)
-    df.iplot()
+    is_train = 0
+    if cuts == 0:
+        is_train = 1
+        prev_cut = min(input_data[feature]) - 1
+        cuts = [prev_cut]
+        reduced_cuts = 0
+        for i in range(1, bins + 1):
+            next_cut = np.percentile(input_data[feature], i * 100 / bins)
+            if next_cut > prev_cut + .000001:  # float numbers shold be compared with some threshold!
+                cuts.append(next_cut)
+            else:
+                reduced_cuts = reduced_cuts + 1
+            prev_cut = next_cut
+
+        # if reduced_cuts>0:
+        #     print('Reduced the number of bins due to less variation in feature')
+        cut_series = pd.cut(input_data[feature], cuts)
+    else:
+        cut_series = pd.cut(input_data[feature], cuts)
+
+    grouped = input_data.groupby([cut_series], as_index=True).agg(
+        {target_col: [np.size, np.mean], feature: [np.mean]})
+    grouped.columns = ['_'.join(cols).strip() for cols in grouped.columns.values]
+    grouped[grouped.index.name] = grouped.index
+    grouped.reset_index(inplace=True, drop=True)
+    grouped = grouped[[feature] + list(grouped.columns[0:3])]
+    grouped = grouped.rename(index=str, columns={target_col + '_size': 'Samples_in_bin'})
+    grouped = grouped.reset_index(drop=True)
+    corrected_bin_name = '[' + str(min(input_data[feature])) + ', ' + str(grouped.loc[0, feature]).split(',')[1]
+    grouped[feature] = grouped[feature].astype('category')
+    grouped[feature] = grouped[feature].cat.add_categories(corrected_bin_name)
+    grouped.loc[0, feature] = corrected_bin_name
+
+    if has_null == 1:
+        grouped_null = grouped.loc[0:0, :].copy()
+        grouped_null[feature] = grouped_null[feature].astype('category')
+        grouped_null[feature] = grouped_null[feature].cat.add_categories('Nulls')
+        grouped_null.loc[0, feature] = 'Nulls'
+        grouped_null.loc[0, 'Samples_in_bin'] = len(data_null)
+        grouped_null.loc[0, target_col + '_mean'] = data_null[target_col].mean()
+        grouped_null.loc[0, feature + '_mean'] = np.nan
+        grouped[feature] = grouped[feature].astype('str')
+        grouped = pd.concat([grouped_null, grouped], axis=0)
+        grouped.reset_index(inplace=True, drop=True)
+
+    grouped[feature] = grouped[feature].astype('str').astype('category')
+    if is_train == 1:
+        return (cuts, grouped)
+    else:
+        return (grouped)
+
+
+
+def plot_univariate_plots(data, target_col, features_list=0, bins=10, data_test=0):
+    """
+    Creates univariate dependence plots for features in the dataset
+    :param data: dataframe containing features and target columns
+    :param target_col: target column name
+    :param features_list: by default creates plots for all features. If list passed, creates plots of only those features.
+    :param bins: number of bins to be created from continuous feature
+    :param data_test: test data which has to be compared with input data for correlation
+    :return: Draws univariate plots for all columns in data
+    """
+    if type(features_list) == int:
+        features_list = list(data.columns)
+        features_list.remove(target_col)
+
+    for cols in features_list:
+        if cols != target_col and data[cols].dtype == 'O':
+            print(cols + ' is categorical. Categorical features not supported yet.')
+        elif cols != target_col and data[cols].dtype != 'O':
+            plot_univariate_histogram(feature=cols, data=data, target_col=target_col, bins=bins, data_test=data_test)
+
+
+
+
+def plot_univariate_histogram(feature, data, target_col, bins=10, data_test=0):
+    """
+    Calls the draw plot function and editing around the plots
+    :param feature: feature column name
+    :param data: dataframe containing features and target columns
+    :param target_col: target column name
+    :param bins: number of bins to be created from continuous feature
+    :param data_test: test data which has to be compared with input data for correlation
+    :return: grouped data if only train passed, else (grouped train data, grouped test data)
+    """
+    print(' {:^100} '.format('Plots for ' + feature))
+    if data[feature].dtype == 'O':
+        print('Categorical feature not supported')
+    else:
+        cuts, grouped = pd_colnum_tocat_stat(input_data=data, feature=feature, target_col=target_col, bins=bins)
+        has_test = type(data_test) == pd.core.frame.DataFrame
+        if has_test:
+            grouped_test = pd_colnum_tocat_stat(input_data=data_test.reset_index(drop=True), feature=feature,
+                                            target_col=target_col, bins=bins, cuts=cuts)
+            trend_corr = pd_stat_distribution_trend_correlation(grouped, grouped_test, feature, target_col)
+            print(' {:^100} '.format('Train data plots'))
+
+            plot_col_univariate(input_data=grouped, feature=feature, target_col=target_col)
+            print(' {:^100} '.format('Test data plots'))
+
+            plot_col_univariate(input_data=grouped_test, feature=feature, target_col=target_col, trend_correlation=trend_corr)
+        else:
+            plot_col_univariate(input_data=grouped, feature=feature, target_col=target_col)
+        print(
+            '--------------------------------------------------------------------------------------------------------------')
+        print('\n')
+        if has_test:
+            return (grouped, grouped_test)
+        else:
+            return (grouped)
+
+
+
+def pd_stat_distribution_trend_correlation(grouped, grouped_test, feature, target_col):
+    """
+    Calculates correlation between train and test trend of feature wrt target.
+    :param grouped: train grouped data
+    :param grouped_test: test grouped data
+    :param feature: feature column name
+    :param target_col: target column name
+    :return: trend correlation between train and test
+    """
+    grouped = grouped[grouped[feature] != 'Nulls'].reset_index(drop=True)
+    grouped_test = grouped_test[grouped_test[feature] != 'Nulls'].reset_index(drop=True)
+
+    if grouped_test.loc[0, feature] != grouped.loc[0, feature]:
+        grouped_test[feature] = grouped_test[feature].cat.add_categories(grouped.loc[0, feature])
+        grouped_test.loc[0, feature] = grouped.loc[0, feature]
+    grouped_test_train = grouped.merge(grouped_test[[feature, target_col + '_mean']], on=feature, how='left',
+                                       suffixes=('', '_test'))
+    nan_rows = pd.isnull(grouped_test_train[target_col + '_mean']) | pd.isnull(
+        grouped_test_train[target_col + '_mean_test'])
+    grouped_test_train = grouped_test_train.loc[~nan_rows, :]
+    if len(grouped_test_train) > 1:
+        trend_correlation = np.corrcoef(grouped_test_train[target_col + '_mean'],
+                                        grouped_test_train[target_col + '_mean_test'])[0, 1]
+    else:
+        trend_correlation = 0
+        print("Only one bin created for " + feature + ". Correlation can't be calculated")
+
+    return (trend_correlation)
+
+
+
+
+def plot_col_univariate(input_data, feature, target_col, trend_correlation=None):
+    """
+    Draws univariate dependence plots for a feature
+    :param input_data: grouped data contained bins of feature and target mean.
+    :param feature: feature column name
+    :param target_col: target column
+    :param trend_correlation: correlation between train and test trends of feature wrt target
+    :return: Draws trend plots for feature
+    """
+    trend_changes = pd_stat_distribution_trend_correlation(grouped_data=input_data,
+                                                           feature=feature, target_col=target_col)
+    plt.figure(figsize=(12, 5))
+    ax1 = plt.subplot(1, 2, 1)
+    ax1.plot(input_data[target_col + '_mean'], marker='o')
+    ax1.set_xticks(np.arange(len(input_data)))
+    ax1.set_xticklabels((input_data[feature]).astype('str'))
+    plt.xticks(rotation=45)
+    ax1.set_xlabel('Bins of ' + feature)
+    ax1.set_ylabel('Average of ' + target_col)
+    comment = "Trend changed " + str(trend_changes) + " times"
+    if trend_correlation == 0:
+        comment = comment + '\n' + 'Correlation with train trend: NA'
+    elif trend_correlation != None:
+        comment = comment + '\n' + 'Correlation with train trend: ' + str(int(trend_correlation * 100)) + '%'
+
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.3)
+    ax1.text(0.05, 0.95, comment, fontsize=12, verticalalignment='top', bbox=props, transform=ax1.transAxes)
+    plt.title('Average of ' + target_col + ' wrt ' + feature)
+
+    ax2 = plt.subplot(1, 2, 2)
+    ax2.bar(np.arange(len(input_data)), input_data['Samples_in_bin'], alpha=0.5)
+    ax2.set_xticks(np.arange(len(input_data)))
+    ax2.set_xticklabels((input_data[feature]).astype('str'))
+    plt.xticks(rotation=45)
+    ax2.set_xlabel('Bins of ' + feature)
+    ax2.set_ylabel('Bin-wise sample size')
+    plt.title('Samples in bins of ' + feature)
+    plt.tight_layout()
+    plt.show()
+
+
+
+
 
 
 def plotbar(df, colname, figsize=(20, 10), title="feature importance", savefile="myfile.png"):
@@ -599,6 +785,37 @@ def plot_col_correl_target(df, cols, coltarget, nb_to_show=10, ascending=False):
     else:
         state = "Least"
     print(f"{state} correlated features to {str(coltarget)} are: \n{corr_target}")
+
+
+
+
+def plot_plotly(df):
+    """
+    pip install plotly # Plotly is a pre-requisite before installing cufflinks
+pip install cufflinks
+
+    #importing Pandas
+import pandas as pd
+#importing plotly and cufflinks in offline mode
+import cufflinks as cf
+import plotly.offline
+cf.go_offline()
+cf.set_config_file(offline=False, world_readable=True)
+
+
+    :param df:
+    :return:
+    """
+    import cufflinks as cf
+    import plotly.offline
+
+    cf.go_offline()
+    cf.set_config_file(offline=False, world_readable=True)
+    df.iplot()
+
+
+
+
 
 
 """
