@@ -1,3 +1,4 @@
+    
 import os
 import sys
 import warnings
@@ -10,8 +11,8 @@ import category_encoders as cat_enc
 import gamma_poisson_factorization
 from dirty_cat import SimilarityEncoder, TargetEncoder
 from dirty_cat.similarity_encoder import get_kmeans_prototypes
-from fasttext import load_model
-# from get_data import get_data_path
+from fastText import load_model
+from get_data import get_data_path
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import (NMF, PCA, LatentDirichletAllocation,
                                    TruncatedSVD)
@@ -21,12 +22,6 @@ from sklearn.preprocessing import (FunctionTransformer, LabelEncoder,
                                    OneHotEncoder)
 from sklearn.random_projection import GaussianRandomProjection
 from sklearn.utils import check_random_state, murmurhash3_32
-
-from abc import ABC, abstractmethod
-from gensim.models import KeyedVectors
-from gensim import corpora
-from nltk.stem import PorterStemmer, SnowballStemmer
-from nltk.stem.lancaster import LancasterStemmer
 
 CE_HOME = os.environ.get("CE_HOME")
 sys.path.append(os.path.abspath(os.path.join(CE_HOME, "python", "categorical_encoding")))
@@ -58,7 +53,6 @@ class OneHotEncoderRemoveOne(OneHotEncoder):
 class NgramNaiveFisherKernel(SimilarityEncoder):
     """
     Fisher kernel for a simple n-gram probability distribution
-
     For the moment, the default implementation uses the most-frequent
     prototypes
     """
@@ -241,79 +235,6 @@ class NgramNaiveFisherKernel(SimilarityEncoder):
         for i, s in enumerate(strings):
             SE[i, :] = SE_dict[s]
         return np.nan_to_num(SE)
-
-
-
-class PretrainedWord2Vec(BaseEstimator, TransformerMixin, ABC):
-
-    def __init__(self, n_components, language="english", model_path=None):
-        self.n_components = n_components
-        self.language = language
-        self.model_path = model_path
-        super().__init__()
-
-    @abstractmethod
-    def fit(self, X, y=None):
-        pass
-
-    @abstractmethod
-    def transform(self, X):
-        pass
-
-
-class PretrainedGensim(PretrainedWord2Vec):
-
-    def fit(self, X, y=None):
-
-        self.ft_model = KeyedVectors.load(
-                                    self.model_path,
-                                    # os.path.join(get_data_path(), self.model_path),
-                                    mmap="r")
-
-        self.PORTER_STEMMER = PorterStemmer()
-        self.LANCASTER_STEMMER = LancasterStemmer()
-        self.SNOWBALL_STEMMER = SnowballStemmer(self.language)
-
-        return self
-
-    def transform(self, X: dict):
-
-        if type(X) is not dict:
-            texts = [[text for text in doc.split()] for doc in X]
-            dictionary = corpora.Dictionary(texts)
-            X = dictionary.token2id
-
-        X_out = np.zeros((max(X.values()) + 1, self.ft_model.vector_size), dtype=np.float32)
-
-        for word, i in X.items():
-            word_embedding = self.__get_word_embedding(word, self.ft_model)
-            if word_embedding is not None:
-                X_out[i] = word_embedding
-
-        return X_out
-
-
-
-    def __word_forms(self, word):
-        yield word
-        yield word.lower()
-        yield word.upper()
-        yield word.capitalize()
-        yield self.PORTER_STEMMER.stem(word)
-        yield self.LANCASTER_STEMMER.stem(word)
-        yield self.SNOWBALL_STEMMER.stem(word)
-
-    def __get_word_embedding(self, word, model):
-        for form in self.__word_forms(word):
-            if form in model:
-                return model[form]
-
-        word = word.strip("-'")
-        for form in self.__word_forms(word):
-            if form in model:
-                return model[form]
-
-        return None
 
 
 class PretrainedFastText(BaseEstimator, TransformerMixin):
@@ -1059,3 +980,4 @@ class DimensionalityReduction(BaseEstimator, TransformerMixin):
             return Xout.reshape(-1, 1)
         else:
             return Xout
+
