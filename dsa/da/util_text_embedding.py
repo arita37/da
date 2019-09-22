@@ -51,6 +51,12 @@ from gensim import corpora
 from nltk.stem import PorterStemmer, SnowballStemmer
 from nltk.stem.lancaster import LancasterStemmer
 
+from bert_embedding import BertEmbedding
+
+from dirty_cat import SimilarityEncoder
+
+
+
 
 
 
@@ -245,10 +251,13 @@ class NgramNaiveFisherKernel(SimilarityEncoder):
 
 class PretrainedWord2Vec(BaseEstimator, TransformerMixin, ABC):
 
-    def __init__(self, n_components, language="english", model_path=None):
+    def __init__(self, n_components=None, language="english", 
+                model_path=None, 
+                bert_args={'bert_model': None, 'bert_dataset_name': None, 'oov': 'sum', 'ctx': None}):
         self.n_components = n_components
         self.language = language
         self.model_path = model_path
+        self.bert_args = bert_args
         super().__init__()
 
     @abstractmethod
@@ -259,6 +268,29 @@ class PretrainedWord2Vec(BaseEstimator, TransformerMixin, ABC):
     def transform(self, X):
         pass
 
+
+class PretrainedBert(PretrainedWord2Vec):
+
+    def fit(self, X, y=None):
+        if self.bert_args['bert_model'] is not None and self.bert_args['bert_dataset_name'] is not None:
+            if self.bert_args['ctx'] is not None:
+                self.ft_model = BertEmbedding(model=self.bert_args['bert_model'], 
+                                            dataset_name=self.bert_args['bert_dataset_name'], 
+                                            ctx=self.bert_args['ctx'])
+            else:
+                self.ft_model = BertEmbedding(model=self.bert_args['bert_model'], 
+                                            dataset_name=self.bert_args['bert_dataset_name'])
+
+        else:
+            self.ft_model = BertEmbedding()
+
+        return self
+
+    def transform(self, X: list):
+
+        X_out = self.ft_model(X, self.bert_args['oov'])
+
+        return X_out
 
 class PretrainedGensim(PretrainedWord2Vec):
 
